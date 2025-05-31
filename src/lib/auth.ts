@@ -73,6 +73,13 @@ export const authOptions: NextAuthOptions = {
         session.user.familyRole = token.familyRole as string | null
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Always redirect to dashboard after login
+      if (url.startsWith(baseUrl)) {
+        return `${baseUrl}/dashboard`
+      }
+      return baseUrl
     }
   },
   pages: {
