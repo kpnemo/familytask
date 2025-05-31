@@ -165,3 +165,202 @@
  GET /api/notifications 200 in 33ms
  GET /api/auth/session 200 in 27ms
  GET /favicon.ico?favicon.45db1c09.ico 200 in 227ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.3.3 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.50.113:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ⚠ Invalid next.config.ts options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverComponentsExternalPackages' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ `experimental.serverComponentsExternalPackages` has been moved to `serverExternalPackages`. Please update your next.config.ts file accordingly.
+ ✓ Ready in 685ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 514ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.mafptfntu38'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.mafptfntu38'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 513ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.9l8zazrl5'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.9l8zazrl5'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.mafptfntu38'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.mafptfntu38'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.1wqqje3th47'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.1wqqje3th47'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.53p49slbpan'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.53p49slbpan'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.0g5jh3jntcij'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.0g5jh3jntcij'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.exhba1k7k1j'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.exhba1k7k1j'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.0g5jh3jntcij'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.0g5jh3jntcij'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.b0hxjo8ap2'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.b0hxjo8ap2'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.3bh0zk3jpy6'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.3bh0zk3jpy6'
+}
+ ○ Compiling /tasks ...
+ ✓ Compiled /tasks in 1440ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.wcirxsv7hrs'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.wcirxsv7hrs'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.lxj26le55zm'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.lxj26le55zm'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.wcirxsv7hrs'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.wcirxsv7hrs'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.vtrrf9ymobq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.vtrrf9ymobq'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.kszorin99j'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.kszorin99j'
+}
+ ✓ Compiled /favicon.ico in 249ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.hbq4i12oi25'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.hbq4i12oi25'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.g09el84tuob'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.g09el84tuob'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.ho33hn0n95h'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.ho33hn0n95h'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.g09el84tuob'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.g09el84tuob'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.4vgftoodk5'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.4vgftoodk5'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.nkma2onltid'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.nkma2onltid'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.eqzwxp842op'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.eqzwxp842op'
+}
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.3.3 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.50.113:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 690ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1168ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.xjdyz0oqiu'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.xjdyz0oqiu'
+}
+ ✓ Compiled /_error in 484ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.evbbo1ztske'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.evbbo1ztske'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.xjdyz0oqiu'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.xjdyz0oqiu'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.s6v219ztan'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.s6v219ztan'
+}
+[Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.b7jxx46p0kd'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.b7jxx46p0kd'
+}
+ ✓ Compiled /favicon.ico in 189ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.xsc3v0apcuf'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/mikeb/DevProjects/FamilyTasks/.next/static/development/_buildManifest.js.tmp.xsc3v0apcuf'
+}
