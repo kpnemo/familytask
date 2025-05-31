@@ -1,7 +1,16 @@
 import Link from "next/link"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import { authOptions } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions)
+
+  // If user is logged in, redirect to dashboard
+  if (session) {
+    redirect("/dashboard")
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
