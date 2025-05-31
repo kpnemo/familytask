@@ -1,0 +1,251 @@
+"use client"
+
+import { useState } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { formatDate, formatDateTime, isTaskOverdue } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { DeclineTaskDialog } from "./decline-task-dialog"
+
+interface Task {
+  id: string
+  title: string
+  description?: string
+  points: number
+  dueDate: string
+  status: "PENDING" | "COMPLETED" | "VERIFIED" | "OVERDUE"
+  creator: { id: string; name: string; role: string }
+  assignee: { id: string; name: string; role: string }
+  verifier?: { id: string; name: string; role: string }
+  tags: Array<{ id: string; name: string; color: string }>
+  completedAt?: string
+  verifiedAt?: string
+  // Legacy field names for backwards compatibility
+  assignedTo?: string
+  createdBy?: string
+}
+
+interface TaskCardProps {
+  task: Task
+  onUpdate: () => void
+  isOverdue?: boolean
+}
+
+export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
+  const { data: session } = useSession()
+  const [loading, setLoading] = useState(false)
+  const [showDeclineDialog, setShowDeclineDialog] = useState(false)
+  const router = useRouter()
+
+  const canComplete = task.assignee.id === session?.user.id && task.status === "PENDING"
+  const canVerify = session?.user.role === "PARENT" && task.status === "COMPLETED"
+  const canEdit = task.creator.id === session?.user.id || session?.user.role === "PARENT"
+
+  const handleComplete = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/complete`, {
+        method: "POST"
+      })
+
+      if (response.ok) {
+        onUpdate()
+      } else {
+        console.error("Failed to complete task")
+      }
+    } catch (error) {
+      console.error("Error completing task:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleVerify = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/verify`, {
+        method: "POST"
+      })
+
+      if (response.ok) {
+        onUpdate()
+      } else {
+        console.error("Failed to verify task")
+      }
+    } catch (error) {
+      console.error("Error verifying task:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDecline = async (reason: string) => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/decline`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ reason })
+      })
+
+      if (response.ok) {
+        onUpdate()
+      } else {
+        console.error("Failed to decline task")
+      }
+    } catch (error) {
+      console.error("Error declining task:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusBadge = () => {
+    switch (task.status) {
+      case "PENDING":
+        return (
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            isOverdue ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {isOverdue ? '🚨 Overdue' : '📋 Pending'}
+          </span>
+        )
+      case "COMPLETED":
+        return (
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            ✅ Completed
+          </span>
+        )
+      case "VERIFIED":
+        return (
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            🎉 Verified
+          </span>
+        )
+      default:
+        return null
+    }
+  }
+
+  const dueDate = new Date(task.dueDate)
+  const isOverdueTask = isTaskOverdue(dueDate) && task.status === "PENDING"
+
+  return (
+    <Card className={`${isOverdueTask ? 'border-red-300 bg-red-50' : ''}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-semibold text-lg text-gray-900">{task.title}</h3>
+              {getStatusBadge()}
+            </div>
+            
+            {task.description && (
+              <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+            )}
+
+            <div className="flex flex-wrap gap-2 mb-3">
+              {task.tags.map(tag => (
+                <span
+                  key={tag.id}
+                  className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                  style={{ backgroundColor: tag.color }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-right ml-4">
+            <div className="text-2xl font-bold text-blue-600 mb-1">
+              {task.points} pts
+            </div>
+            <div className={`text-sm ${isOverdueTask ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+              Due: {formatDate(dueDate)}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-0">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600 space-y-1">
+            <div>
+              <strong>Assigned to:</strong> {task.assignee.name}
+              {task.assignee.id === session?.user.id && (
+                <span className="text-blue-600 ml-1">(You)</span>
+              )}
+            </div>
+            <div>
+              <strong>Created by:</strong> {task.creator.name}
+            </div>
+            {task.completedAt && (
+              <div>
+                <strong>Completed:</strong> {formatDateTime(new Date(task.completedAt))}
+              </div>
+            )}
+            {task.verifiedAt && task.verifier && (
+              <div>
+                <strong>Verified by:</strong> {task.verifier.name} on {formatDateTime(new Date(task.verifiedAt))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            {canComplete && (
+              <Button 
+                onClick={handleComplete} 
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {loading ? "Completing..." : "Mark Complete"}
+              </Button>
+            )}
+
+            {canVerify && (
+              <>
+                <Button 
+                  onClick={handleVerify} 
+                  disabled={loading}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {loading ? "Verifying..." : "Verify & Award Points"}
+                </Button>
+                <Button 
+                  onClick={() => setShowDeclineDialog(true)} 
+                  disabled={loading}
+                  variant="destructive"
+                  size="sm"
+                >
+                  Decline
+                </Button>
+              </>
+            )}
+
+            {canEdit && task.status === "PENDING" && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => router.push(`/tasks/${task.id}/edit`)}
+              >
+                Edit
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+
+      <DeclineTaskDialog
+        isOpen={showDeclineDialog}
+        onClose={() => setShowDeclineDialog(false)}
+        onDecline={handleDecline}
+        taskTitle={task.title}
+        loading={loading}
+      />
+    </Card>
+  )
+}

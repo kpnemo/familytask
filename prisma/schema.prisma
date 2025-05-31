@@ -1,0 +1,185 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String   @map("password_hash")
+  role          UserRole
+  avatarUrl     String?  @map("avatar_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  familyMemberships FamilyMember[]
+  createdTasks      Task[]         @relation("TaskCreator")
+  assignedTasks     Task[]         @relation("TaskAssignee")
+  verifiedTasks     Task[]         @relation("TaskVerifier")
+  pointsHistory     PointsHistory[]
+  notifications     Notification[]
+  pointsGiven       PointsHistory[] @relation("PointsGiver")
+
+  @@map("users")
+}
+
+model Family {
+  id         String   @id @default(cuid())
+  name       String
+  familyCode String   @unique @map("family_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  members       FamilyMember[]
+  tasks         Task[]
+  tags          TaskTag[]
+  pointsHistory PointsHistory[]
+
+  @@map("families")
+}
+
+model FamilyMember {
+  id       String           @id @default(cuid())
+  familyId String           @map("family_id")
+  userId   String           @map("user_id")
+  role     FamilyMemberRole
+  joinedAt DateTime         @default(now()) @map("joined_at")
+
+  // Relationships
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([familyId, userId])
+  @@map("family_members")
+}
+
+model Task {
+  id                String            @id @default(cuid())
+  title             String
+  description       String?
+  points            Int               @default(1)
+  dueDate           DateTime          @map("due_date")
+  status            TaskStatus        @default(PENDING)
+  createdBy         String            @map("created_by")
+  assignedTo        String            @map("assigned_to")
+  familyId          String            @map("family_id")
+  completedAt       DateTime?         @map("completed_at")
+  verifiedAt        DateTime?         @map("verified_at")
+  verifiedBy        String?           @map("verified_by")
+  isRecurring       Boolean           @default(false) @map("is_recurring")
+  recurrencePattern String?           @map("recurrence_pattern")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  // Relationships
+  creator     User                @relation("TaskCreator", fields: [createdBy], references: [id])
+  assignee    User                @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  verifier    User?               @relation("TaskVerifier", fields: [verifiedBy], references: [id])
+  family      Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  tags        TaskTagRelation[]
+  pointsEntry PointsHistory[]
+  notifications Notification[]
+
+  @@map("tasks")
+}
+
+model TaskTag {
+  id       String   @id @default(cuid())
+  name     String
+  color    String
+  familyId String   @map("family_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  family Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  tasks  TaskTagRelation[]
+
+  @@unique([name, familyId])
+  @@map("task_tags")
+}
+
+model TaskTagRelation {
+  taskId String @map("task_id")
+  tagId  String @map("tag_id")
+
+  // Relationships
+  task Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag  TaskTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@map("task_tag_relations")
+}
+
+model PointsHistory {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  familyId  String   @map("family_id")
+  points    Int
+  reason    String
+  taskId    String?  @map("task_id")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relationships
+  user    User    @relation(fields: [userId], references: [id])
+  family  Family  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  task    Task?   @relation(fields: [taskId], references: [id])
+  creator User    @relation("PointsGiver", fields: [createdBy], references: [id])
+
+  @@map("points_history")
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String           @map("user_id")
+  title         String
+  message       String
+  type          NotificationType
+  read          Boolean          @default(false)
+  relatedTaskId String?          @map("related_task_id")
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  // Relationships
+  user        User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedTask Task? @relation(fields: [relatedTaskId], references: [id])
+
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  PARENT
+  CHILD
+}
+
+enum FamilyMemberRole {
+  ADMIN_PARENT
+  PARENT
+  CHILD
+}
+
+enum TaskStatus {
+  PENDING
+  COMPLETED
+  VERIFIED
+  OVERDUE
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  TASK_VERIFIED
+  TASK_DECLINED
+  POINTS_EARNED
+  POINTS_DEDUCTED
+}
