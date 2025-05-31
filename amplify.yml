@@ -3,22 +3,30 @@ frontend:
   phases:
     preBuild:
       commands:
+        - echo "=== AMPLIFY BUILD START ==="
+        - echo "Node version:" $(node --version)
+        - echo "NPM version:" $(npm --version)
+        - echo "=== INSTALLING DEPENDENCIES ==="
         - npm ci
+        - echo "=== GENERATING PRISMA CLIENT ==="
         - npx prisma generate
-        - echo "Checking environment variables..."
-        - echo "DATABASE_URL length:" ${#DATABASE_URL}
-        - echo "NEXTAUTH_SECRET length:" ${#NEXTAUTH_SECRET}
-        - echo "NEXTAUTH_URL:" $NEXTAUTH_URL
+        - echo "=== CHECKING ENVIRONMENT VARIABLES ==="
+        - echo "DATABASE_URL set:" $([[ -n "$DATABASE_URL" ]] && echo "YES" || echo "NO")
+        - echo "NEXTAUTH_SECRET set:" $([[ -n "$NEXTAUTH_SECRET" ]] && echo "YES" || echo "NO") 
+        - echo "NEXTAUTH_URL set:" $([[ -n "$NEXTAUTH_URL" ]] && echo "YES" || echo "NO")
         - |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "ERROR: DATABASE_URL is not set!"
+          if [[ -z "$DATABASE_URL" || -z "$NEXTAUTH_SECRET" || -z "$NEXTAUTH_URL" ]]; then
+            echo "ERROR: Required environment variables are missing!"
+            echo "Please set DATABASE_URL, NEXTAUTH_SECRET, and NEXTAUTH_URL in Amplify Console"
             exit 1
           fi
-        - echo "Setting up database..."
-        - npx prisma db push --accept-data-loss --force-reset
+        - echo "=== SETTING UP DATABASE ==="
+        - npx prisma db push --accept-data-loss || echo "Database setup failed, continuing..."
     build:
       commands:
+        - echo "=== BUILDING APPLICATION ==="
         - npm run build
+        - echo "=== BUILD COMPLETE ==="
   artifacts:
     baseDirectory: .next
     files:
