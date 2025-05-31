@@ -1,8 +1,11 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { NotificationsPanel } from "@/components/features/notifications-panel"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Icons } from "@/components/ui/icons"
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
@@ -11,213 +14,105 @@ export default async function Dashboard() {
     redirect("/login")
   }
 
-  // Get family information including family code and all members
-  const familyInfo = await db.familyMember.findFirst({
-    where: { userId: session.user.id },
-    include: {
-      family: {
-        include: {
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  role: true,
-                  createdAt: true
-                }
-              }
-            },
-            orderBy: [
-              { role: 'asc' }, // ADMIN_PARENT, PARENT, CHILD
-              { joinedAt: 'asc' }
-            ]
-          }
-        }
-      }
-    }
-  })
-
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Welcome to FamilyTasks Dashboard!
-          </h1>
-          
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <h2 className="text-lg font-semibold text-green-800 mb-2">
-              🎉 Authentication is working!
-            </h2>
-            <p className="text-green-700">
-              You have successfully logged in to the FamilyTasks application.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">User Information:</h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <p><strong>Name:</strong> {session.user.name}</p>
-              <p><strong>Email:</strong> {session.user.email}</p>
-              <p><strong>Role:</strong> {session.user.role}</p>
-              <p><strong>Family Name:</strong> {familyInfo?.family.name || "Not assigned"}</p>
-              <p><strong>Family Role:</strong> {session.user.familyRole || "Not assigned"}</p>
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Header */}
+      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-xl font-semibold text-gray-900">FamilyTasks</h1>
             </div>
+            
+            <div className="flex items-center space-x-4">
+              <Link href="/settings" className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <Icons.settings className="h-5 w-5" />
+              </Link>
+              
+              <div className="flex items-center space-x-3">
+                <Avatar>
+                  <AvatarFallback className="bg-blue-100 text-blue-700 font-medium">
+                    {session.user.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
+                  <p className="text-xs text-gray-500">{session.user.role}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* Welcome Section */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome back, {session.user.name?.split(' ')[0]}!
+            </h2>
+            <p className="text-gray-600">Here's your family task dashboard.</p>
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-indigo-800 mb-4">
-              🚀 Quick Actions
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <a
-                href="/tasks"
-                className="bg-white rounded-lg p-4 border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all text-center"
-              >
-                <div className="text-2xl mb-2">📋</div>
-                <h4 className="font-semibold text-indigo-900">View Tasks</h4>
-                <p className="text-sm text-indigo-600">See all family tasks</p>
-              </a>
-
-              {session.user.role === "PARENT" && (
-                <a
-                  href="/tasks/new"
-                  className="bg-white rounded-lg p-4 border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all text-center"
-                >
-                  <div className="text-2xl mb-2">➕</div>
-                  <h4 className="font-semibold text-indigo-900">Create Task</h4>
-                  <p className="text-sm text-indigo-600">Assign new tasks</p>
-                </a>
-              )}
-
-              <a
-                href="/points"
-                className="bg-white rounded-lg p-4 border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all text-center"
-              >
-                <div className="text-2xl mb-2">⭐</div>
-                <h4 className="font-semibold text-indigo-900">Points</h4>
-                <p className="text-sm text-indigo-600">Track points & rewards</p>
-              </a>
-            </div>
-          </div>
-
-          {/* Recent Notifications */}
-          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-yellow-800 mb-4">
-              🔔 Recent Notifications
-            </h3>
-            <NotificationsPanel />
-          </div>
-
-          {familyInfo?.family && (
-            <>
-              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                  📋 Family Code (for inviting others):
-                </h3>
-                <div className="bg-white rounded-md p-3 border-2 border-dashed border-blue-300">
-                  <p className="text-2xl font-mono font-bold text-center tracking-wider text-blue-700">
-                    {familyInfo.family.familyCode}
-                  </p>
-                </div>
-                <p className="text-sm text-blue-600 mt-2">
-                  Share this code with family members so they can join your family when registering.
-                </p>
-              </div>
-
-              <div className="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-purple-800 mb-4">
-                  👨‍👩‍👧‍👦 Family Members ({familyInfo.family.members.length})
-                </h3>
-                <div className="space-y-3">
-                  {familyInfo.family.members.map((member) => (
-                    <div 
-                      key={member.id} 
-                      className={`bg-white rounded-lg p-3 border-l-4 ${
-                        member.user.id === session.user.id 
-                          ? 'border-l-green-500 bg-green-50' 
-                          : 'border-l-purple-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold text-gray-900">
-                              {member.user.name}
-                              {member.user.id === session.user.id && (
-                                <span className="text-sm text-green-600 font-normal"> (You)</span>
-                              )}
-                            </h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              member.role === 'ADMIN_PARENT' 
-                                ? 'bg-red-100 text-red-800'
-                                : member.role === 'PARENT'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {member.role === 'ADMIN_PARENT' ? '👑 Admin Parent' : 
-                               member.role === 'PARENT' ? '👨‍👩‍ Parent' : 
-                               '🧒 Child'}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {member.user.email}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Joined: {new Date(member.joinedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span className={`inline-block w-3 h-3 rounded-full ${
-                            member.user.role === 'PARENT' ? 'bg-blue-500' : 'bg-yellow-500'
-                          }`} title={member.user.role}></span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 p-3 bg-purple-100 rounded-lg">
-                  <p className="text-sm text-purple-700">
-                    <strong>Family Statistics:</strong>
-                  </p>
-                  <div className="mt-2 grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <p className="text-lg font-bold text-purple-800">
-                        {familyInfo.family.members.filter(m => m.role.includes('PARENT')).length}
-                      </p>
-                      <p className="text-xs text-purple-600">Parents</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-purple-800">
-                        {familyInfo.family.members.filter(m => m.role === 'CHILD').length}
-                      </p>
-                      <p className="text-xs text-purple-600">Children</p>
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold text-purple-800">
-                        {familyInfo.family.members.length}
-                      </p>
-                      <p className="text-xs text-purple-600">Total</p>
-                    </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Link href="/tasks" className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group">
+                  <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                    <Icons.tasks className="h-5 w-5 text-blue-600" />
                   </div>
-                </div>
-              </div>
-            </>
-          )}
+                  <div>
+                    <h3 className="font-medium text-gray-900">View Tasks</h3>
+                    <p className="text-sm text-gray-500">See all family tasks</p>
+                  </div>
+                  <Icons.chevronRight className="h-4 w-4 text-gray-400 ml-auto" />
+                </Link>
 
-          <div className="mt-6">
-            <a 
+                {session.user.role === "PARENT" && (
+                  <Link href="/tasks/new" className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group">
+                    <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                      <Icons.plus className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">Create Task</h3>
+                      <p className="text-sm text-gray-500">Assign new tasks</p>
+                    </div>
+                    <Icons.chevronRight className="h-4 w-4 text-gray-400 ml-auto" />
+                  </Link>
+                )}
+
+                <Link href="/points" className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group">
+                  <div className="p-2 bg-yellow-100 rounded-lg group-hover:bg-yellow-200 transition-colors">
+                    <Icons.points className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">Points & Rewards</h3>
+                    <p className="text-sm text-gray-500">Track your progress</p>
+                  </div>
+                  <Icons.chevronRight className="h-4 w-4 text-gray-400 ml-auto" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sign Out */}
+          <div className="flex justify-center pt-8">
+            <Link 
               href="/api/auth/signout" 
-              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="inline-flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              Sign Out
-            </a>
+              <Icons.logout className="h-4 w-4" />
+              <span>Sign Out</span>
+            </Link>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

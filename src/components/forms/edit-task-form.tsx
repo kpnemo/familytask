@@ -13,7 +13,7 @@ import { updateTaskSchema, type UpdateTaskInput } from "@/lib/validations"
 interface TaskData {
   id: string
   title: string
-  description?: string
+  description?: string | null
   points: number
   dueDate: string
   assignedTo: string
