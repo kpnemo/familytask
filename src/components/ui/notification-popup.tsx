@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Icons } from "@/components/ui/icons"
 import { formatDateTime } from "@/lib/utils"
 
@@ -22,7 +23,9 @@ export function NotificationPopup() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   // Fetch unread count on mount
   useEffect(() => {
@@ -74,6 +77,7 @@ export function NotificationPopup() {
   }, [isOpen])
 
   const markAsRead = async (notificationId: string) => {
+    setActionLoading(notificationId)
     try {
       const res = await fetch("/api/notifications", {
         method: "PATCH",
@@ -88,7 +92,55 @@ export function NotificationPopup() {
       }
     } catch (error) {
       console.error("Error marking as read:", error)
+    } finally {
+      setActionLoading(null)
     }
+  }
+
+  const deleteNotification = async (notificationId: string) => {
+    setActionLoading(notificationId)
+    try {
+      const res = await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId })
+      })
+      if (res.ok) {
+        setNotifications(prev => prev.filter(n => n.id !== notificationId))
+        setCount(prev => {
+          const deletedNotification = notifications.find(n => n.id === notificationId)
+          return deletedNotification && !deletedNotification.read ? Math.max(0, prev - 1) : prev
+        })
+      }
+    } catch (error) {
+      console.error("Error deleting notification:", error)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const clearAllNotifications = async () => {
+    setActionLoading("clear_all")
+    try {
+      const res = await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete_all" })
+      })
+      if (res.ok) {
+        setNotifications([])
+        setCount(0)
+      }
+    } catch (error) {
+      console.error("Error clearing all notifications:", error)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleTaskClick = (taskId: string) => {
+    router.push(`/tasks/${taskId}`)
+    setIsOpen(false) // Close popup when navigating
   }
 
   const togglePopup = () => {
@@ -112,7 +164,18 @@ export function NotificationPopup() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
+              {notifications.length > 0 && (
+                <button
+                  onClick={clearAllNotifications}
+                  disabled={actionLoading === "clear_all"}
+                  className="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 disabled:opacity-50"
+                >
+                  {actionLoading === "clear_all" ? "Clearing..." : "Clear All"}
+                </button>
+              )}
+            </div>
           </div>
           
           <div className="max-h-96 overflow-y-auto">
@@ -125,11 +188,11 @@ export function NotificationPopup() {
                 {notifications.slice(0, 10).map((notification) => (
                   <div 
                     key={notification.id}
-                    className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 ${
+                    className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 relative ${
                       !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between pr-8">
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                           {notification.title}
@@ -141,20 +204,48 @@ export function NotificationPopup() {
                           {formatDateTime(new Date(notification.createdAt))}
                         </p>
                         {notification.relatedTask && (
-                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                            Related: {notification.relatedTask.title}
-                          </p>
+                          <button
+                            onClick={() => handleTaskClick(notification.relatedTask!.id)}
+                            className="inline-block text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 hover:underline mt-1 cursor-pointer"
+                            title="Click to view task"
+                          >
+                            📝 Task: {notification.relatedTask.title}
+                          </button>
                         )}
+                        
+                        {/* Mark as read button */}
+                        <div className="flex gap-2 mt-2">
+                          {!notification.read && (
+                            <button
+                              onClick={() => markAsRead(notification.id)}
+                              disabled={actionLoading === notification.id}
+                              className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 disabled:opacity-50"
+                            >
+                              {actionLoading === notification.id ? "Marking..." : "Mark read"}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      {!notification.read && (
-                        <button
-                          onClick={() => markAsRead(notification.id)}
-                          className="ml-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-xs"
-                        >
-                          Mark read
-                        </button>
-                      )}
                     </div>
+                    
+                    {/* X Delete Button */}
+                    <button
+                      onClick={() => deleteNotification(notification.id)}
+                      disabled={actionLoading === notification.id}
+                      className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors disabled:opacity-50"
+                      title="Delete notification"
+                    >
+                      {actionLoading === notification.id ? (
+                        <Icons.circle className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Icons.x className="w-4 h-4" />
+                      )}
+                    </button>
+                    
+                    {/* Unread indicator */}
+                    {!notification.read && (
+                      <div className="absolute top-3 right-10 w-2 h-2 bg-blue-500 rounded-full"></div>
+                    )}
                   </div>
                 ))}
               </div>
