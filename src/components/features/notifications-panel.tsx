@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { formatDateTime } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Icons } from "@/components/ui/icons"
 
 interface Notification {
   id: string
@@ -22,6 +24,7 @@ export function NotificationsPanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -81,6 +84,10 @@ export function NotificationsPanel() {
     } finally {
       setActionLoading(null)
     }
+  }
+
+  const handleTaskClick = (taskId: string) => {
+    router.push(`/tasks/${taskId}`)
   }
 
   const deleteNotification = async (notificationId: string) => {
@@ -213,21 +220,25 @@ export function NotificationsPanel() {
         {notifications.map((notification) => (
           <div 
             key={notification.id}
-            className={`bg-white rounded p-3 border-l-4 ${
+            className={`bg-white rounded p-3 border-l-4 relative ${
               notification.read ? 'border-l-gray-300' : 'border-l-yellow-500'
             }`}
           >
             <div className="flex items-start justify-between">
-              <div className="flex-1">
+              <div className="flex-1 pr-8">
                 <h4 className="font-medium text-gray-900">{notification.title}</h4>
                 <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   {formatDateTime(new Date(notification.createdAt))}
                 </p>
                 {notification.relatedTask && (
-                  <p className="text-xs text-blue-600 mt-1">
-                    Related to: {notification.relatedTask.title}
-                  </p>
+                  <button
+                    onClick={() => handleTaskClick(notification.relatedTask!.id)}
+                    className="inline-block text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 cursor-pointer"
+                    title="Click to view task"
+                  >
+                    📝 Task: {notification.relatedTask.title}
+                  </button>
                 )}
                 
                 {/* Individual notification actions */}
@@ -241,17 +252,26 @@ export function NotificationsPanel() {
                       {actionLoading === notification.id ? "Marking..." : "Mark Read"}
                     </button>
                   )}
-                  <button
-                    onClick={() => deleteNotification(notification.id)}
-                    disabled={actionLoading === notification.id}
-                    className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50"
-                  >
-                    {actionLoading === notification.id ? "Deleting..." : "Delete"}
-                  </button>
                 </div>
               </div>
+              
+              {/* X Delete Button */}
+              <button
+                onClick={() => deleteNotification(notification.id)}
+                disabled={actionLoading === notification.id}
+                className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
+                title="Delete notification"
+              >
+                {actionLoading === notification.id ? (
+                  <Icons.circle className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Icons.x className="w-4 h-4" />
+                )}
+              </button>
+              
+              {/* Unread indicator */}
               {!notification.read && (
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1"></div>
+                <div className="absolute top-3 right-10 w-2 h-2 bg-yellow-500 rounded-full"></div>
               )}
             </div>
           </div>
