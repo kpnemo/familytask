@@ -144,7 +144,7 @@ export function WeeklyView() {
                         <div className="flex items-center space-x-2 mb-1">
                           {getStatusIcon(task.status)}
                           <Link 
-                            href={`/tasks/${task.id}/edit`}
+                            href={`/tasks/${task.id}`}
                             className="font-medium text-sm hover:underline truncate"
                           >
                             {task.title}
