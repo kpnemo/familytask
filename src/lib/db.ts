@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import './db-config' // Ensure DIRECT_URL is set
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
