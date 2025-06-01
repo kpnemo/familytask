@@ -290,26 +290,52 @@ export async function DELETE(
 
       // Create a notification for the assignee if different from deleter
       if (task.assignedTo && task.assignedTo !== session.user.id) {
-        await tx.notification.create({
-          data: {
-            userId: task.assignedTo,
-            title: "Task Deleted",
-            message: `The task "${task.title}" has been deleted by ${session.user.name}`,
-            type: "TASK_DELETED"
-          }
-        })
+        try {
+          await tx.notification.create({
+            data: {
+              userId: task.assignedTo,
+              title: "Task Deleted",
+              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
+              type: "TASK_DELETED"
+            }
+          })
+        } catch (error) {
+          // Fallback if TASK_DELETED enum doesn't exist yet - use POINTS_DEDUCTED as fallback
+          console.warn("TASK_DELETED enum not available, using fallback notification type")
+          await tx.notification.create({
+            data: {
+              userId: task.assignedTo,
+              title: "Task Deleted",
+              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
+              type: "POINTS_DEDUCTED" // Temporary fallback
+            }
+          })
+        }
       }
 
       // Create a notification for the creator if different from deleter and assignee
       if (task.createdBy && task.createdBy !== session.user.id && task.createdBy !== task.assignedTo) {
-        await tx.notification.create({
-          data: {
-            userId: task.createdBy,
-            title: "Task Deleted",
-            message: `The task "${task.title}" has been deleted by ${session.user.name}`,
-            type: "TASK_DELETED"
-          }
-        })
+        try {
+          await tx.notification.create({
+            data: {
+              userId: task.createdBy,
+              title: "Task Deleted",
+              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
+              type: "TASK_DELETED"
+            }
+          })
+        } catch (error) {
+          // Fallback if TASK_DELETED enum doesn't exist yet
+          console.warn("TASK_DELETED enum not available, using fallback notification type")
+          await tx.notification.create({
+            data: {
+              userId: task.createdBy,
+              title: "Task Deleted",
+              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
+              type: "POINTS_DEDUCTED" // Temporary fallback
+            }
+          })
+        }
       }
 
       return {

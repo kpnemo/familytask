@@ -16,7 +16,10 @@
     "test:e2e:ui": "playwright test --ui",
     "test:smoke": "npm run build && npm run test:unit && playwright test tests/e2e/auth.spec.ts",
     "test:setup": "node scripts/setup-test-db.js setup",
-    "test:clean": "node scripts/setup-test-db.js clean"
+    "test:clean": "node scripts/setup-test-db.js clean",
+    "migrate:apply": "node scripts/apply-migration.js",
+    "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
