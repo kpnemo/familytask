@@ -7,7 +7,16 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "node scripts/test-runner.js",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:unit:watch": "jest --testPathPattern=unit --watch",
+    "test:unit:coverage": "jest --testPathPattern=unit --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:smoke": "npm run build && npm run test:unit && playwright test tests/e2e/auth.spec.ts",
+    "test:setup": "node scripts/setup-test-db.js setup",
+    "test:clean": "node scripts/setup-test-db.js clean"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -31,13 +40,21 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@jest/globals": "^30.0.0-beta.3",
+    "@playwright/test": "^1.52.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^30.0.0-beta.3",
+    "playwright": "^1.52.0",
+    "supertest": "^7.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

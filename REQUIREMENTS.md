@@ -1,7 +1,7 @@
-# FamilyTasks - Web Application Requirements (MVP)
+# FamilyTasks - Web Application Requirements (Updated)
 
 ## Project Overview
-A simplified web-based family task management application that engages kids in completing household tasks through a gamified points system. Parents create and assign tasks, kids complete them, and points can be exchanged for real-world rewards.
+A comprehensive web-based family task management application that engages kids in completing household tasks through a gamified points system. Parents create and assign tasks, kids complete them, and points can be exchanged for real-world rewards through the integrated reward shop.
 
 ## Core Features
 
@@ -10,6 +10,7 @@ A simplified web-based family task management application that engages kids in c
 - Family structure: One family per parent, multiple parents allowed
 - Roles: Admin Parent, Parent, Child (no age restrictions)
 - Family invite system: First registered family member gets a family code, others join using this code during registration
+- **✅ Family member management**: Edit names, remove members (parent/admin only)
 
 ### Task Management
 - Parents create tasks and assign to children
@@ -17,33 +18,42 @@ A simplified web-based family task management application that engages kids in c
 - Task properties: title, description, points (default: 1), due date, tags
 - Workflow: Child completes → Parent verifies → Points awarded
 - Support for recurring tasks
+- **✅ Single task view**: Detailed task page with role-based actions
+- **✅ Task completion**: Complete, verify, decline functionality
+- **✅ Overdue detection**: Visual indicators for past-due tasks
 
 ### Points System
 - Points earned for verified task completion
 - Points accumulate (no monthly reset)
-- Parents can deduct points for real-world rewards
+- **✅ Reward Shop**: Parents can deduct points for real-world rewards
+- **✅ Points history**: Complete transaction log with running balance
+- **✅ Balance tracking**: Before/after amounts for all transactions
 - Hall of Fame leaderboard for all family children
 
 ### Notifications
-- **In-app notifications only** (no email)
+- **✅ Enhanced in-app notifications** (no email)
 - Real-time updates for task assignments, completions, verifications
-- Notification bell with unread count
+- **✅ Notification bell with unread count**
+- **✅ Clickable task notifications**: Navigate directly to task details
+- **✅ Individual notification management**: Mark read, delete individual notifications
+- **✅ Bulk actions**: Clear all notifications
 
 ### Core Pages
 - Dashboard (role-specific views)
-- Task management (list, create, details)
-- Points overview and history
+- **✅ Task management** (list, create, details, edit)
+- **✅ Points overview and history with reward shop**
 - Hall of Fame leaderboard
-- Family management with family code display
+- **✅ Enhanced family management** with family code display and member management
+- **✅ Settings page** with profile management and family member controls
 - Basic analytics for parents
 
 ## Technical Stack
 
-**Frontend & Backend**: Next.js 14 + TypeScript
+**Frontend & Backend**: Next.js 15 + TypeScript
 **Database**: PostgreSQL + Prisma ORM
 **Authentication**: NextAuth.js (credentials provider only)
 **Styling**: Tailwind CSS + Shadcn/ui
-**Real-time**: Server-Sent Events for notifications
+**UI Components**: Radix UI primitives
 **Deployment**: Vercel
 
 ## Database Schema
@@ -112,9 +122,9 @@ PointsHistory {
   id: UUID (PK)
   user_id: UUID (FK)
   family_id: UUID (FK)
-  points: Integer (can be negative)
+  points: Integer (can be negative for deductions)
   reason: String
-  task_id: UUID? (FK)
+  task_id: UUID? (FK) - null for reward shop deductions
   created_by: UUID (FK)
   created_at: DateTime
 }
@@ -124,151 +134,276 @@ Notifications {
   user_id: UUID (FK)
   title: String
   message: String
-  type: Enum(TASK_ASSIGNED, TASK_COMPLETED, TASK_VERIFIED, POINTS_EARNED, POINTS_DEDUCTED)
+  type: Enum(TASK_ASSIGNED, TASK_COMPLETED, TASK_VERIFIED, TASK_DECLINED, POINTS_EARNED, POINTS_DEDUCTED)
   read: Boolean (default: false)
   related_task_id: UUID? (FK)
   created_at: DateTime
 }
 ```
 
-## Registration & Family Setup Flow
+## Pages Structure
 
-### Option 1: First Family Member (Creates Family)
-1. User registers with email/password
-2. Selects "Create new family"
-3. System generates unique 8-character family code
-4. User becomes Admin Parent
-5. Family code displayed for sharing
+```
+/                         # Landing page
+/login                   # Login
+/register                # Registration with family code option
+/dashboard               # Role-specific dashboard
+/tasks                   # Task list with filters
+/tasks/new               # Create task
+/tasks/[id]              # ✅ Single task view with actions
+/tasks/[id]/edit         # Edit task
+/points                  # ✅ Points overview with reward shop
+/settings                # ✅ Profile and family management
+/notifications           # Notification center (if needed)
+```
 
-### Option 2: Joining Existing Family
-1. User registers with email/password
-2. Enters family code during registration
-3. System validates code and adds user to family
-4. Role assigned based on user selection (Parent/Child)
-
-## API Endpoints
+## API Documentation
 
 ### Authentication
 ```typescript
-// Register with optional family code
 POST /api/auth/register
 Body: {
   email: string;
   password: string;
   name: string;
   role: "PARENT" | "CHILD";
-  familyCode?: string; // If joining existing family
-  familyName?: string; // If creating new family
+  familyCode?: string;
+  familyName?: string;
 }
 
 POST /api/auth/login
 Body: { email: string; password: string; }
-
-GET /api/auth/me
 ```
 
 ### Family Management
 ```typescript
-GET /api/families/my           // Get user's family with code
-GET /api/families/members      // Get family members
-POST /api/families/regenerate  // Regenerate family code (admin only)
+GET /api/families/my
+Response: {
+  success: boolean;
+  data: {
+    family: { id: string; name: string; familyCode: string; };
+    members: Array<{
+      id: string;
+      role: "ADMIN_PARENT" | "PARENT" | "CHILD";
+      user: { id: string; name: string; email: string; role: string; };
+    }>;
+    userRole: "ADMIN_PARENT" | "PARENT" | "CHILD";
+  }
+}
+
+PATCH /api/families/members/[id]
+Body: { name: string; }
+Purpose: Update family member name (parents only)
+
+DELETE /api/families/members/[id]
+Purpose: Remove family member (parents only)
+
+POST /api/families/regenerate
+Purpose: Regenerate family code (admin only)
 ```
 
 ### Tasks
 ```typescript
-GET /api/tasks                 // Get tasks (filtered by role)
-POST /api/tasks               // Create task
-PUT /api/tasks/:id            // Update task
-DELETE /api/tasks/:id         // Delete task
-POST /api/tasks/:id/complete  // Mark as completed
-POST /api/tasks/:id/verify    // Verify completion
+GET /api/tasks
+Query: { status?: string; assignedTo?: string; }
+Response: Array of tasks with creator, assignee, tags
+
+POST /api/tasks
+Body: {
+  title: string;
+  description?: string;
+  points: number;
+  dueDate: string;
+  assignedTo: string;
+  tagIds?: string[];
+}
+
+GET /api/tasks/[id]
+Response: Full task details with relationships
+
+PUT /api/tasks/[id]
+Body: Same as POST /api/tasks
+
+POST /api/tasks/[id]/complete
+Purpose: Mark task as completed (assignee only)
+
+POST /api/tasks/[id]/verify
+Purpose: Verify completed task (parents only)
+
+POST /api/tasks/[id]/decline
+Purpose: Decline completed task, reset to pending (parents only)
+
+GET /api/tasks/weekly
+Response: Tasks organized by week for calendar view
 ```
 
-### Tags
+### Points & Reward Shop
 ```typescript
-GET /api/tags                 // Get family tags
-POST /api/tags               // Create tag
-PUT /api/tags/:id            // Update tag
-DELETE /api/tags/:id         // Delete tag
-```
+GET /api/user/points
+Response: { success: boolean; points: number; }
 
-### Points
-```typescript
-GET /api/points/balance/:userId     // Get points balance
-GET /api/points/history/:userId     // Get points history
-POST /api/points/deduct            // Deduct points (parent only)
-GET /api/points/leaderboard        // Get hall of fame
-```
+POST /api/points/deduct
+Body: {
+  userId: string;
+  points: number;
+  reason: string;
+}
+Purpose: Deduct points for rewards (parents only)
+Response: {
+  success: boolean;
+  data: {
+    balanceBefore: number;
+    balanceAfter: number;
+    // ... transaction details
+  }
+}
 
-### Analytics (Basic)
-```typescript
-GET /api/analytics/overview        // Family stats (parent only)
-GET /api/analytics/child/:id       // Child stats (parent only)
+GET /api/points/history
+Query: { userId?: string; }
+Response: {
+  success: boolean;
+  data: {
+    history: Array<{
+      id: string;
+      points: number;
+      reason: string;
+      createdAt: string;
+      createdBy: string;
+      balanceBefore: number;
+      balanceAfter: number;
+      isDeduction: boolean;
+    }>;
+    currentBalance: number;
+  }
+}
 ```
 
 ### Notifications
 ```typescript
-GET /api/notifications             // Get user notifications
-PUT /api/notifications/:id/read    // Mark as read
-DELETE /api/notifications/:id      // Delete notification
-GET /api/notifications/sse         // Server-sent events for real-time
+GET /api/notifications
+Response: {
+  success: boolean;
+  data: Array<{
+    id: string;
+    title: string;
+    message: string;
+    type: string;
+    read: boolean;
+    createdAt: string;
+    relatedTask?: { id: string; title: string; };
+  }>
+}
+
+PATCH /api/notifications
+Body: { 
+  notificationId?: string;  // For single notification
+  action?: "clear_all";     // For bulk mark as read
+}
+Purpose: Mark notification(s) as read
+
+DELETE /api/notifications
+Body: {
+  notificationId?: string;  // For single deletion
+  action?: "delete_all";    // For bulk deletion
+}
+
+GET /api/notifications/unread-count
+Response: { success: boolean; count: number; }
 ```
 
-## Pages Structure
+### Tags
+```typescript
+GET /api/tags
+Response: Array of family tags
 
+POST /api/tags
+Body: { name: string; color: string; }
+
+PUT /api/tags/[id]
+Body: { name: string; color: string; }
+
+DELETE /api/tags/[id]
 ```
-/                    # Landing page
-/register           # Registration with family code option
-/login              # Login
-/dashboard          # Role-specific dashboard
-/tasks              # Task list
-/tasks/new          # Create task
-/tasks/[id]         # Task details
-/points             # Points overview
-/leaderboard        # Hall of Fame
-/points/deduct      # Deduct points (parent only)
-/analytics          # Basic analytics (parent only)
-/family             # Family code display and member management
-/profile            # User profile
-/notifications      # Notification center
+
+### User Management
+```typescript
+POST /api/user/change-email
+Body: { newEmail: string; password: string; }
+
+POST /api/user/change-password
+Body: { currentPassword: string; newPassword: string; }
 ```
 
 ## User Roles & Permissions
 
-**Admin Parent**: 
+### Admin Parent
 - Create family and get family code
 - Regenerate family code
+- Remove family members
 - All parent permissions
 
-**Parent**: 
+### Parent
 - Create/assign tasks to children
 - Verify task completions
-- Deduct points
-- View basic analytics
+- Decline task completions
+- Edit family member names
+- Remove family members (except admins)
+- Deduct points through reward shop
+- View all family points history
 
-**Child**: 
+### Child
 - Complete assigned tasks
 - Create personal tasks
-- View points and leaderboard
+- View own points and transaction history
+- View family leaderboard
+- Read-only access to family member list
 
-## MVP Simplifications
+## Role-Based UI Features
 
-✅ **Included in MVP:**
-- Basic task creation and assignment
-- Points system with manual deduction
-- In-app notifications only
-- Simple family code sharing
-- Basic analytics
-- Hall of fame leaderboard
+### Points Page (/points)
+**For Parents:**
+- Current points display
+- Family leaderboard
+- **Reward Shop section** with kid selection and point deduction
+- Full points history for all family members
 
-❌ **NOT in MVP:**
-- Email notifications or verification
-- Advanced recurring patterns
-- Photo attachments
-- Reward catalog
-- Advanced analytics
-- Bulk operations
-- Task templates
+**For Kids:**
+- Current points display
+- Family leaderboard  
+- Points history (own transactions only)
+- **No reward shop section** (hidden for better UX)
+
+### Settings Page (/settings)
+**For All Users:**
+- Profile information display
+- Change email/password functionality
+- Family information display
+
+**For Parents/Admins:**
+- **Family Members Management section**
+- Edit member names
+- Remove members (with proper restrictions)
+
+**For Kids:**
+- Read-only family members list
+
+### Task Details (/tasks/[id])
+**For Assignees:**
+- "Complete Task" button (when pending)
+
+**For Parents:**
+- "Verify Task" button (when completed)
+- "Decline Task" button (when completed)
+
+**For Creators:**
+- "Edit Task" link (when pending)
+
+### Notifications
+**For All Users:**
+- Mark individual notifications as read
+- Delete individual notifications with X button
+- Clear all notifications
+- **Clickable task notifications** that navigate to task details
 
 ## Development Commands
 
@@ -280,6 +415,10 @@ npm run lint                  # Lint code
 npx prisma generate          # Generate Prisma client
 npx prisma db push           # Push schema to database
 npx prisma studio            # Database GUI
+
+# Deployment
+vercel                        # Deploy to preview
+vercel --prod                # Deploy to production
 ```
 
 ## Environment Variables
@@ -300,20 +439,33 @@ NODE_ENV=production
 
 ```
 src/
-├── app/                 # Next.js 14 app directory
+├── app/                 # Next.js 15 app directory
 │   ├── (auth)/         # Auth pages (login, register)
 │   ├── dashboard/      # Dashboard
 │   ├── tasks/          # Task management
-│   ├── points/         # Points and leaderboard
-│   ├── family/         # Family management
+│   │   ├── [id]/       # Single task view and edit
+│   │   ├── new/        # Create task
+│   │   └── page.tsx    # Task list
+│   ├── points/         # Points and reward shop
+│   ├── settings/       # Settings and family management
 │   ├── api/            # API routes
+│   │   ├── auth/       # Authentication
+│   │   ├── families/   # Family management
+│   │   ├── tasks/      # Task CRUD and actions
+│   │   ├── points/     # Points and reward shop
+│   │   ├── notifications/ # Notification management
+│   │   ├── tags/       # Tag management
+│   │   └── user/       # User profile updates
 │   ├── layout.tsx      # Root layout
 │   └── page.tsx        # Landing page
 ├── components/         # React components
 │   ├── ui/            # Shadcn/ui components
 │   ├── forms/         # Form components
-│   ├── layout/        # Layout components
-│   └── features/      # Feature-specific components
+│   ├── layout/        # Layout components (AppHeader, etc.)
+│   ├── features/      # Feature-specific components
+│   ├── settings/      # Settings page components
+│   ├── points/        # Points and reward shop components
+│   └── tasks/         # Task-related components
 ├── lib/               # Utilities
 │   ├── db.ts          # Prisma client
 │   ├── auth.ts        # NextAuth config
@@ -325,12 +477,49 @@ src/
     └── schema.prisma
 ```
 
-## Family Code System
+## Feature Implementation Status
 
-- **Code Generation**: 8-character alphanumeric code (e.g., "ABC12XYZ")
-- **Code Display**: Shown prominently in family settings
-- **Code Regeneration**: Admin can regenerate if compromised
-- **Code Validation**: Checked during registration
-- **Single Use**: Multiple people can use same code to join family
+### ✅ Completed Features
+- **User Authentication & Registration**
+- **Family Management with Invite Codes**
+- **Task CRUD Operations**
+- **Task Workflow** (Create → Assign → Complete → Verify)
+- **Points System with History Tracking**
+- **Reward Shop** for point deductions
+- **Enhanced Notifications** with clickable tasks
+- **Single Task View** with role-based actions
+- **Family Member Management**
+- **Role-Based UI** (different views for parents/kids)
+- **Settings Page** with profile management
+- **Responsive Design** with proper navigation
 
-This MVP approach removes email complexity while maintaining core family task management functionality.
+### 🔄 In Progress / Future Enhancements
+- Advanced recurring task patterns
+- Bulk task operations
+- Enhanced analytics dashboard
+- Task templates
+- Photo attachments for task verification
+
+## Security & Permissions
+
+### Data Access Control
+- Users can only access their own family's data
+- Family isolation enforced at API level
+- Role-based permissions for sensitive operations
+- Proper authorization checks on all endpoints
+
+### Family Member Management Rules
+- Only parents/admins can edit member names
+- Only parents/admins can remove members
+- Users cannot remove themselves
+- Only admins can remove other admins
+- Admins cannot be removed by non-admins
+
+### Points & Reward Shop Rules
+- Only parents can deduct points
+- Cannot deduct more points than available
+- All point transactions are logged
+- Cannot deduct from zero balance
+- Reason required for all deductions
+
+This comprehensive system provides a complete family task management solution with proper role separation, reward mechanisms, and user-friendly interfaces for all family members.
