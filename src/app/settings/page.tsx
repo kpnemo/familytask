@@ -9,6 +9,7 @@ import { ChangeEmailModal } from "@/components/settings/change-email-modal"
 import { ChangePasswordModal } from "@/components/settings/change-password-modal"
 import { FamilyCodeSection } from "@/components/settings/family-code-section"
 import { FamilyMembersWrapper } from "@/components/settings/family-members-wrapper"
+import { ThemeToggle } from "@/components/settings/theme-toggle"
 import { AppHeader } from "@/components/layout/app-header"
 
 export default async function SettingsPage() {
@@ -81,6 +82,30 @@ export default async function SettingsPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Appearance Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Icons.palette className="h-5 w-5" />
+                <span>Appearance</span>
+              </CardTitle>
+              <CardDescription>Customize how the app looks and feels</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+                    Theme
+                  </label>
+                  <ThemeToggle />
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Choose between light and dark mode for better viewing comfort
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Profile Section */}
           <Card>

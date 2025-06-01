@@ -98,7 +98,7 @@ export function RewardShop({ familyMembers, isParent, onPointsDeducted }: Reward
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <div className="text-4xl mb-2">🏪</div>
             <div className="font-medium">Ask a parent to set up rewards!</div>
             <div className="text-sm">Parents can deduct points when you get real-world rewards.</div>
@@ -121,7 +121,7 @@ export function RewardShop({ familyMembers, isParent, onPointsDeducted }: Reward
       <CardContent>
         <div className="space-y-4">
           {eligibleMembers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <div className="text-4xl mb-2">🎯</div>
               <div className="font-medium">No kids with points found</div>
               <div className="text-sm">Kids need to earn points by completing tasks first.</div>
@@ -135,7 +135,7 @@ export function RewardShop({ familyMembers, isParent, onPointsDeducted }: Reward
                   id="kidSelect"
                   value={selectedUserId}
                   onChange={(e) => setSelectedUserId(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Choose a kid...</option>
                   {eligibleMembers.map((member) => (
@@ -147,13 +147,13 @@ export function RewardShop({ familyMembers, isParent, onPointsDeducted }: Reward
               </div>
 
               {selectedMember && (
-                <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{selectedMember.user.name}</div>
-                      <div className="text-sm text-gray-600">Available Points</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{selectedMember.user.name}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Available Points</div>
                     </div>
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {selectedMember.totalPoints}
                     </div>
                   </div>
@@ -209,9 +209,9 @@ export function RewardShop({ familyMembers, isParent, onPointsDeducted }: Reward
               </Button>
 
               {selectedMember && points && (
-                <div className="text-sm text-gray-600 text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
                   {selectedMember.user.name} will have{" "}
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">
                     {Math.max(0, selectedMember.totalPoints - (parseInt(points) || 0))} points
                   </span>{" "}
                   remaining

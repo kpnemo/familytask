@@ -51,10 +51,10 @@ export function PointsPageClient({
         </CardHeader>
         <CardContent>
           <div className="text-center">
-            <div className="text-6xl font-bold text-blue-600 mb-2">
+            <div className="text-6xl font-bold text-blue-600 dark:text-blue-400 mb-2">
               {userTotalPoints}
             </div>
-            <div className="text-gray-500">Current Balance</div>
+            <div className="text-gray-500 dark:text-gray-400">Current Balance</div>
           </div>
         </CardContent>
       </Card>
@@ -72,24 +72,24 @@ export function PointsPageClient({
         <CardContent>
           <div className="space-y-3">
             {familyMembers.map((member, index) => (
-              <div key={member.userId} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div key={member.userId} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-center gap-3">
                   <div className="text-lg">
                     {index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "👤"}
                   </div>
                   <div>
-                    <div className="font-medium">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
                       {member.user.name}
                       {member.userId === currentUserId && (
-                        <span className="text-blue-600 ml-1">(You)</span>
+                        <span className="text-blue-600 dark:text-blue-400 ml-1">(You)</span>
                       )}
                     </div>
-                    <div className="text-sm text-gray-500 capitalize">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
                       {member.user.role.toLowerCase()}
                     </div>
                   </div>
                 </div>
-                <div className="text-lg font-bold text-blue-600">
+                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
                   {member.totalPoints} pts
                 </div>
               </div>

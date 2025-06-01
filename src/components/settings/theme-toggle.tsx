@@ -7,28 +7,30 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
       <button
         onClick={() => setTheme("light")}
-        className={`p-2 rounded-lg transition-colors ${
+        className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-all duration-200 ${
           theme === "light"
-            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+            ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         }`}
-        aria-label="Light mode"
+        aria-label="Switch to light mode"
       >
         <Icons.sun className="h-4 w-4" />
+        <span className="text-sm font-medium">Light</span>
       </button>
       <button
         onClick={() => setTheme("dark")}
-        className={`p-2 rounded-lg transition-colors ${
+        className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-all duration-200 ${
           theme === "dark"
-            ? "bg-gray-900 text-white dark:bg-gray-600 dark:text-gray-100"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+            ? "bg-gray-900 dark:bg-gray-600 text-white shadow-sm"
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
         }`}
-        aria-label="Dark mode"
+        aria-label="Switch to dark mode"
       >
         <Icons.moon className="h-4 w-4" />
+        <span className="text-sm font-medium">Dark</span>
       </button>
     </div>
   )

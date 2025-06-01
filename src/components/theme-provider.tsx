@@ -22,10 +22,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
     setMounted(true)
     
-    // Get theme from localStorage or system preference
+    // Get theme from localStorage or default to light mode
+    // This prevents unexpected dark mode for new users
     const savedTheme = localStorage.getItem("theme") as Theme | null
     const systemPreference = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-    const initialTheme = savedTheme || systemPreference
+    
+    // Prioritize saved theme, fallback to light mode instead of system preference
+    // This gives users more control and prevents unexpected dark mode
+    const initialTheme = savedTheme || "light"
     
     setTheme(initialTheme)
     applyTheme(initialTheme)

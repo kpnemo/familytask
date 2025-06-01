@@ -70,13 +70,13 @@ export function WeeklyView() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return "text-green-600 bg-green-50 border-green-200"
+        return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700"
       case "IN_PROGRESS":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200"
+        return "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700"
       case "PENDING_VERIFICATION":
-        return "text-blue-600 bg-blue-50 border-blue-200"
+        return "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200"
+        return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
     }
   }
 

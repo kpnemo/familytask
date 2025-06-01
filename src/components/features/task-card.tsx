@@ -147,20 +147,22 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
       case "PENDING":
         return (
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            isOverdue ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+            isOverdue 
+              ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' 
+              : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
           }`}>
             {isOverdue ? '🚨 Overdue' : '📋 Pending'}
           </span>
         )
       case "COMPLETED":
         return (
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
             ✅ Completed
           </span>
         )
       case "VERIFIED":
         return (
-          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
             🎉 Verified
           </span>
         )
@@ -173,17 +175,17 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
   const isOverdueTask = isTaskOverdue(dueDate) && task.status === "PENDING"
 
   return (
-    <Card className={`${isOverdueTask ? 'border-red-300 bg-red-50' : ''}`}>
+    <Card className={`${isOverdueTask ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-lg text-gray-900">{task.title}</h3>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{task.title}</h3>
               {getStatusBadge()}
             </div>
             
             {task.description && (
-              <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{task.description}</p>
             )}
 
             <div className="flex flex-wrap gap-2 mb-3">
@@ -200,10 +202,14 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
           </div>
 
           <div className="text-right ml-4">
-            <div className="text-2xl font-bold text-blue-600 mb-1">
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
               {task.points} pts
             </div>
-            <div className={`text-sm ${isOverdueTask ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+            <div className={`text-sm ${
+              isOverdueTask 
+                ? 'text-red-600 dark:text-red-400 font-medium' 
+                : 'text-gray-500 dark:text-gray-400'
+            }`}>
               Due: {formatDate(dueDate)}
             </div>
           </div>
@@ -212,11 +218,11 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
 
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
             <div>
               <strong>Assigned to:</strong> {task.assignee.name}
               {task.assignee.id === session?.user.id && (
-                <span className="text-blue-600 ml-1">(You)</span>
+                <span className="text-blue-600 dark:text-blue-400 ml-1">(You)</span>
               )}
             </div>
             <div>
