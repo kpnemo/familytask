@@ -98,14 +98,16 @@ export function PointsPageClient({
         </CardContent>
       </Card>
 
-      {/* Reward Shop */}
-      <div className="lg:col-span-2">
-        <RewardShop
-          familyMembers={familyMembers}
-          isParent={isParent}
-          onPointsDeducted={handlePointsDeducted}
-        />
-      </div>
+      {/* Reward Shop - Only for Parents */}
+      {isParent && (
+        <div className="lg:col-span-2">
+          <RewardShop
+            familyMembers={familyMembers}
+            isParent={isParent}
+            onPointsDeducted={handlePointsDeducted}
+          />
+        </div>
+      )}
 
       {/* Points History */}
       <div className="lg:col-span-2">
