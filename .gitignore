@@ -44,6 +44,14 @@ server.log
 # env files (can opt-in for committing if needed)
 .env*
 
+# migration files and data exports
+/scripts/migration/exports/
+/scripts/migration/setup-log.json
+/scripts/migration/rollback.log
+.env.backup
+.env.vercel
+.env.rollback
+
 # vercel
 .vercel
 
