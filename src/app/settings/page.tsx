@@ -5,6 +5,9 @@ import { authOptions } from "@/lib/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Icons } from "@/components/ui/icons"
+import { ChangeEmailModal } from "@/components/settings/change-email-modal"
+import { ChangePasswordModal } from "@/components/settings/change-password-modal"
+import { ThemeToggle } from "@/components/settings/theme-toggle"
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
@@ -72,14 +75,18 @@ export default async function SettingsPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 pt-4 border-t">
-                <button className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  <Icons.edit className="h-4 w-4" />
-                  <span>Change Email</span>
-                </button>
-                <button className="inline-flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                  <Icons.key className="h-4 w-4" />
-                  <span>Change Password</span>
-                </button>
+                <ChangeEmailModal currentEmail={session.user.email || ""}>
+                  <button className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <Icons.edit className="h-4 w-4" />
+                    <span>Change Email</span>
+                  </button>
+                </ChangeEmailModal>
+                <ChangePasswordModal>
+                  <button className="inline-flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                    <Icons.key className="h-4 w-4" />
+                    <span>Change Password</span>
+                  </button>
+                </ChangePasswordModal>
               </div>
             </CardContent>
           </Card>
@@ -100,14 +107,7 @@ export default async function SettingsPage() {
                   <h3 className="text-sm font-medium text-gray-900">Theme</h3>
                   <p className="text-sm text-gray-500">Choose between light and dark mode</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
-                    <Icons.sun className="h-4 w-4" />
-                  </button>
-                  <button className="p-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors">
-                    <Icons.moon className="h-4 w-4" />
-                  </button>
-                </div>
+                <ThemeToggle />
               </div>
             </CardContent>
           </Card>
