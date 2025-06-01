@@ -34,7 +34,8 @@ export async function GET() {
     const tasks = await db.task.findMany({
       where,
       include: {
-        assignee: { select: { name: true } }
+        assignee: { select: { id: true, name: true } },
+        creator: { select: { id: true, name: true } }
       },
       orderBy: { dueDate: 'asc' }
     })

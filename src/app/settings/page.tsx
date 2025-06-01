@@ -4,11 +4,11 @@ import Link from "next/link"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Icons } from "@/components/ui/icons"
 import { ChangeEmailModal } from "@/components/settings/change-email-modal"
 import { ChangePasswordModal } from "@/components/settings/change-password-modal"
 import { FamilyCodeSection } from "@/components/settings/family-code-section"
+import { AppHeader } from "@/components/layout/app-header"
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
@@ -35,31 +35,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <Icons.chevronLeft className="h-5 w-5" />
-              </Link>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Settings</h1>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <Avatar>
-                <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 font-medium">
-                  {session.user.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{session.user.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{session.user.role}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader title="Settings" user={session.user} showBackButton={true} />
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
