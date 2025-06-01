@@ -234,14 +234,14 @@ export async function DELETE(
       )
     }
 
-    // Perform deletion with proper points calculation in a transaction
-    const result = await db.$transaction(async (tx) => {
-      let pointsAdjustment = null
+    // Perform deletion with proper points calculation
+    let pointsAdjustment = null
 
-      // If task was verified, we need to reverse the points
-      if (task.status === "VERIFIED" && task.assignedTo) {
+    // First, handle points reversal if needed (outside transaction for safety)
+    if (task.status === "VERIFIED" && task.assignedTo) {
+      try {
         // Find the points history entry for this task
-        const pointsEntry = await tx.pointsHistory.findFirst({
+        const pointsEntry = await db.pointsHistory.findFirst({
           where: {
             taskId: task.id,
             userId: task.assignedTo,
@@ -251,7 +251,7 @@ export async function DELETE(
 
         if (pointsEntry) {
           // Create a reversal entry
-          await tx.pointsHistory.create({
+          await db.pointsHistory.create({
             data: {
               userId: task.assignedTo,
               familyId: task.familyId,
@@ -266,83 +266,127 @@ export async function DELETE(
             pointsReversed: pointsEntry.points
           }
         }
+      } catch (pointsError) {
+        console.warn("Error handling points reversal:", pointsError)
+        // Continue with deletion even if points reversal fails
       }
+    }
 
-      // Delete related notifications
-      await tx.notification.deleteMany({
+    // Perform deletion with cascade handling (simpler approach)
+    try {
+      // Delete related data in order (respecting foreign key constraints)
+      console.log(`Deleting task ${task.id}: ${task.title}`)
+      
+      // Step 1: Delete notifications related to this task
+      const deletedNotifications = await db.notification.deleteMany({
         where: { relatedTaskId: task.id }
       })
+      console.log(`Deleted ${deletedNotifications.count} notifications`)
 
-      // Delete task tag relations
-      await tx.taskTagRelation.deleteMany({
+      // Step 2: Delete task tag relations
+      const deletedTagRelations = await db.taskTagRelation.deleteMany({
         where: { taskId: task.id }
       })
+      console.log(`Deleted ${deletedTagRelations.count} tag relations`)
 
-      // Delete points history entries for this task
-      await tx.pointsHistory.deleteMany({
+      // Step 3: Delete points history entries for this task
+      const deletedPointsHistory = await db.pointsHistory.deleteMany({
         where: { taskId: task.id }
       })
+      console.log(`Deleted ${deletedPointsHistory.count} points history entries`)
 
-      // Finally delete the task
-      await tx.task.delete({
+      // Step 4: Finally delete the task itself
+      await db.task.delete({
         where: { id }
       })
+      console.log(`Task ${task.id} deleted successfully`)
 
-      // Create a notification for the assignee if different from deleter
+    } catch (deleteError) {
+      console.error("Deletion failed:", deleteError)
+      throw new Error(`Failed to delete task: ${deleteError.message}`)
+    }
+
+    const result = {
+      task,
+      pointsAdjustment
+    }
+
+    // Create notifications AFTER the transaction completes successfully
+    // This prevents transaction rollback issues and handles edge cases better
+    try {
+      // Check if assignee still exists in the family before creating notification
       if (task.assignedTo && task.assignedTo !== session.user.id) {
-        try {
-          await tx.notification.create({
-            data: {
-              userId: task.assignedTo,
-              title: "Task Deleted",
-              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
-              type: "TASK_DELETED"
-            }
-          })
-        } catch (error) {
-          // Fallback if TASK_DELETED enum doesn't exist yet - use POINTS_DEDUCTED as fallback
-          console.warn("TASK_DELETED enum not available, using fallback notification type")
-          await tx.notification.create({
-            data: {
-              userId: task.assignedTo,
-              title: "Task Deleted",
-              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
-              type: "POINTS_DEDUCTED" // Temporary fallback
-            }
-          })
+        const assigneeMembership = await db.familyMember.findFirst({
+          where: {
+            userId: task.assignedTo,
+            familyId: familyMembership.familyId
+          }
+        })
+
+        // Only create notification if user is still in the family
+        if (assigneeMembership) {
+          try {
+            await db.notification.create({
+              data: {
+                userId: task.assignedTo,
+                title: "Task Deleted",
+                message: `The task "${result.task.title}" has been deleted by ${session.user.name}`,
+                type: "TASK_DELETED"
+              }
+            })
+          } catch (enumError) {
+            // Fallback if TASK_DELETED enum doesn't exist yet
+            console.warn("TASK_DELETED enum not available, using fallback notification type")
+            await db.notification.create({
+              data: {
+                userId: task.assignedTo,
+                title: "Task Deleted",
+                message: `The task "${result.task.title}" has been deleted by ${session.user.name}`,
+                type: "POINTS_DEDUCTED" // Temporary fallback
+              }
+            })
+          }
         }
       }
 
-      // Create a notification for the creator if different from deleter and assignee
+      // Check if creator still exists in the family before creating notification
       if (task.createdBy && task.createdBy !== session.user.id && task.createdBy !== task.assignedTo) {
-        try {
-          await tx.notification.create({
-            data: {
-              userId: task.createdBy,
-              title: "Task Deleted",
-              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
-              type: "TASK_DELETED"
-            }
-          })
-        } catch (error) {
-          // Fallback if TASK_DELETED enum doesn't exist yet
-          console.warn("TASK_DELETED enum not available, using fallback notification type")
-          await tx.notification.create({
-            data: {
-              userId: task.createdBy,
-              title: "Task Deleted",
-              message: `The task "${task.title}" has been deleted by ${session.user.name}`,
-              type: "POINTS_DEDUCTED" // Temporary fallback
-            }
-          })
+        const creatorMembership = await db.familyMember.findFirst({
+          where: {
+            userId: task.createdBy,
+            familyId: familyMembership.familyId
+          }
+        })
+
+        // Only create notification if user is still in the family
+        if (creatorMembership) {
+          try {
+            await db.notification.create({
+              data: {
+                userId: task.createdBy,
+                title: "Task Deleted",
+                message: `The task "${result.task.title}" has been deleted by ${session.user.name}`,
+                type: "TASK_DELETED"
+              }
+            })
+          } catch (enumError) {
+            // Fallback if TASK_DELETED enum doesn't exist yet
+            console.warn("TASK_DELETED enum not available, using fallback notification type")
+            await db.notification.create({
+              data: {
+                userId: task.createdBy,
+                title: "Task Deleted",
+                message: `The task "${result.task.title}" has been deleted by ${session.user.name}`,
+                type: "POINTS_DEDUCTED" // Temporary fallback
+              }
+            })
+          }
         }
       }
-
-      return {
-        task,
-        pointsAdjustment
-      }
-    })
+    } catch (notificationError) {
+      // Log notification errors but don't fail the deletion
+      console.warn("Failed to create deletion notifications:", notificationError)
+    }
 
     return NextResponse.json({
       success: true,
