@@ -28,12 +28,7 @@ export function UserMenu({ user }: UserMenuProps) {
           const data = await res.json()
           if (data.success) {
             setPoints(data.points || 0)
-            console.log("Points fetched:", data) // Debug logging
-          } else {
-            console.error("Points API returned error:", data)
           }
-        } else {
-          console.error("Points API HTTP error:", res.status)
         }
       } catch (error) {
         console.error("Error fetching points:", error)

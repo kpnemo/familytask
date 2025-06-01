@@ -4,8 +4,8 @@ import Link from "next/link"
 import { authOptions } from "@/lib/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icons } from "@/components/ui/icons"
-import { WeeklyView } from "@/components/features/weekly-view"
 import { AppHeader } from "@/components/layout/app-header"
+import { WeeklyView } from "@/components/features/weekly-view"
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)

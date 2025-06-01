@@ -30,10 +30,12 @@ export function WeeklyView() {
     const fetchTasks = async () => {
       try {
         const res = await fetch("/api/tasks/weekly")
-        const data = await res.json()
-        if (data.success) setTasks(data.tasks)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.success) setTasks(data.tasks || [])
+        }
       } catch (error) {
-        console.error("Error:", error)
+        // Silent fail for production
       } finally {
         setLoading(false)
       }
@@ -92,7 +94,7 @@ export function WeeklyView() {
         if (data.success) setTasks(data.tasks)
       }
     } catch (error) {
-      console.error("Error performing task action:", error)
+      // Silent fail for production
     }
   }
 

@@ -36,25 +36,9 @@ export async function GET() {
     // Use points history if it has data, otherwise fall back to completed tasks  
     const totalPoints = pointsFromHistory > 0 ? pointsFromHistory : pointsFromTasks
 
-    // Debug logging
-    console.log(`Points calculation for user ${session.user.id}:`, {
-      pointsFromHistory,
-      pointsFromTasks,
-      totalPoints,
-      pointsHistoryCount: pointsEntries.length,
-      completedTasksCount: completedTasks.length
-    })
-
     return NextResponse.json({ 
       success: true, 
-      points: totalPoints,
-      debug: {
-        pointsFromHistory,
-        pointsFromTasks,
-        totalPoints,
-        pointsHistoryCount: pointsEntries.length,
-        completedTasksCount: completedTasks.length
-      }
+      points: totalPoints
     })
   } catch (error) {
     console.error("Error fetching points:", error)
