@@ -2,12 +2,14 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Icons } from "@/components/ui/icons"
 import { ChangeEmailModal } from "@/components/settings/change-email-modal"
 import { ChangePasswordModal } from "@/components/settings/change-password-modal"
 import { ThemeToggle } from "@/components/settings/theme-toggle"
+import { FamilyCodeSection } from "@/components/settings/family-code-section"
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions)
@@ -15,6 +17,22 @@ export default async function SettingsPage() {
   if (!session) {
     redirect("/login")
   }
+
+  // Get user's family information
+  const familyMembership = await db.familyMember.findFirst({
+    where: { userId: session.user.id },
+    include: {
+      family: {
+        select: {
+          name: true,
+          familyCode: true,
+        },
+      },
+    },
+  })
+
+  const family = familyMembership?.family
+  const userRole = familyMembership?.role
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -47,6 +65,26 @@ export default async function SettingsPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
+          {/* Family Section */}
+          {family && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Icons.users className="h-5 w-5" />
+                  <span>Family</span>
+                </CardTitle>
+                <CardDescription>Manage your family settings and invitation code</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FamilyCodeSection 
+                  familyName={family.name}
+                  familyCode={family.familyCode}
+                  userRole={userRole || "CHILD"}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Profile Section */}
           <Card>
             <CardHeader>
