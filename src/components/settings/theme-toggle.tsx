@@ -5,8 +5,10 @@ import { Icons } from "@/components/ui/icons"
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -30,6 +32,20 @@ export function ThemeToggle() {
     setTheme(newTheme)
     localStorage.setItem("theme", newTheme)
     applyTheme(newTheme)
+  }
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <div className="flex items-center space-x-2">
+        <button className="p-2 rounded-lg bg-gray-100 text-gray-600">
+          <Icons.sun className="h-4 w-4" />
+        </button>
+        <button className="p-2 rounded-lg bg-gray-100 text-gray-600">
+          <Icons.moon className="h-4 w-4" />
+        </button>
+      </div>
+    )
   }
 
   return (
