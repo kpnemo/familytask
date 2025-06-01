@@ -1,10 +1,31 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Icons } from "@/components/ui/icons"
 import { useTheme } from "@/components/theme-provider"
 
 export function ThemeToggle() {
+  const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
+        <div className="flex items-center space-x-2 px-3 py-2 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm">
+          <Icons.sun className="h-4 w-4" />
+          <span className="text-sm font-medium">Light</span>
+        </div>
+        <div className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-600 dark:text-gray-400">
+          <Icons.moon className="h-4 w-4" />
+          <span className="text-sm font-medium">Dark</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
