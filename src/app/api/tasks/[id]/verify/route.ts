@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { createNextRecurringTask } from "@/lib/recurring-tasks"
 
 export async function POST(
   req: NextRequest,
@@ -106,6 +107,16 @@ export async function POST(
 
       return updatedTask
     })
+
+    // Create next recurring task instance if needed (outside transaction)
+    if (task.isRecurring && task.recurrencePattern) {
+      try {
+        await createNextRecurringTask(id)
+      } catch (error) {
+        console.error("Error creating next recurring task:", error)
+        // Don't fail the main operation if recurring task creation fails
+      }
+    }
 
     return NextResponse.json({
       success: true,

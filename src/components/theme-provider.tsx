@@ -32,6 +32,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   }, [])
 
   const applyTheme = (newTheme: Theme) => {
+    if (typeof document === 'undefined') return
+    
     const root = document.documentElement
     
     // Remove any existing theme classes
