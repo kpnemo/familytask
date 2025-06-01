@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Icons } from "@/components/ui/icons"
 import { ChangeEmailModal } from "@/components/settings/change-email-modal"
 import { ChangePasswordModal } from "@/components/settings/change-password-modal"
-import { ThemeToggle } from "@/components/settings/theme-toggle"
 import { FamilyCodeSection } from "@/components/settings/family-code-section"
 
 export default async function SettingsPage() {
@@ -129,76 +128,6 @@ export default async function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Appearance Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Icons.palette className="h-5 w-5" />
-                <span>Appearance</span>
-              </CardTitle>
-              <CardDescription>Customize how the app looks and feels</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Theme Toggle */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Theme</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Choose between light and dark mode</p>
-                </div>
-                <ThemeToggle />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Language Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Icons.globe className="h-5 w-5" />
-                <span>Language & Region</span>
-              </CardTitle>
-              <CardDescription>Set your preferred language and regional settings</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Language</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Currently: English (US)</p>
-                </div>
-                <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="en">English (US)</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                  <option value="it">Italian</option>
-                </select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Danger Zone */}
-          <Card className="border-red-200">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-red-700">
-                <Icons.warning className="h-5 w-5" />
-                <span>Danger Zone</span>
-              </CardTitle>
-              <CardDescription>Irreversible and destructive actions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <h3 className="text-sm font-medium text-red-900 dark:text-red-200">Delete Account</h3>
-                  <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                    Once you delete your account, there is no going back. Please be certain.
-                  </p>
-                  <button className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
-                    Delete Account
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Back to Dashboard */}
           <div className="flex justify-center pt-8">
