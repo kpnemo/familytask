@@ -54,12 +54,12 @@ export function FamilyCodeSection({ familyName, familyCode, userRole }: FamilyCo
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">Family Name</label>
-          <p className="mt-1 text-sm text-gray-900">{familyName}</p>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Family Name</label>
+          <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{familyName}</p>
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700">Your Role</label>
-          <p className="mt-1 text-sm text-gray-900">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Role</label>
+          <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
             {userRole === "ADMIN_PARENT" ? "Admin Parent" : 
              userRole === "PARENT" ? "Parent" : "Child"}
           </p>
@@ -67,9 +67,9 @@ export function FamilyCodeSection({ familyName, familyCode, userRole }: FamilyCo
       </div>
 
       <div>
-        <label className="text-sm font-medium text-gray-700">Family Invitation Code</label>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Family Invitation Code</label>
         <div className="mt-1 flex items-center space-x-3">
-          <div className="flex-1 font-mono text-lg bg-gray-50 border rounded-lg px-3 py-2 text-gray-900">
+          <div className="flex-1 font-mono text-lg bg-gray-50 dark:bg-gray-800 border dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100">
             {familyCode}
           </div>
           <Button
@@ -96,17 +96,17 @@ export function FamilyCodeSection({ familyName, familyCode, userRole }: FamilyCo
             )}
           </Button>
         </div>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           Share this code with family members so they can join your family.
         </p>
       </div>
 
       {canManageFamily && (
-        <div className="pt-4 border-t">
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-medium text-gray-900">Regenerate Family Code</h4>
-              <p className="text-sm text-gray-500">
+              <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Regenerate Family Code</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Create a new invitation code. The old code will stop working.
               </p>
             </div>

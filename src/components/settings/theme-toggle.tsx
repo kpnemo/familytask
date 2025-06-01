@@ -32,6 +32,9 @@ export function ThemeToggle() {
     setTheme(newTheme)
     localStorage.setItem("theme", newTheme)
     applyTheme(newTheme)
+    
+    // Force a re-render to update button styles immediately
+    setTimeout(() => setTheme(newTheme), 0)
   }
 
   // Prevent hydration mismatch by not rendering until mounted
@@ -54,8 +57,8 @@ export function ThemeToggle() {
         onClick={() => toggleTheme("light")}
         className={`p-2 rounded-lg transition-colors ${
           theme === "light"
-            ? "bg-blue-100 text-blue-700"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
         }`}
         aria-label="Light mode"
       >
@@ -65,8 +68,8 @@ export function ThemeToggle() {
         onClick={() => toggleTheme("dark")}
         className={`p-2 rounded-lg transition-colors ${
           theme === "dark"
-            ? "bg-gray-900 text-white"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            ? "bg-gray-900 text-white dark:bg-gray-600 dark:text-gray-100"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
         }`}
         aria-label="Dark mode"
       >

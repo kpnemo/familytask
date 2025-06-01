@@ -44,6 +44,12 @@ export function ChangeEmailModal({ currentEmail, children }: ChangeEmailModalPro
       setIsOpen(false)
       setNewEmail("")
       setPassword("")
+      
+      // Force session refresh and page reload to update UI
+      await fetch("/api/auth/session", { 
+        method: "GET",
+        cache: "no-store" 
+      })
       window.location.reload()
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred")

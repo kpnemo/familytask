@@ -35,27 +35,27 @@ export default async function SettingsPage() {
   const userRole = familyMembership?.role
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/dashboard" className="text-gray-500 hover:text-gray-700">
+              <Link href="/dashboard" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <Icons.chevronLeft className="h-5 w-5" />
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Settings</h1>
             </div>
             
             <div className="flex items-center space-x-3">
               <Avatar>
-                <AvatarFallback className="bg-blue-100 text-blue-700 font-medium">
+                <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 font-medium">
                   {session.user.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
-                <p className="text-xs text-gray-500">{session.user.role}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{session.user.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{session.user.role}</p>
               </div>
             </div>
           </div>
@@ -98,16 +98,16 @@ export default async function SettingsPage() {
               {/* Current Profile Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Name</label>
-                  <p className="mt-1 text-sm text-gray-900">{session.user.name}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{session.user.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Email</label>
-                  <p className="mt-1 text-sm text-gray-900">{session.user.email}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{session.user.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Role</label>
-                  <p className="mt-1 text-sm text-gray-900">{session.user.role}</p>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{session.user.role}</p>
                 </div>
               </div>
 
@@ -142,8 +142,8 @@ export default async function SettingsPage() {
               {/* Theme Toggle */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">Theme</h3>
-                  <p className="text-sm text-gray-500">Choose between light and dark mode</p>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Theme</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Choose between light and dark mode</p>
                 </div>
                 <ThemeToggle />
               </div>
@@ -162,10 +162,10 @@ export default async function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">Language</h3>
-                  <p className="text-sm text-gray-500">Currently: English (US)</p>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Language</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Currently: English (US)</p>
                 </div>
-                <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                   <option value="en">English (US)</option>
                   <option value="es">Spanish</option>
                   <option value="fr">French</option>
@@ -187,9 +187,9 @@ export default async function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <h3 className="text-sm font-medium text-red-900">Delete Account</h3>
-                  <p className="text-sm text-red-700 mt-1">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <h3 className="text-sm font-medium text-red-900 dark:text-red-200">Delete Account</h3>
+                  <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                     Once you delete your account, there is no going back. Please be certain.
                   </p>
                   <button className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">

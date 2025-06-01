@@ -15,29 +15,29 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm sticky top-0 z-40 border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900">FamilyTasks</h1>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">FamilyTasks</h1>
             </div>
             
             <div className="flex items-center space-x-4">
-              <Link href="/settings" className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+              <Link href="/settings" className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <Icons.settings className="h-5 w-5" />
               </Link>
               
               <div className="flex items-center space-x-3">
                 <Avatar>
-                  <AvatarFallback className="bg-blue-100 text-blue-700 font-medium">
+                  <AvatarFallback className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 font-medium">
                     {session.user.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900">{session.user.name}</p>
-                  <p className="text-xs text-gray-500">{session.user.role}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{session.user.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{session.user.role}</p>
                 </div>
               </div>
             </div>
