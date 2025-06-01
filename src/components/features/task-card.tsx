@@ -41,6 +41,7 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
   const canComplete = task.assignee.id === session?.user.id && task.status === "PENDING"
   const canVerify = session?.user.role === "PARENT" && task.status === "COMPLETED"
   const canEdit = task.creator.id === session?.user.id || session?.user.role === "PARENT"
+  const canDelete = session?.user.role === "PARENT" // Only parents/admins can delete
 
   const handleComplete = async () => {
     setLoading(true)
@@ -98,6 +99,44 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
       }
     } catch (error) {
       console.error("Error declining task:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    const confirmMessage = task.status === "VERIFIED" 
+      ? `Are you sure you want to delete "${task.title}"?\n\nThis task is VERIFIED and points will be reversed for ${task.assignee.name}.\n\nThis action cannot be undone.`
+      : `Are you sure you want to delete "${task.title}"?\n\nThis action cannot be undone.`
+    
+    if (!confirm(confirmMessage)) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "DELETE"
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        
+        // Show success message with details
+        let successMessage = `Task "${result.data.taskTitle}" deleted successfully.`
+        if (result.data.pointsAdjustment) {
+          successMessage += `\n\n${result.data.pointsAdjustment.pointsReversed} points have been reversed.`
+        }
+        
+        alert(successMessage)
+        onUpdate()
+      } else {
+        const error = await response.json()
+        alert(error.error?.message || "Failed to delete task")
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error)
+      alert("Failed to delete task")
     } finally {
       setLoading(false)
     }
@@ -233,6 +272,18 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
                 onClick={() => router.push(`/tasks/${task.id}/edit`)}
               >
                 Edit
+              </Button>
+            )}
+
+            {canDelete && (
+              <Button 
+                onClick={handleDelete}
+                disabled={loading}
+                variant="destructive"
+                size="sm"
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {loading ? "Deleting..." : "Delete"}
               </Button>
             )}
           </div>

@@ -160,6 +160,48 @@ export function TaskViewClient({
     }
   }
 
+  const handleDeleteTask = async () => {
+    const confirmMessage = currentStatus === "VERIFIED" 
+      ? `Are you sure you want to delete "${task.title}"?\n\nThis task is VERIFIED and points will be reversed for ${task.assignee.name}.\n\nThis action cannot be undone.`
+      : `Are you sure you want to delete "${task.title}"?\n\nThis action cannot be undone.`
+    
+    if (!confirm(confirmMessage)) {
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error?.message || "Failed to delete task")
+      }
+
+      const result = await response.json()
+      
+      // Show success message with details
+      let successMessage = `Task "${result.data.taskTitle}" deleted successfully.`
+      if (result.data.pointsAdjustment) {
+        successMessage += `\n\n${result.data.pointsAdjustment.pointsReversed} points have been reversed.`
+      }
+      
+      alert(successMessage)
+      
+      // Navigate back to tasks list
+      router.push("/tasks")
+      router.refresh()
+    } catch (error) {
+      console.error("Error deleting task:", error)
+      alert(error instanceof Error ? error.message : "Failed to delete task")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const isOverdue = new Date(task.dueDate) < new Date() && currentStatus === "PENDING"
 
   return (
@@ -338,6 +380,28 @@ export function TaskViewClient({
                   <Icons.edit className="w-4 h-4 mr-2" />
                   Edit Task
                 </Link>
+              </Button>
+            )}
+
+            {/* Delete Task - for parents/admins only */}
+            {isParent && (
+              <Button
+                onClick={handleDeleteTask}
+                disabled={isLoading}
+                variant="destructive"
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Icons.trash className="w-4 h-4 mr-2" />
+                    Delete Task
+                  </>
+                )}
               </Button>
             )}
 

@@ -188,41 +188,144 @@ export async function DELETE(
       )
     }
 
-    // Check if task exists and user can delete it
+    // Get user's family membership to check permissions
+    const familyMembership = await db.familyMember.findFirst({
+      where: { userId: session.user.id },
+      include: { family: true }
+    })
+
+    if (!familyMembership) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Not a family member" } },
+        { status: 403 }
+      )
+    }
+
+    // Check if user is parent or admin
+    const isParentOrAdmin = ["PARENT", "ADMIN_PARENT"].includes(familyMembership.role)
+
+    if (!isParentOrAdmin) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Only parents and admins can delete tasks" } },
+        { status: 403 }
+      )
+    }
+
+    // Get task with full details including points history
     const task = await db.task.findFirst({
       where: {
         id,
-        family: {
-          members: {
-            some: { userId: session.user.id }
-          }
+        familyId: familyMembership.familyId
+      },
+      include: {
+        assignee: {
+          select: { id: true, name: true }
+        },
+        creator: {
+          select: { id: true, name: true }
         }
       }
     })
 
     if (!task) {
       return NextResponse.json(
-        { error: { code: "TASK_NOT_FOUND", message: "Task not found" } },
+        { error: { code: "TASK_NOT_FOUND", message: "Task not found or not in your family" } },
         { status: 404 }
       )
     }
 
-    // Only creator or parents can delete tasks
-    if (task.createdBy !== session.user.id && session.user.role === "CHILD") {
-      return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Not authorized to delete this task" } },
-        { status: 403 }
-      )
-    }
+    // Perform deletion with proper points calculation in a transaction
+    const result = await db.$transaction(async (tx) => {
+      let pointsAdjustment = null
 
-    // Delete task (cascade will handle relations)
-    await db.task.delete({
-      where: { id }
+      // If task was verified, we need to reverse the points
+      if (task.status === "VERIFIED" && task.assignedTo) {
+        // Find the points history entry for this task
+        const pointsEntry = await tx.pointsHistory.findFirst({
+          where: {
+            taskId: task.id,
+            userId: task.assignedTo,
+            points: { gt: 0 } // Positive points (earned)
+          }
+        })
+
+        if (pointsEntry) {
+          // Create a reversal entry
+          await tx.pointsHistory.create({
+            data: {
+              userId: task.assignedTo,
+              familyId: task.familyId,
+              points: -pointsEntry.points,
+              reason: `Task deleted: ${task.title} (points reversed)`,
+              createdBy: session.user.id
+            }
+          })
+
+          pointsAdjustment = {
+            userId: task.assignedTo,
+            pointsReversed: pointsEntry.points
+          }
+        }
+      }
+
+      // Delete related notifications
+      await tx.notification.deleteMany({
+        where: { relatedTaskId: task.id }
+      })
+
+      // Delete task tag relations
+      await tx.taskTagRelation.deleteMany({
+        where: { taskId: task.id }
+      })
+
+      // Delete points history entries for this task
+      await tx.pointsHistory.deleteMany({
+        where: { taskId: task.id }
+      })
+
+      // Finally delete the task
+      await tx.task.delete({
+        where: { id }
+      })
+
+      // Create a notification for the assignee if different from deleter
+      if (task.assignedTo && task.assignedTo !== session.user.id) {
+        await tx.notification.create({
+          data: {
+            userId: task.assignedTo,
+            title: "Task Deleted",
+            message: `The task "${task.title}" has been deleted by ${session.user.name}`,
+            type: "TASK_DELETED"
+          }
+        })
+      }
+
+      // Create a notification for the creator if different from deleter and assignee
+      if (task.createdBy && task.createdBy !== session.user.id && task.createdBy !== task.assignedTo) {
+        await tx.notification.create({
+          data: {
+            userId: task.createdBy,
+            title: "Task Deleted",
+            message: `The task "${task.title}" has been deleted by ${session.user.name}`,
+            type: "TASK_DELETED"
+          }
+        })
+      }
+
+      return {
+        task,
+        pointsAdjustment
+      }
     })
 
     return NextResponse.json({
       success: true,
-      data: { message: "Task deleted successfully" }
+      data: {
+        message: "Task deleted successfully",
+        taskTitle: result.task.title,
+        taskStatus: result.task.status,
+        pointsAdjustment: result.pointsAdjustment
+      }
     })
 
   } catch (error) {

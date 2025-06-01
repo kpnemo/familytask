@@ -20,6 +20,7 @@ A comprehensive web-based family task management application that engages kids i
 - Support for recurring tasks
 - **✅ Single task view**: Detailed task page with role-based actions
 - **✅ Task completion**: Complete, verify, decline functionality
+- **✅ Task deletion**: Parents/admins can delete any task with proper points reversal
 - **✅ Overdue detection**: Visual indicators for past-due tasks
 
 ### Points System
@@ -233,6 +234,21 @@ Purpose: Verify completed task (parents only)
 POST /api/tasks/[id]/decline
 Purpose: Decline completed task, reset to pending (parents only)
 
+DELETE /api/tasks/[id]
+Purpose: Delete task with proper cleanup (parents/admins only)
+Response: {
+  success: boolean;
+  data: {
+    message: string;
+    taskTitle: string;
+    taskStatus: string;
+    pointsAdjustment?: {
+      userId: string;
+      pointsReversed: number;
+    };
+  }
+}
+
 GET /api/tasks/weekly
 Response: Tasks organized by week for calendar view
 ```
@@ -346,6 +362,7 @@ Body: { currentPassword: string; newPassword: string; }
 - Create/assign tasks to children
 - Verify task completions
 - Decline task completions
+- **Delete any task** (with proper points reversal)
 - Edit family member names
 - Remove family members (except admins)
 - Deduct points through reward shop
