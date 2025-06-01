@@ -12,12 +12,13 @@ frontend:
         - npx prisma generate
         - echo "=== CHECKING ENVIRONMENT VARIABLES ==="
         - echo "DATABASE_URL set:" $([[ -n "$DATABASE_URL" ]] && echo "YES" || echo "NO")
+        - echo "DIRECT_URL set:" $([[ -n "$DIRECT_URL" ]] && echo "YES" || echo "NO")
         - echo "NEXTAUTH_SECRET set:" $([[ -n "$NEXTAUTH_SECRET" ]] && echo "YES" || echo "NO") 
         - echo "NEXTAUTH_URL set:" $([[ -n "$NEXTAUTH_URL" ]] && echo "YES" || echo "NO")
         - |
-          if [[ -z "$DATABASE_URL" || -z "$NEXTAUTH_SECRET" || -z "$NEXTAUTH_URL" ]]; then
+          if [[ -z "$DATABASE_URL" || -z "$DIRECT_URL" || -z "$NEXTAUTH_SECRET" || -z "$NEXTAUTH_URL" ]]; then
             echo "ERROR: Required environment variables are missing!"
-            echo "Please set DATABASE_URL, NEXTAUTH_SECRET, and NEXTAUTH_URL in Amplify Console"
+            echo "Please set DATABASE_URL, DIRECT_URL, NEXTAUTH_SECRET, and NEXTAUTH_URL in Amplify Console"
             exit 1
           fi
         - echo "=== SETTING UP DATABASE ==="
