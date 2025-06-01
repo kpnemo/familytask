@@ -8,6 +8,7 @@ import { Icons } from "@/components/ui/icons"
 import { ChangeEmailModal } from "@/components/settings/change-email-modal"
 import { ChangePasswordModal } from "@/components/settings/change-password-modal"
 import { FamilyCodeSection } from "@/components/settings/family-code-section"
+import { FamilyMembersWrapper } from "@/components/settings/family-members-wrapper"
 import { AppHeader } from "@/components/layout/app-header"
 
 export default async function SettingsPage() {
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
     redirect("/login")
   }
 
-  // Get user's family information
+  // Get user's family information with all members
   const familyMembership = await db.familyMember.findFirst({
     where: { userId: session.user.id },
     include: {
@@ -29,6 +30,27 @@ export default async function SettingsPage() {
       },
     },
   })
+
+  // Get all family members if user has a family
+  const familyMembers = familyMembership ? await db.familyMember.findMany({
+    where: { familyId: familyMembership.familyId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true,
+          createdAt: true,
+        },
+      },
+    },
+    orderBy: [
+      { role: 'asc' }, // Admin parents first, then parents, then children
+      { joinedAt: 'asc' },
+    ],
+  }) : []
 
   const family = familyMembership?.family
   const userRole = familyMembership?.role
@@ -104,6 +126,13 @@ export default async function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Family Members Section */}
+          {family && familyMembers.length > 0 && (
+            <FamilyMembersWrapper
+              initialMembers={familyMembers}
+              userRole={userRole || "CHILD"}
+            />
+          )}
 
           {/* Back to Dashboard */}
           <div className="flex justify-center pt-8">
