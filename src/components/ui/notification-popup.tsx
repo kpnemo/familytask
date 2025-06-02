@@ -162,10 +162,13 @@ export function NotificationPopup() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 
+        <div className="absolute mt-2 
+                       right-0 w-[calc(100vw-0.5rem)] max-w-xs
                        sm:right-0 sm:w-80 sm:max-w-none
                        md:right-0 md:w-96
-                       transform -translate-x-2 sm:translate-x-0">
+                       bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 
+                       transform -translate-x-1
+                       sm:transform sm:translate-x-0">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
@@ -181,7 +184,7 @@ export function NotificationPopup() {
             </div>
           </div>
           
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-[50vh] sm:max-h-96 overflow-y-auto">
             {loading ? (
               <div className="p-4 text-center text-gray-500">Loading...</div>
             ) : notifications.length === 0 ? (
@@ -197,10 +200,10 @@ export function NotificationPopup() {
                   >
                     <div className="flex items-start justify-between pr-8">
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white break-words">
                           {notification.title}
                         </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 break-words">
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -209,7 +212,7 @@ export function NotificationPopup() {
                         {notification.relatedTask && (
                           <button
                             onClick={() => handleTaskClick(notification.relatedTask!.id)}
-                            className="inline-block text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 hover:underline mt-1 cursor-pointer"
+                            className="inline-block text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 hover:underline mt-1 cursor-pointer break-words"
                             title="Click to view task"
                           >
                             📝 Task: {notification.relatedTask.title}
