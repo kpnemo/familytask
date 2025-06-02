@@ -10,6 +10,7 @@ interface User {
   role: "PARENT" | "CHILD"
   avatarUrl?: string
   createdAt: string
+  phoneNumber?: string | null
 }
 
 interface FamilyMember {

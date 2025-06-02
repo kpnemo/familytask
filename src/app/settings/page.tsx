@@ -51,25 +51,56 @@ export default async function SettingsPage() {
   })
 
   // Get all family members if user has a family
-  const familyMembers = familyMembership ? await db.familyMember.findMany({
-    where: { familyId: familyMembership.familyId },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          avatarUrl: true,
-          createdAt: true,
+  const isParent = familyMembership && ["PARENT", "ADMIN_PARENT"].includes(familyMembership.role)
+  
+  let familyMembers: any[] = []
+  
+  if (familyMembership) {
+    if (isParent) {
+      // Parent query - includes phone numbers
+      familyMembers = await db.familyMember.findMany({
+        where: { familyId: familyMembership.familyId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              avatarUrl: true,
+              createdAt: true,
+              phoneNumber: true
+            },
+          },
         },
-      },
-    },
-    orderBy: [
-      { role: 'asc' }, // Admin parents first, then parents, then children
-      { joinedAt: 'asc' },
-    ],
-  }) : []
+        orderBy: [
+          { role: 'asc' }, // Admin parents first, then parents, then children
+          { joinedAt: 'asc' },
+        ],
+      })
+    } else {
+      // Child query - no phone numbers
+      familyMembers = await db.familyMember.findMany({
+        where: { familyId: familyMembership.familyId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              avatarUrl: true,
+              createdAt: true,
+            },
+          },
+        },
+        orderBy: [
+          { role: 'asc' }, // Admin parents first, then parents, then children
+          { joinedAt: 'asc' },
+        ],
+      })
+    }
+  }
 
   const family = familyMembership?.family
   const userRole = familyMembership?.role

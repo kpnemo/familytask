@@ -14,6 +14,7 @@ interface User {
   role: "PARENT" | "CHILD"
   avatarUrl?: string
   createdAt: string
+  phoneNumber?: string | null
 }
 
 interface FamilyMember {
@@ -153,6 +154,12 @@ export function FamilyMembersSection({
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       {member.user.email}
                     </div>
+                    {/* Show phone number only if user has phoneNumber field (i.e., current user is a parent) and member has a phone number */}
+                    {member.user.phoneNumber && (
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                        📞 {member.user.phoneNumber}
+                      </div>
+                    )}
                     <div className="flex items-center space-x-2 mt-1">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
