@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import packageJson from "../../../../package.json"
 
 export async function GET() {
   try {
@@ -16,6 +17,7 @@ export async function GET() {
 
     return NextResponse.json({
       status: "healthy",
+      version: packageJson.version,
       timestamp: new Date().toISOString(),
       environment: envCheck,
       database: "connected"
@@ -23,6 +25,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({
       status: "error",
+      version: packageJson.version,
       error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date().toISOString()
     }, { status: 500 })
