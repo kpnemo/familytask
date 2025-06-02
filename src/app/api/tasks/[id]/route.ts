@@ -303,7 +303,8 @@ export async function DELETE(
 
     } catch (deleteError) {
       console.error("Deletion failed:", deleteError)
-      throw new Error(`Failed to delete task: ${deleteError.message}`)
+      const errorMessage = deleteError instanceof Error ? deleteError.message : 'Unknown error occurred'
+      throw new Error(`Failed to delete task: ${errorMessage}`)
     }
 
     const result = {
@@ -334,7 +335,7 @@ export async function DELETE(
                 type: "TASK_DELETED"
               }
             })
-          } catch (enumError) {
+          } catch {
             // Fallback if TASK_DELETED enum doesn't exist yet
             console.warn("TASK_DELETED enum not available, using fallback notification type")
             await db.notification.create({
@@ -369,7 +370,7 @@ export async function DELETE(
                 type: "TASK_DELETED"
               }
             })
-          } catch (enumError) {
+          } catch {
             // Fallback if TASK_DELETED enum doesn't exist yet
             console.warn("TASK_DELETED enum not available, using fallback notification type")
             await db.notification.create({
