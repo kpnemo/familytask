@@ -1,5 +1,8 @@
 import { User, Family, FamilyMember, Task, TaskTag, PointsHistory, Notification } from "@prisma/client"
 
+// Re-export Prisma types
+export type { User, Family, FamilyMember, Task, TaskTag, PointsHistory, Notification }
+
 // Extended types with relations
 export type UserWithFamily = User & {
   familyMemberships: (FamilyMember & {
