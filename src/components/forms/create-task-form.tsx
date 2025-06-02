@@ -22,7 +22,11 @@ interface Tag {
   color: string
 }
 
-export function CreateTaskForm() {
+interface CreateTaskFormProps {
+  currentUserId: string
+}
+
+export function CreateTaskForm({ currentUserId }: CreateTaskFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
@@ -53,11 +57,15 @@ export function CreateTaskForm() {
         const membersResult = await membersResponse.json()
         
         if (membersResult.success) {
-          setFamilyMembers(membersResult.data.map((member: any) => ({
+          const members = membersResult.data.map((member: any) => ({
             id: member.user.id,
             name: member.user.name,
             role: member.user.role
-          })))
+          }))
+          setFamilyMembers(members)
+          
+          // Set current user as default assignee
+          setValue("assignedTo", currentUserId)
         }
 
         // Fetch tags
@@ -73,7 +81,7 @@ export function CreateTaskForm() {
     }
 
     fetchData()
-  }, [])
+  }, [currentUserId, setValue])
 
   const onSubmit = async (data: CreateTaskInput) => {
     setIsLoading(true)

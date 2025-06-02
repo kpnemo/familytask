@@ -21,6 +21,8 @@ export interface Task {
   tags: Array<{ id: string; name: string; color: string }>
   completedAt?: string
   verifiedAt?: string
+  isRecurring?: boolean
+  recurrencePattern?: string
   // Legacy field names for backwards compatibility
   assignedTo?: string
   createdBy?: string
@@ -180,7 +182,17 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{task.title}</h3>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                {task.title}
+                {task.isRecurring && (
+                  <span 
+                    className="text-purple-600 dark:text-purple-400" 
+                    title={`Recurring ${task.recurrencePattern?.toLowerCase()}`}
+                  >
+                    🔄
+                  </span>
+                )}
+              </h3>
               {getStatusBadge()}
             </div>
             
