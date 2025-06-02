@@ -31,15 +31,28 @@ export async function createNotificationWithSMS(data: CreateNotificationData, sm
       },
     })
 
-    // Check if user has SMS notifications enabled
-    const user = await db.user.findUnique({
-      where: { id: data.userId },
-      select: {
-        phoneNumber: true,
-        smsNotificationsEnabled: true,
-        name: true,
-      },
-    })
+    // Check if user has SMS notifications enabled (backwards compatible)
+    let user = null;
+    try {
+      user = await db.user.findUnique({
+        where: { id: data.userId },
+        select: {
+          phoneNumber: true,
+          smsNotificationsEnabled: true,
+          name: true,
+        },
+      });
+    } catch (error) {
+      // SMS columns don't exist yet, get basic user info
+      user = await db.user.findUnique({
+        where: { id: data.userId },
+        select: {
+          name: true,
+        },
+      });
+      // Add default SMS values
+      user = { ...user, phoneNumber: null, smsNotificationsEnabled: false };
+    }
 
     // Send SMS if enabled and phone number exists
     if (user?.smsNotificationsEnabled && user.phoneNumber) {

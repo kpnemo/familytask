@@ -21,14 +21,21 @@ export default async function SettingsPage() {
     redirect("/login")
   }
 
-  // Get user's data including SMS settings
-  const userData = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      phoneNumber: true,
-      smsNotificationsEnabled: true,
-    },
-  })
+  // Get user's data including SMS settings (conditional for backwards compatibility)
+  let userData = null;
+  try {
+    userData = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        phoneNumber: true,
+        smsNotificationsEnabled: true,
+      },
+    });
+  } catch (error) {
+    // SMS columns don't exist yet in production, ignore for now
+    console.log('SMS columns not available yet, skipping SMS settings');
+    userData = { phoneNumber: null, smsNotificationsEnabled: false };
+  }
 
   // Get user's family information with all members
   const familyMembership = await db.familyMember.findFirst({
@@ -100,11 +107,13 @@ export default async function SettingsPage() {
           {/* Dashboard Style Section */}
           <DashboardStyleSection />
 
-          {/* SMS Settings Section */}
-          <SMSSettingsSection 
-            initialPhoneNumber={userData?.phoneNumber || undefined}
-            initialSmsEnabled={userData?.smsNotificationsEnabled || false}
-          />
+          {/* SMS Settings Section - Only show if SMS columns exist */}
+          {userData && typeof userData.phoneNumber !== 'undefined' && (
+            <SMSSettingsSection 
+              initialPhoneNumber={userData?.phoneNumber || undefined}
+              initialSmsEnabled={userData?.smsNotificationsEnabled || false}
+            />
+          )}
 
           {/* Profile Section */}
           <Card>
