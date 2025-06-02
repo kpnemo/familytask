@@ -24,6 +24,9 @@ export default function Dashboard2Kid({ user }: Props) {
   const [loading, setLoading] = useState(true)
   // UI filter: overdue, upcoming, completed
   const [filter, setFilter] = useState<'ALL'|'OVERDUE'|'UPCOMING'|'COMPLETED'>('ALL')
+  
+  // Calculate total task count for All filter
+  const totalTasks = pendingTasks.length + completedTasks.length + verifiedTasks.length
 
   const fetchData = async () => {
     try {
@@ -109,7 +112,7 @@ export default function Dashboard2Kid({ user }: Props) {
           className={`inline-flex items-center space-x-2 px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors ${filter === 'ALL' ? 'font-semibold' : ''}`}
         >
           <Icons.tasks className="h-4 w-4" />
-          <span>All</span>
+          <span>All ({totalTasks})</span>
         </button>
         {/* Overdue */}
         <button

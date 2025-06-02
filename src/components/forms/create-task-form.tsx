@@ -45,7 +45,8 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
       points: 1,
-      isRecurring: false
+      isRecurring: false,
+      assignedTo: currentUserId
     }
   })
 

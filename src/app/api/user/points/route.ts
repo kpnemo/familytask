@@ -20,7 +20,16 @@ export async function GET() {
 
     const pointsFromHistory = pointsEntries.reduce((sum, entry) => sum + entry.points, 0)
 
-    // Also get points from completed/verified tasks (fallback in case points history isn't being used)
+    // If we have points history entries, use that total (even if it's 0)
+    // Otherwise fall back to completed tasks for backwards compatibility
+    if (pointsEntries.length > 0) {
+      return NextResponse.json({ 
+        success: true, 
+        points: pointsFromHistory
+      })
+    }
+
+    // Fallback: Get points from completed/verified tasks if no points history exists
     const completedTasks = await db.task.findMany({
       where: { 
         assignedTo: session.user.id,
@@ -33,12 +42,9 @@ export async function GET() {
 
     const pointsFromTasks = completedTasks.reduce((sum, task) => sum + task.points, 0)
 
-    // Use points history if it has data, otherwise fall back to completed tasks  
-    const totalPoints = pointsFromHistory > 0 ? pointsFromHistory : pointsFromTasks
-
     return NextResponse.json({ 
       success: true, 
-      points: totalPoints
+      points: pointsFromTasks
     })
   } catch (error) {
     console.error("Error fetching points:", error)

@@ -53,18 +53,20 @@ export async function POST(
       )
     }
 
+    // Only auto-verify if the parent is completing their own task
+    // If a parent completes a task assigned to someone else, it should still follow normal workflow
+    const isParentCompletingOwnTask = session.user.role === "PARENT" && task.assignedTo === session.user.id
+
     // Update task status and create notification
     const result = await db.$transaction(async (tx) => {
-      // If user is a parent, auto-verify the task
-      const isParent = session.user.role === "PARENT"
-      const status = isParent ? "VERIFIED" : "COMPLETED"
+      const status = isParentCompletingOwnTask ? "VERIFIED" : "COMPLETED"
       
       const updatedTask = await tx.task.update({
         where: { id },
         data: {
           status,
           completedAt: new Date(),
-          ...(isParent && {
+          ...(isParentCompletingOwnTask && {
             verifiedAt: new Date(),
             verifiedBy: session.user.id
           })
@@ -79,8 +81,8 @@ export async function POST(
         }
       })
 
-      if (isParent) {
-        // Award points immediately for parent tasks
+      if (isParentCompletingOwnTask) {
+        // Award points immediately for parent completing their own tasks
         await tx.pointsHistory.create({
           data: {
             userId: task.assignedTo,
@@ -97,8 +99,8 @@ export async function POST(
     })
 
     // Send notifications outside transaction (SMS calls can be slow)
-    if (session.user.role === "PARENT") {
-      // Send verification and points notifications for parent auto-complete
+    if (isParentCompletingOwnTask) {
+      // Send verification and points notifications for parent completing their own task
       const notifications = [
         {
           userId: task.assignedTo,
