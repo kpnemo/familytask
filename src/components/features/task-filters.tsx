@@ -11,7 +11,7 @@ interface TaskFiltersProps {
     assignedTo: string
     createdBy: string
   }
-  onFiltersChange: (filters: any) => void
+  onFiltersChange: (filters: { status: string; assignedTo: string; createdBy: string }) => void
 }
 
 interface FamilyMember {
@@ -31,7 +31,7 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
         const result = await response.json()
         
         if (result.success) {
-          setFamilyMembers(result.data.map((member: any) => ({
+          setFamilyMembers(result.data.map((member: { user: { id: string; name: string; role: string } }) => ({
             id: member.user.id,
             name: member.user.name,
             role: member.user.role
@@ -61,6 +61,7 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
   }
 
   const hasActiveFilters = filters.status || filters.assignedTo || filters.createdBy
+  const isChild = session?.user.role === "CHILD"
 
   return (
     <Card>
@@ -68,96 +69,99 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
         <CardTitle className="text-lg">Filter Tasks</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="VERIFIED">Verified</option>
-            </select>
-          </div>
-
-          {/* Assigned To Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assigned To
-            </label>
-            <select
-              value={filters.assignedTo}
-              onChange={(e) => handleFilterChange("assignedTo", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Members</option>
-              {session?.user.id && (
-                <option value={session.user.id}>My Tasks</option>
-              )}
-              {familyMembers.map(member => (
-                <option key={member.id} value={member.id}>
-                  {member.name} ({member.role})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Created By Filter (only for parents) */}
-          {session?.user.role === "PARENT" && (
+        {/* Show dropdowns only for parents */}
+        {!isChild && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Status Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Created By
+                Status
               </label>
               <select
-                value={filters.createdBy}
-                onChange={(e) => handleFilterChange("createdBy", e.target.value)}
+                value={filters.status}
+                onChange={(e) => handleFilterChange("status", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Creators</option>
-                <option value={session.user.id}>Created by Me</option>
-                {familyMembers
-                  .filter(member => member.role === "PARENT" && member.id !== session.user.id)
-                  .map(member => (
-                    <option key={member.id} value={member.id}>
-                      {member.name}
-                    </option>
-                  ))}
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="VERIFIED">Verified</option>
               </select>
             </div>
-          )}
 
-          {/* Clear Filters Button */}
-          <div className="flex items-end">
-            {hasActiveFilters && (
-              <Button 
-                variant="outline" 
-                onClick={clearFilters}
-                className="w-full"
+            {/* Assigned To Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Assigned To
+              </label>
+              <select
+                value={filters.assignedTo}
+                onChange={(e) => handleFilterChange("assignedTo", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </div>
+                <option value="">All Members</option>
+                {session?.user.id && (
+                  <option value={session.user.id}>My Tasks</option>
+                )}
+                {familyMembers.map(member => (
+                  <option key={member.id} value={member.id}>
+                    {member.name} ({member.role})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Quick Filter Buttons */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            variant={filters.assignedTo === session?.user.id ? "default" : "outline"}
-            size="sm"
-            onClick={() => handleFilterChange("assignedTo", 
-              filters.assignedTo === session?.user.id ? "" : session?.user.id || ""
+            {/* Created By Filter (only for parents) */}
+            {session?.user.role === "PARENT" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Created By
+                </label>
+                <select
+                  value={filters.createdBy}
+                  onChange={(e) => handleFilterChange("createdBy", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">All Creators</option>
+                  <option value={session.user.id}>Created by Me</option>
+                  {familyMembers
+                    .filter(member => member.role === "PARENT" && member.id !== session.user.id)
+                    .map(member => (
+                      <option key={member.id} value={member.id}>
+                        {member.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             )}
+
+            {/* Clear Filters Button */}
+            <div className="flex items-end">
+              {hasActiveFilters && (
+                <Button 
+                  variant="outline" 
+                  onClick={clearFilters}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Status Filter Buttons */}
+        <div className={`${!isChild ? 'mt-4' : ''} flex flex-wrap gap-2`}>
+          {/* Show All button */}
+          <Button
+            variant={!filters.status ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleFilterChange("status", "")}
           >
-            My Tasks
+            Show All
           </Button>
 
+          {/* Status-specific buttons */}
           <Button
             variant={filters.status === "PENDING" ? "default" : "outline"}
             size="sm"
@@ -165,7 +169,7 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
               filters.status === "PENDING" ? "" : "PENDING"
             )}
           >
-            Pending Only
+            Pending
           </Button>
 
           <Button
@@ -175,19 +179,44 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
               filters.status === "COMPLETED" ? "" : "COMPLETED"
             )}
           >
-            Need Verification
+            Completed
           </Button>
 
-          {session?.user.role === "PARENT" && (
-            <Button
-              variant={filters.createdBy === session.user.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleFilterChange("createdBy", 
-                filters.createdBy === session.user.id ? "" : session.user.id
+          <Button
+            variant={filters.status === "VERIFIED" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleFilterChange("status", 
+              filters.status === "VERIFIED" ? "" : "VERIFIED"
+            )}
+          >
+            Verified
+          </Button>
+
+          {/* Parent-only buttons */}
+          {!isChild && (
+            <>
+              <Button
+                variant={filters.assignedTo === session?.user.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleFilterChange("assignedTo", 
+                  filters.assignedTo === session?.user.id ? "" : session?.user.id || ""
+                )}
+              >
+                My Tasks
+              </Button>
+
+              {session?.user.role === "PARENT" && (
+                <Button
+                  variant={filters.createdBy === session.user.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleFilterChange("createdBy", 
+                    filters.createdBy === session.user.id ? "" : session.user.id
+                  )}
+                >
+                  Created by Me
+                </Button>
               )}
-            >
-              Created by Me
-            </Button>
+            </>
           )}
         </div>
       </CardContent>
