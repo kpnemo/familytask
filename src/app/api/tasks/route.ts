@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { createTaskSchema } from "@/lib/validations"
+import { createNotificationWithSMS } from "@/lib/notification-helpers"
 
 export async function GET(req: NextRequest) {
   try {
@@ -166,21 +167,28 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // Create notification for assignee (if not self-assigned)
-      if (validatedData.assignedTo !== session.user.id) {
-        await tx.notification.create({
-          data: {
-            userId: validatedData.assignedTo,
-            title: "New Task Assigned",
-            message: `You have been assigned a new task: "${validatedData.title}"`,
-            type: "TASK_ASSIGNED",
-            relatedTaskId: task.id
-          }
-        })
-      }
-
       return task
     })
+
+    // Create notification outside transaction (SMS calls can be slow)
+    if (validatedData.assignedTo !== session.user.id) {
+      // Don't await this to avoid slowing down the response
+      createNotificationWithSMS(
+        {
+          userId: validatedData.assignedTo,
+          title: "New Task Assigned",
+          message: `You have been assigned a new task: "${validatedData.title}"`,
+          type: "TASK_ASSIGNED",
+          relatedTaskId: result.id
+        },
+        {
+          title: validatedData.title,
+          dueDate: validatedData.dueDate
+        }
+      ).catch(error => {
+        console.error("Failed to send task assignment notification:", error)
+      })
+    }
 
     return NextResponse.json({
       success: true,

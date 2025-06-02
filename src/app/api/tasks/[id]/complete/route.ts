@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { createNextRecurringTask } from "@/lib/recurring-tasks"
+import { createNotificationWithSMS } from "@/lib/notification-helpers"
 
 export async function POST(
   req: NextRequest,
@@ -90,44 +91,58 @@ export async function POST(
             createdBy: session.user.id
           }
         })
-
-        // Create verification and points notifications
-        await tx.notification.create({
-          data: {
-            userId: task.assignedTo,
-            title: "Task Verified",
-            message: `Your task "${task.title}" has been verified! You earned ${task.points} points.`,
-            type: "TASK_VERIFIED",
-            relatedTaskId: id
-          }
-        })
-
-        await tx.notification.create({
-          data: {
-            userId: task.assignedTo,
-            title: "Points Earned",
-            message: `You earned ${task.points} points for completing "${task.title}"`,
-            type: "POINTS_EARNED",
-            relatedTaskId: id
-          }
-        })
-      } else {
-        // Create notification for task creator (if different from assignee)
-        if (task.createdBy !== session.user.id) {
-          await tx.notification.create({
-            data: {
-              userId: task.createdBy,
-              title: "Task Completed",
-              message: `${session.user.name} has completed the task: "${task.title}"`,
-              type: "TASK_COMPLETED",
-              relatedTaskId: id
-            }
-          })
-        }
       }
 
       return updatedTask
     })
+
+    // Send notifications outside transaction (SMS calls can be slow)
+    if (session.user.role === "PARENT") {
+      // Send verification and points notifications for parent auto-complete
+      const notifications = [
+        {
+          userId: task.assignedTo,
+          title: "Task Verified",
+          message: `Your task "${task.title}" has been verified! You earned ${task.points} points.`,
+          type: "TASK_VERIFIED" as const,
+          relatedTaskId: id,
+          smsData: { title: task.title, points: task.points }
+        },
+        {
+          userId: task.assignedTo,
+          title: "Points Earned", 
+          message: `You earned ${task.points} points for completing "${task.title}"`,
+          type: "POINTS_EARNED" as const,
+          relatedTaskId: id,
+          smsData: { title: task.title, points: task.points }
+        }
+      ]
+
+      notifications.forEach(({ smsData, ...notificationData }) => {
+        createNotificationWithSMS(notificationData, smsData).catch(error => {
+          console.error("Failed to send task verification notification:", error)
+        })
+      })
+    } else {
+      // Send completion notification to task creator
+      if (task.createdBy !== session.user.id) {
+        createNotificationWithSMS(
+          {
+            userId: task.createdBy,
+            title: "Task Completed",
+            message: `${session.user.name} has completed the task: "${task.title}"`,
+            type: "TASK_COMPLETED",
+            relatedTaskId: id
+          },
+          {
+            title: task.title,
+            userName: session.user.name
+          }
+        ).catch(error => {
+          console.error("Failed to send task completion notification:", error)
+        })
+      }
+    }
 
     // Create next recurring task instance if needed (outside transaction)
     if (task.isRecurring && task.recurrencePattern) {

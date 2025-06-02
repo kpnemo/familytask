@@ -19,6 +19,8 @@ model User {
   role            UserRole
   avatarUrl       String?       @map("avatar_url")
   dashboardStyle  DashboardStyle @default(STYLE1) @map("dashboard_style")
+  phoneNumber     String?       @map("phone_number")
+  smsNotificationsEnabled Boolean @default(false) @map("sms_notifications_enabled")
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 

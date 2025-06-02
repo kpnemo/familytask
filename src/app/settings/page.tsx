@@ -11,6 +11,7 @@ import { FamilyCodeSection } from "@/components/settings/family-code-section"
 import { FamilyMembersWrapper } from "@/components/settings/family-members-wrapper"
 import { AppearanceSection } from "@/components/settings/appearance-section"
 import { DashboardStyleSection } from "@/components/settings/dashboard-style-section"
+import { SMSSettingsSection } from "@/components/settings/sms-settings-section"
 import { AppHeader } from "@/components/layout/app-header"
 
 export default async function SettingsPage() {
@@ -19,6 +20,15 @@ export default async function SettingsPage() {
   if (!session) {
     redirect("/login")
   }
+
+  // Get user's data including SMS settings
+  const userData = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      phoneNumber: true,
+      smsNotificationsEnabled: true,
+    },
+  })
 
   // Get user's family information with all members
   const familyMembership = await db.familyMember.findFirst({
@@ -89,6 +99,12 @@ export default async function SettingsPage() {
 
           {/* Dashboard Style Section */}
           <DashboardStyleSection />
+
+          {/* SMS Settings Section */}
+          <SMSSettingsSection 
+            initialPhoneNumber={userData?.phoneNumber || undefined}
+            initialSmsEnabled={userData?.smsNotificationsEnabled || false}
+          />
 
           {/* Profile Section */}
           <Card>
