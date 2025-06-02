@@ -12,14 +12,15 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  name          String
-  passwordHash  String   @map("password_hash")
-  role          UserRole
-  avatarUrl     String?  @map("avatar_url")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id              String        @id @default(cuid())
+  email           String        @unique
+  name            String
+  passwordHash    String        @map("password_hash")
+  role            UserRole
+  avatarUrl       String?       @map("avatar_url")
+  dashboardStyle  DashboardStyle @default(STYLE1) @map("dashboard_style")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
   // Relationships
   familyMemberships FamilyMember[]
@@ -174,6 +175,11 @@ enum TaskStatus {
   COMPLETED
   VERIFIED
   OVERDUE
+}
+
+enum DashboardStyle {
+  STYLE1
+  STYLE2
 }
 
 enum NotificationType {

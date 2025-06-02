@@ -10,6 +10,7 @@ import { ChangePasswordModal } from "@/components/settings/change-password-modal
 import { FamilyCodeSection } from "@/components/settings/family-code-section"
 import { FamilyMembersWrapper } from "@/components/settings/family-members-wrapper"
 import { AppearanceSection } from "@/components/settings/appearance-section"
+import { DashboardStyleSection } from "@/components/settings/dashboard-style-section"
 import { AppHeader } from "@/components/layout/app-header"
 
 export default async function SettingsPage() {
@@ -85,6 +86,9 @@ export default async function SettingsPage() {
 
           {/* Appearance Section */}
           <AppearanceSection />
+
+          {/* Dashboard Style Section */}
+          <DashboardStyleSection />
 
           {/* Profile Section */}
           <Card>

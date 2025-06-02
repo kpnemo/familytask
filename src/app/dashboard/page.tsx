@@ -2,16 +2,45 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icons } from "@/components/ui/icons"
 import { AppHeader } from "@/components/layout/app-header"
 import { WeeklyView } from "@/components/features/weekly-view"
+import Dashboard2Parent from "@/components/features/dashboard2-parent"
+import Dashboard2Kid from "@/components/features/dashboard2-kid"
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
 
   if (!session) {
     redirect("/login")
+  }
+
+  // Get user's dashboard preference, with smart defaults
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { dashboardStyle: true, role: true }
+  })
+
+  // Default to STYLE2 for kids, STYLE1 for parents if no preference set
+  const defaultStyle = session.user.role === "CHILD" ? "STYLE2" : "STYLE1"
+  const dashboardStyle = user?.dashboardStyle || defaultStyle
+
+  // If user prefers STYLE2 or is a kid without preference, show dashboard2 components
+  if (dashboardStyle === "STYLE2") {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
+        <AppHeader title="FamilyTasks" user={session.user} />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {session.user.role === "PARENT" ? (
+            <Dashboard2Parent user={session.user} />
+          ) : (
+            <Dashboard2Kid user={session.user} />
+          )}
+        </main>
+      </div>
+    )
   }
 
   return (
