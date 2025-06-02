@@ -48,7 +48,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
   } = useForm<CreateTaskInput>({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
-      points: 1,
+      points: currentUserRole === "CHILD" ? 0 : 1,
       isRecurring: false,
       isBonusTask: false,
       assignedTo: currentUserId
@@ -194,10 +194,17 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
               <Input
                 id="points"
                 type="number"
-                min="1"
+                min={currentUserRole === "CHILD" ? "0" : "1"}
                 max="100"
+                disabled={currentUserRole === "CHILD"}
                 {...register("points", { valueAsNumber: true })}
+                className={currentUserRole === "CHILD" ? "bg-gray-100 cursor-not-allowed" : ""}
               />
+              {currentUserRole === "CHILD" && (
+                <p className="text-xs text-gray-500">
+                  👦 Kids can create tasks but cannot assign points. Parents will review and assign points later.
+                </p>
+              )}
               {errors.points && (
                 <p className="text-sm text-destructive">{errors.points.message}</p>
               )}
@@ -217,32 +224,34 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
             </div>
           </div>
 
-          {/* Bonus Task Toggle */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isBonusTask"
-                {...register("isBonusTask")}
-                className="text-blue-600"
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setValue("assignedTo", undefined);
-                  } else {
-                    setValue("assignedTo", currentUserId);
-                  }
-                }}
-              />
-              <Label htmlFor="isBonusTask">Bonus Task</Label>
-            </div>
-            {isBonusTask && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-sm text-amber-700">
-                  💰 <strong>Bonus Task:</strong> This task will be available for any family member to claim. Perfect for urgent tasks with higher point rewards!
-                </p>
+          {/* Bonus Task Toggle - Only for parents */}
+          {currentUserRole === "PARENT" && (
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isBonusTask"
+                  {...register("isBonusTask")}
+                  className="text-blue-600"
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setValue("assignedTo", undefined);
+                    } else {
+                      setValue("assignedTo", currentUserId);
+                    }
+                  }}
+                />
+                <Label htmlFor="isBonusTask">Bonus Task</Label>
               </div>
-            )}
-          </div>
+              {isBonusTask && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-sm text-amber-700">
+                    💰 <strong>Bonus Task:</strong> This task will be available for any family member to claim. Perfect for urgent tasks with higher point rewards!
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Assign To - Only show for regular tasks */}
           {!isBonusTask && (

@@ -36,7 +36,7 @@ export const loginSchema = z.object({
 export const createTaskSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long"),
   description: z.string().max(500, "Description too long").optional(),
-  points: z.number().int().min(1, "Points must be at least 1").max(100, "Points cannot exceed 100"),
+  points: z.number().int().min(0, "Points must be at least 0").max(100, "Points cannot exceed 100"),
   dueDate: z.string().min(1, "Due date is required"),
   assignedTo: z.string().cuid("Invalid user ID").optional(),
   tagIds: z.array(z.string().cuid()).optional(),
@@ -58,7 +58,7 @@ export const createTaskSchema = z.object({
 export const updateTaskSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title too long").optional(),
   description: z.string().max(500, "Description too long").optional(),
-  points: z.number().int().min(1, "Points must be at least 1").max(100, "Points cannot exceed 100").optional(),
+  points: z.number().int().min(0, "Points must be at least 0").max(100, "Points cannot exceed 100").optional(),
   dueDate: z.string().min(1, "Due date is required").optional(),
   tagIds: z.array(z.string().cuid()).optional(),
 })

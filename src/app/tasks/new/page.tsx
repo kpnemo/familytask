@@ -11,10 +11,8 @@ export default async function NewTaskPage() {
     redirect("/login")
   }
 
-  // Only parents can create tasks
-  if (session.user.role !== "PARENT") {
-    redirect("/tasks")
-  }
+  // Both parents and children can create tasks
+  // Children will have restricted options in the form
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -25,7 +23,9 @@ export default async function NewTaskPage() {
             <Link href="/tasks" className="text-blue-600 hover:text-blue-800 mr-4">
               ← Back to Tasks
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Create New Task</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {session.user.role === "PARENT" ? "Create New Task" : "Request New Task"}
+            </h1>
           </div>
         </div>
       </div>
