@@ -4,12 +4,12 @@
 import { useState, useEffect } from "react"
 import { TaskCard, Task as FullTask } from "./task-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { User } from "@/types"
+import { SessionUser } from "@/types"
 import { Icons } from "@/components/ui/icons"
 import { cn } from "@/lib/utils"
 
 interface Props {
-  user: User
+  user: SessionUser
 }
 
 export default function Dashboard2Parent({ user }: Props) {

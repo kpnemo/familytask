@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import { TaskCard } from "./task-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { User } from "@/types"
+import { SessionUser } from "@/types"
 import { Icons } from "@/components/ui/icons"
 import { Task as FullTask } from "./task-card"
 import Link from "next/link"
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 interface Task extends Pick<FullTask, 'id' | 'title' | 'dueDate' | 'points' | 'status' | 'assignee' | 'tags' | 'creator'> {}
 
 interface Props {
-  user: User
+  user: SessionUser
 }
 
 export default function Dashboard2Kid({ user }: Props) {

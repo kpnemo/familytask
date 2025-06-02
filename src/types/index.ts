@@ -3,6 +3,16 @@ import { User, Family, FamilyMember, Task, TaskTag, PointsHistory, Notification 
 // Re-export Prisma types
 export type { User, Family, FamilyMember, Task, TaskTag, PointsHistory, Notification }
 
+// Session user type (matches NextAuth session.user)
+export interface SessionUser {
+  id: string
+  email: string
+  name: string
+  role: string
+  familyId: string | null
+  familyRole: string | null
+}
+
 // Extended types with relations
 export type UserWithFamily = User & {
   familyMemberships: (FamilyMember & {
