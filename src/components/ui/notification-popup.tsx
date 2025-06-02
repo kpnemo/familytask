@@ -163,11 +163,11 @@ export function NotificationPopup() {
 
       {isOpen && (
         <div className="absolute mt-2 
-                       right-0 w-[calc(100vw-0.5rem)] max-w-xs
-                       sm:right-0 sm:w-80 sm:max-w-none
-                       md:right-0 md:w-96
+                       fixed right-0 w-full
+                       sm:absolute sm:right-0 sm:w-80
+                       md:w-96
                        bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 
-                       transform -translate-x-1
+                       transform translate-x-0
                        sm:transform sm:translate-x-0">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
