@@ -84,6 +84,7 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
               >
                 <option value="">All Statuses</option>
                 <option value="PENDING">Pending</option>
+                <option value="AVAILABLE">Available Bonus</option>
                 <option value="COMPLETED">Completed</option>
                 <option value="VERIFIED">Verified</option>
               </select>
@@ -190,6 +191,17 @@ export function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
             )}
           >
             Verified
+          </Button>
+
+          <Button
+            variant={filters.status === "AVAILABLE" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleFilterChange("status", 
+              filters.status === "AVAILABLE" ? "" : "AVAILABLE"
+            )}
+            className="bg-amber-600 hover:bg-amber-700 text-white border-amber-600"
+          >
+            💰 Bonus
           </Button>
 
           {/* Parent-only buttons */}

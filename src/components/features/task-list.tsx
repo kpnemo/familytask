@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { TaskCard } from "./task-card"
 import { TaskFilters } from "./task-filters"
+import { BonusTaskCard } from "./bonus-task-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Task {
@@ -12,13 +13,14 @@ interface Task {
   description?: string
   points: number
   dueDate: string
-  status: "PENDING" | "COMPLETED" | "VERIFIED" | "OVERDUE"
+  status: "PENDING" | "AVAILABLE" | "COMPLETED" | "VERIFIED" | "OVERDUE"
   creator: { id: string; name: string; role: string }
-  assignee: { id: string; name: string; role: string }
+  assignee?: { id: string; name: string; role: string }
   verifier?: { id: string; name: string; role: string }
   tags: Array<{ id: string; name: string; color: string }>
   completedAt?: string
   verifiedAt?: string
+  isBonusTask?: boolean
 }
 
 export function TaskList() {
@@ -70,7 +72,8 @@ export function TaskList() {
   }
 
   // Group tasks by status
-  const pendingTasks = tasks.filter(task => task.status === "PENDING")
+  const bonusTasks = tasks.filter(task => task.isBonusTask && task.status === "AVAILABLE")
+  const pendingTasks = tasks.filter(task => task.status === "PENDING") // Include ALL pending tasks (regular + assigned bonus)
   const completedTasks = tasks.filter(task => task.status === "COMPLETED")
   const verifiedTasks = tasks.filter(task => task.status === "VERIFIED")
   const overdueTasks = tasks.filter(task => {
@@ -84,7 +87,18 @@ export function TaskList() {
       <TaskFilters filters={filters} onFiltersChange={setFilters} />
 
       {/* Task Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Available Bonus
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-amber-600">{bonusTasks.length}</div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -131,6 +145,23 @@ export function TaskList() {
       </div>
 
       {/* Task Sections */}
+      {bonusTasks.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-amber-700 mb-3">
+            💰 Available Bonus Tasks ({bonusTasks.length})
+          </h2>
+          <div className="grid gap-4">
+            {bonusTasks.map(task => (
+              <BonusTaskCard 
+                key={task.id} 
+                task={task as any}
+                onAssign={handleTaskUpdate}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {overdueTasks.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-red-700 mb-3">

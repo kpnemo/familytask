@@ -50,12 +50,13 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     defaultValues: {
       points: 1,
       isRecurring: false,
+      isBonusTask: false,
       assignedTo: currentUserId
     }
   })
 
   const assignedTo = watch("assignedTo")
-
+  const isBonusTask = watch("isBonusTask")
   const isRecurring = watch("isRecurring")
 
   useEffect(() => {
@@ -151,7 +152,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
       <CardHeader>
         <CardTitle>Create New Task</CardTitle>
         <CardDescription>
-          Create and assign a task to a family member
+          Create a task and assign it to a family member, or create a bonus task for anyone to claim
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -216,26 +217,55 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
             </div>
           </div>
 
-          {/* Assign To */}
-          <div className="space-y-2">
-            <Label htmlFor="assignedTo">Assign To *</Label>
-            <select
-              id="assignedTo"
-              {...register("assignedTo")}
-              value={assignedTo || ""}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {!assignedTo && <option value="">Select a family member</option>}
-              {familyMembers.map(member => (
-                <option key={member.id} value={member.id}>
-                  {member.name} ({member.role})
-                </option>
-              ))}
-            </select>
-            {errors.assignedTo && (
-              <p className="text-sm text-destructive">{errors.assignedTo.message}</p>
+          {/* Bonus Task Toggle */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isBonusTask"
+                {...register("isBonusTask")}
+                className="text-blue-600"
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setValue("assignedTo", undefined);
+                  } else {
+                    setValue("assignedTo", currentUserId);
+                  }
+                }}
+              />
+              <Label htmlFor="isBonusTask">Bonus Task</Label>
+            </div>
+            {isBonusTask && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-700">
+                  💰 <strong>Bonus Task:</strong> This task will be available for any family member to claim. Perfect for urgent tasks with higher point rewards!
+                </p>
+              </div>
             )}
           </div>
+
+          {/* Assign To - Only show for regular tasks */}
+          {!isBonusTask && (
+            <div className="space-y-2">
+              <Label htmlFor="assignedTo">Assign To *</Label>
+              <select
+                id="assignedTo"
+                {...register("assignedTo")}
+                value={assignedTo || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {!assignedTo && <option value="">Select a family member</option>}
+                {familyMembers.map(member => (
+                  <option key={member.id} value={member.id}>
+                    {member.name} ({member.role})
+                  </option>
+                ))}
+              </select>
+              {errors.assignedTo && (
+                <p className="text-sm text-destructive">{errors.assignedTo.message}</p>
+              )}
+            </div>
+          )}
 
           {/* Tags */}
           {tags.length > 0 && (
@@ -315,7 +345,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
               disabled={isLoading}
               className="flex-1"
             >
-              {isLoading ? "Creating..." : "Create Task"}
+              {isLoading ? "Creating..." : isBonusTask ? "Create Bonus Task" : "Create Task"}
             </Button>
           </div>
         </form>

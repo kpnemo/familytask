@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { TaskCard, Task as FullTask } from "./task-card"
+import { BonusTaskCard } from "./bonus-task-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SessionUser } from "@/types"
 import { Icons } from "@/components/ui/icons"
@@ -16,23 +17,33 @@ export default function Dashboard2Parent({ user }: Props) {
   const [pendingTasks, setPendingTasks] = useState<FullTask[]>([])
   const [completedTasks, setCompletedTasks] = useState<FullTask[]>([])
   const [verifiedTasks, setVerifiedTasks] = useState<FullTask[]>([])
+  const [bonusTasks, setBonusTasks] = useState<FullTask[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'ALL'|'OVERDUE'|'UPCOMING'|'COMPLETED'|'VERIFIED'>('ALL')
+  const [filter, setFilter] = useState<'ALL'|'OVERDUE'|'UPCOMING'|'COMPLETED'|'VERIFIED'|'BONUS'>('ALL')
   const [showMyTasksOnly, setShowMyTasksOnly] = useState(false)
 
   const fetchData = async () => {
     try {
-      const [pendingRes, completedRes, verifiedRes] = await Promise.all([
+      const [pendingRes, completedRes, verifiedRes, bonusRes] = await Promise.all([
         fetch("/api/tasks?status=PENDING"),
         fetch("/api/tasks?status=COMPLETED"),
-        fetch("/api/tasks?status=VERIFIED")
+        fetch("/api/tasks?status=VERIFIED"),
+        fetch("/api/tasks?status=AVAILABLE")
       ])
       const pendingData = await pendingRes.json()
       const completedData = await completedRes.json()
       const verifiedData = await verifiedRes.json()
+      const bonusData = await bonusRes.json()
       if (pendingData.success) setPendingTasks(pendingData.data)
       if (completedData.success) setCompletedTasks(completedData.data)
       if (verifiedData.success) setVerifiedTasks(verifiedData.data)
+      if (bonusData.success) {
+        // Filter only bonus tasks that are actually available
+        const availableBonusTasks = bonusData.data.filter((task: FullTask) => 
+          task.isBonusTask && task.status === "AVAILABLE"
+        )
+        setBonusTasks(availableBonusTasks)
+      }
     } catch {
       // ignore
     } finally {
@@ -81,7 +92,7 @@ export default function Dashboard2Parent({ user }: Props) {
   const completedAll = [...filteredCompletedTasks, ...filteredVerifiedTasks]
   
   // Calculate total tasks for "All" filter
-  const totalTasks = filteredPendingTasks.length + filteredCompletedTasks.length + filteredVerifiedTasks.length
+  const totalTasks = filteredPendingTasks.length + filteredCompletedTasks.length + filteredVerifiedTasks.length + bonusTasks.length
 
   // Helper to label dates
   const getDateLabel = (dateString: string) => {
@@ -153,6 +164,14 @@ export default function Dashboard2Parent({ user }: Props) {
           <Icons.check className="h-4 w-4" />
           <span>Verified ({filteredVerifiedTasks.length})</span>
         </button>
+        {/* Bonus Tasks */}
+        <button
+          onClick={() => setFilter('BONUS')}
+          className={cn("inline-flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors", filter === 'BONUS' && "font-semibold")}
+        >
+          <span className="text-sm">💰</span>
+          <span>Bonus ({bonusTasks.length})</span>
+        </button>
       </div>
 
       {/* My Tasks Only Toggle */}
@@ -176,6 +195,18 @@ export default function Dashboard2Parent({ user }: Props) {
       </div>
 
       {/* Sections (filtered) */}
+      {/* Bonus Tasks - Always show at top when available */}
+      {(filter === 'ALL' || filter === 'BONUS') && bonusTasks.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-amber-700">💰 Available Bonus Tasks ({bonusTasks.length})</h2>
+          <div className="grid gap-4 mt-2">
+            {bonusTasks.map(task => (
+              <BonusTaskCard key={task.id} task={task as any} onAssign={fetchData} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {filter !== 'UPCOMING' && (filter === 'ALL' || filter === 'OVERDUE') && overdueTasks.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-red-700">🚨 Overdue Tasks ({overdueTasks.length})</h2>
@@ -252,6 +283,14 @@ export default function Dashboard2Parent({ user }: Props) {
               <TaskCard key={task.id} task={task} onUpdate={fetchData} />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Show message when filtering for bonus tasks but none available */}
+      {filter === 'BONUS' && bonusTasks.length === 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-amber-700">💰 Available Bonus Tasks</h2>
+          <p className="text-gray-600 mt-2">No bonus tasks available right now. Check back later!</p>
         </div>
       )}
     </div>

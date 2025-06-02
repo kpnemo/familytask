@@ -28,14 +28,15 @@ interface Task {
   description?: string
   points: number
   dueDate: string
-  status: "PENDING" | "COMPLETED" | "VERIFIED" | "OVERDUE"
+  status: "PENDING" | "AVAILABLE" | "COMPLETED" | "VERIFIED" | "OVERDUE"
   createdAt: string
   completedAt?: string
   verifiedAt?: string
   creator: User
-  assignee: User
+  assignee: User | null
   verifier?: User
   tags: Tag[]
+  isBonusTask?: boolean
 }
 
 interface TaskViewClientProps {
@@ -160,9 +161,32 @@ export function TaskViewClient({
     }
   }
 
+  const handleAssignToMe = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error?.message || "Failed to assign task")
+      }
+
+      // Refresh the page to show updated task
+      router.refresh()
+    } catch (error) {
+      console.error("Error assigning task:", error)
+      alert(error instanceof Error ? error.message : "Failed to assign task")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleDeleteTask = async () => {
     const confirmMessage = currentStatus === "VERIFIED" 
-      ? `Are you sure you want to delete "${task.title}"?\n\nThis task is VERIFIED and points will be reversed for ${task.assignee.name}.\n\nThis action cannot be undone.`
+      ? `Are you sure you want to delete "${task.title}"?\n\nThis task is VERIFIED and points will be reversed for ${task.assignee?.name || 'the assignee'}.\n\nThis action cannot be undone.`
       : `Are you sure you want to delete "${task.title}"?\n\nThis action cannot be undone.`
     
     if (!confirm(confirmMessage)) {
@@ -213,7 +237,7 @@ export function TaskViewClient({
             <div className="flex-1">
               <CardTitle className="text-2xl">{task.title}</CardTitle>
               <CardDescription className="mt-2">
-                Created by {task.creator.name} • Assigned to {task.assignee.name}
+                Created by {task.creator.name} • {task.assignee ? `Assigned to ${task.assignee.name}` : '💰 Bonus Task - Available to Claim'}
               </CardDescription>
             </div>
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(isOverdue ? "OVERDUE" : currentStatus)}`}>
@@ -273,13 +297,23 @@ export function TaskViewClient({
                     <div className="text-xs text-gray-500">Creator • {task.creator.role}</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Icons.user className="h-4 w-4 text-gray-400" />
-                  <div>
-                    <div className="text-sm font-medium">{task.assignee.name}</div>
-                    <div className="text-xs text-gray-500">Assignee • {task.assignee.role}</div>
+                {task.assignee ? (
+                  <div className="flex items-center gap-3">
+                    <Icons.user className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <div className="text-sm font-medium">{task.assignee.name}</div>
+                      <div className="text-xs text-gray-500">Assignee • {task.assignee.role}</div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">💰</span>
+                    <div>
+                      <div className="text-sm font-medium text-amber-700">Bonus Task</div>
+                      <div className="text-xs text-amber-600">Available for anyone to claim</div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {task.tags.length > 0 && (
@@ -310,6 +344,27 @@ export function TaskViewClient({
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
+            {/* Assign to Me - for bonus tasks */}
+            {!task.assignee && task.isBonusTask && currentStatus === "AVAILABLE" && (
+              <Button
+                onClick={handleAssignToMe}
+                disabled={isLoading}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
+                    Assigning...
+                  </>
+                ) : (
+                  <>
+                    <span className="text-sm mr-2">💰</span>
+                    Assign to Me
+                  </>
+                )}
+              </Button>
+            )}
+
             {/* Complete Task - for assignee when pending */}
             {isAssignee && currentStatus === "PENDING" && (
               <Button

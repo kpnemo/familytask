@@ -75,19 +75,20 @@ model Task {
   dueDate           DateTime          @map("due_date")
   status            TaskStatus        @default(PENDING)
   createdBy         String            @map("created_by")
-  assignedTo        String            @map("assigned_to")
+  assignedTo        String?           @map("assigned_to")
   familyId          String            @map("family_id")
   completedAt       DateTime?         @map("completed_at")
   verifiedAt        DateTime?         @map("verified_at")
   verifiedBy        String?           @map("verified_by")
   isRecurring       Boolean           @default(false) @map("is_recurring")
   recurrencePattern String?           @map("recurrence_pattern")
+  isBonusTask       Boolean           @default(false) @map("is_bonus_task")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
   // Relationships
   creator     User                @relation("TaskCreator", fields: [createdBy], references: [id])
-  assignee    User                @relation("TaskAssignee", fields: [assignedTo], references: [id])
+  assignee    User?               @relation("TaskAssignee", fields: [assignedTo], references: [id])
   verifier    User?               @relation("TaskVerifier", fields: [verifiedBy], references: [id])
   family      Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
   tags        TaskTagRelation[]
@@ -174,6 +175,7 @@ enum FamilyMemberRole {
 
 enum TaskStatus {
   PENDING
+  AVAILABLE
   COMPLETED
   VERIFIED
   OVERDUE
@@ -190,6 +192,7 @@ enum NotificationType {
   TASK_VERIFIED
   TASK_DECLINED
   TASK_DELETED
+  BONUS_TASK_SELF_ASSIGNED
   POINTS_EARNED
   POINTS_DEDUCTED
 }

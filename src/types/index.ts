@@ -22,7 +22,7 @@ export type UserWithFamily = User & {
 
 export type TaskWithRelations = Task & {
   creator: User
-  assignee: User
+  assignee?: User
   verifier?: User
   tags: (TaskTag)[]
   family: Family

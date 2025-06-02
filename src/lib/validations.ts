@@ -38,10 +38,21 @@ export const createTaskSchema = z.object({
   description: z.string().max(500, "Description too long").optional(),
   points: z.number().int().min(1, "Points must be at least 1").max(100, "Points cannot exceed 100"),
   dueDate: z.string().min(1, "Due date is required"),
-  assignedTo: z.string().cuid("Invalid user ID"),
+  assignedTo: z.string().cuid("Invalid user ID").optional(),
   tagIds: z.array(z.string().cuid()).optional(),
   isRecurring: z.boolean().optional(),
   recurrencePattern: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
+  isBonusTask: z.boolean().optional(),
+}).refine((data) => {
+  // For bonus tasks, assignedTo should be null
+  if (data.isBonusTask) {
+    return !data.assignedTo;
+  }
+  // For regular tasks, assignedTo is required
+  return !!data.assignedTo;
+}, {
+  message: "Regular tasks require assignment, bonus tasks cannot be assigned",
+  path: ["assignedTo"]
 })
 
 export const updateTaskSchema = z.object({

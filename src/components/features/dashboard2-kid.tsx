@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { TaskCard } from "./task-card"
+import { BonusTaskCard } from "./bonus-task-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SessionUser } from "@/types"
 import { Icons } from "@/components/ui/icons"
@@ -21,29 +22,39 @@ export default function Dashboard2Kid({ user }: Props) {
   const [pendingTasks, setPendingTasks] = useState<Task[]>([])
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
   const [verifiedTasks, setVerifiedTasks] = useState<Task[]>([])
+  const [bonusTasks, setBonusTasks] = useState<FullTask[]>([])
   const [loading, setLoading] = useState(true)
   // UI filter: overdue, upcoming, completed
-  const [filter, setFilter] = useState<'ALL'|'OVERDUE'|'UPCOMING'|'COMPLETED'>('ALL')
+  const [filter, setFilter] = useState<'ALL'|'OVERDUE'|'UPCOMING'|'COMPLETED'|'BONUS'>('ALL')
   
   // Calculate total task count for All filter
-  const totalTasks = pendingTasks.length + completedTasks.length + verifiedTasks.length
+  const totalTasks = pendingTasks.length + completedTasks.length + verifiedTasks.length + bonusTasks.length
 
   const fetchData = async () => {
     try {
-      const [weeklyRes, pendingRes, completedRes, verifiedRes] = await Promise.all([
+      const [weeklyRes, pendingRes, completedRes, verifiedRes, bonusRes] = await Promise.all([
         fetch("/api/tasks/weekly"),
         fetch("/api/tasks?status=PENDING"),
         fetch("/api/tasks?status=COMPLETED"),
-        fetch("/api/tasks?status=VERIFIED")
+        fetch("/api/tasks?status=VERIFIED"),
+        fetch("/api/tasks?status=AVAILABLE")
       ])
       const weeklyData = await weeklyRes.json()
       const pendingData = await pendingRes.json()
       const completedData = await completedRes.json()
       const verifiedData = await verifiedRes.json()
+      const bonusData = await bonusRes.json()
       if (weeklyData.success) setWeeklyTasks(weeklyData.tasks)
       if (pendingData.success) setPendingTasks(pendingData.data)
       if (completedData.success) setCompletedTasks(completedData.data)
       if (verifiedData.success) setVerifiedTasks(verifiedData.data)
+      if (bonusData.success) {
+        // Filter only bonus tasks that are actually available
+        const availableBonusTasks = bonusData.data.filter((task: FullTask) => 
+          task.isBonusTask && task.status === "AVAILABLE"
+        )
+        setBonusTasks(availableBonusTasks)
+      }
     } catch {
       // ignore
     } finally {
@@ -138,6 +149,14 @@ export default function Dashboard2Kid({ user }: Props) {
           <Icons.check className="h-4 w-4" />
           <span>Completed ({completedAll.length})</span>
         </button>
+        {/* Bonus Tasks */}
+        <button
+          onClick={() => setFilter('BONUS')}
+          className={`inline-flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors ${filter === 'BONUS' ? 'font-semibold' : ''}`}
+        >
+          <span className="text-sm">💰</span>
+          <span>Bonus ({bonusTasks.length})</span>
+        </button>
       </div>
       {/* Link to full tasks page */}
       <div className="mt-2">
@@ -147,6 +166,18 @@ export default function Dashboard2Kid({ user }: Props) {
       </div>
 
       {/* Sections (filtered) */}
+      {/* Bonus Tasks - Always show at top when available */}
+      {(filter === 'ALL' || filter === 'BONUS') && bonusTasks.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-amber-700">💰 Available Bonus Tasks ({bonusTasks.length})</h2>
+          <div className="grid gap-4 mt-2">
+            {bonusTasks.map(task => (
+              <BonusTaskCard key={task.id} task={task as any} onAssign={fetchData} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {filter !== 'UPCOMING' && (filter === 'ALL' || filter === 'OVERDUE') && overdueTasks.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-red-700">🚨 Overdue Tasks ({overdueTasks.length})</h2>
@@ -214,6 +245,14 @@ export default function Dashboard2Kid({ user }: Props) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Show message when filtering for bonus tasks but none available */}
+      {filter === 'BONUS' && bonusTasks.length === 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-amber-700">💰 Available Bonus Tasks</h2>
+          <p className="text-gray-600 mt-2">No bonus tasks available right now. Check back later!</p>
         </div>
       )}
     </div>

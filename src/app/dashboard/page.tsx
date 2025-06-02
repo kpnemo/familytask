@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Icons } from "@/components/ui/icons"
 import { AppHeader } from "@/components/layout/app-header"
 import { WeeklyView } from "@/components/features/weekly-view"
+import { BonusTasksWidget } from "@/components/features/bonus-tasks-widget"
 import Dashboard2Parent from "@/components/features/dashboard2-parent"
 import Dashboard2Kid from "@/components/features/dashboard2-kid"
 
@@ -58,7 +59,7 @@ export default async function Dashboard() {
             <p className="text-gray-600">Here's your family task dashboard.</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Quick Actions */}
             <Card>
               <CardHeader>
@@ -103,6 +104,9 @@ export default async function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Bonus Tasks Widget */}
+            <BonusTasksWidget />
 
             {/* Weekly View */}
             <WeeklyView />

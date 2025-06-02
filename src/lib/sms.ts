@@ -24,6 +24,14 @@ export async function sendSMS(to: string, message: string): Promise<SMSResult> {
     }
   }
 
+  // Debug log for credentials check
+  console.log('Twilio config check:', {
+    accountSid: accountSid ? `${accountSid.substring(0, 10)}...` : 'missing',
+    authToken: authToken ? `${authToken.substring(0, 8)}...` : 'missing',
+    fromNumber: fromNumber || 'missing',
+    toNumber: to
+  })
+
   try {
     const result = await client.messages.create({
       body: message,
@@ -31,12 +39,19 @@ export async function sendSMS(to: string, message: string): Promise<SMSResult> {
       to: to
     })
 
+    console.log('SMS sent successfully:', result.sid)
     return {
       success: true,
       messageId: result.sid
     }
-  } catch (error) {
-    console.error('SMS sending failed:', error)
+  } catch (error: any) {
+    console.error('SMS sending failed:', {
+      message: error.message,
+      status: error.status,
+      code: error.code,
+      moreInfo: error.moreInfo,
+      details: error.details
+    })
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -47,6 +62,9 @@ export async function sendSMS(to: string, message: string): Promise<SMSResult> {
 export function formatSMSMessage(type: string, data: any): string {
   switch (type) {
     case 'TASK_ASSIGNED':
+      if (data.isBonus) {
+        return `New Bonus task added - ${data.title} - ${data.points} Points`
+      }
       return `New task: ${data.title} - Due: ${formatDate(data.dueDate)}`
     
     case 'TASK_COMPLETED':

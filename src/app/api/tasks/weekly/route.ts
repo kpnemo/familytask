@@ -23,13 +23,23 @@ export async function GET() {
     endDate.setDate(endDate.getDate() + 6)
     endDate.setHours(23, 59, 59, 999)
 
-    const where: any = {
+    let where: any = {
       familyId: familyMember.familyId,
-      dueDate: { gte: startDate, lte: endDate },
-      status: "PENDING"
+      dueDate: { gte: startDate, lte: endDate }
     }
+
     if (session.user.role === "CHILD") {
-      where.assignedTo = session.user.id
+      // Kids see their assigned tasks + available bonus tasks
+      where.OR = [
+        { assignedTo: session.user.id, status: "PENDING" }, // Their assigned pending tasks
+        { isBonusTask: true, status: "AVAILABLE" } // Available bonus tasks
+      ]
+    } else {
+      // Parents see all family pending tasks + available bonus tasks
+      where.OR = [
+        { status: "PENDING" },
+        { isBonusTask: true, status: "AVAILABLE" }
+      ]
     }
 
     const tasks = await db.task.findMany({

@@ -50,9 +50,30 @@ export async function GET(req: NextRequest) {
       where.createdBy = createdBy
     }
 
-    // Children can only see their own assigned tasks
+    // Handle role-based filtering
     if (session.user.role === "CHILD") {
-      where.assignedTo = session.user.id
+      if (status === "AVAILABLE") {
+        // If filtering for available bonus tasks specifically
+        where.isBonusTask = true
+        where.status = "AVAILABLE"
+      } else if (status) {
+        // If filtering by other specific status, show only their assigned tasks with that status
+        where.assignedTo = session.user.id
+        where.status = status
+      } else {
+        // If no status filter, show their assigned tasks + available bonus tasks
+        where.OR = [
+          { assignedTo: session.user.id }, // Their assigned tasks (including assigned bonus tasks)
+          { isBonusTask: true, status: "AVAILABLE" } // Available bonus tasks they can claim
+        ]
+      }
+      // Remove assignedTo filter if we used OR condition
+      if (where.OR) {
+        delete where.assignedTo
+      }
+    } else {
+      // Parents can see all family tasks including assigned bonus tasks
+      // No additional filtering needed - they see everything in their family
     }
 
     const tasks = await db.task.findMany({
@@ -126,19 +147,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verify assignee is in the same family
-    const assigneeMember = await db.familyMember.findFirst({
-      where: {
-        userId: validatedData.assignedTo,
-        familyId: familyMember.familyId
-      }
-    })
+    // For bonus tasks, skip assignee validation
+    if (!validatedData.isBonusTask) {
+      // Verify assignee is in the same family
+      const assigneeMember = await db.familyMember.findFirst({
+        where: {
+          userId: validatedData.assignedTo,
+          familyId: familyMember.familyId
+        }
+      })
 
-    if (!assigneeMember) {
-      return NextResponse.json(
-        { error: { code: "INVALID_ASSIGNEE", message: "Assignee not found in family" } },
-        { status: 400 }
-      )
+      if (!assigneeMember) {
+        return NextResponse.json(
+          { error: { code: "INVALID_ASSIGNEE", message: "Assignee not found in family" } },
+          { status: 400 }
+        )
+      }
     }
 
     // Create task in transaction
@@ -150,10 +174,12 @@ export async function POST(req: NextRequest) {
           points: validatedData.points,
           dueDate: new Date(validatedData.dueDate + "T23:59:59.999Z"), // Set to end of day
           createdBy: session.user.id,
-          assignedTo: validatedData.assignedTo,
+          assignedTo: validatedData.isBonusTask ? null : validatedData.assignedTo,
           familyId: familyMember.familyId,
           isRecurring: validatedData.isRecurring || false,
-          recurrencePattern: validatedData.recurrencePattern
+          recurrencePattern: validatedData.recurrencePattern,
+          isBonusTask: validatedData.isBonusTask || false,
+          status: validatedData.isBonusTask ? "AVAILABLE" : "PENDING"
         }
       })
 
@@ -170,9 +196,53 @@ export async function POST(req: NextRequest) {
       return task
     })
 
-    // Create notification outside transaction (SMS calls can be slow)
-    if (validatedData.assignedTo !== session.user.id) {
-      // Don't await this to avoid slowing down the response
+    // Create notifications
+    if (validatedData.isBonusTask) {
+      // For bonus tasks, notify all family members
+      const familyMembers = await db.familyMember.findMany({
+        where: { familyId: familyMember.familyId },
+        include: { user: true }
+      })
+      
+      console.log(`Creating bonus task notifications for ${familyMembers.length} family members`)
+      
+      // Send notifications to all family members except the creator
+      const notificationPromises = familyMembers
+        .filter(member => member.userId !== session.user.id)
+        .map(async (member) => {
+          try {
+            console.log(`Creating notification for user: ${member.userId} (${member.user.name})`)
+            const notification = await createNotificationWithSMS(
+              {
+                userId: member.userId,
+                title: "New Bonus Task Added",
+                message: `New Bonus task added - ${validatedData.title} - ${validatedData.points} Points`,
+                type: "TASK_ASSIGNED",
+                relatedTaskId: result.id
+              },
+              {
+                title: validatedData.title,
+                points: validatedData.points,
+                dueDate: validatedData.dueDate,
+                isBonus: true
+              }
+            )
+            console.log(`Successfully created notification ${notification.id} for user ${member.userId}`)
+            return notification
+          } catch (error) {
+            console.error(`Failed to send bonus task notification to user ${member.userId}:`, error)
+            return null
+          }
+        })
+      
+      // Wait for all notifications to be created
+      const notifications = await Promise.allSettled(notificationPromises)
+      const successful = notifications.filter(n => n.status === 'fulfilled' && n.value).length
+      const failed = notifications.filter(n => n.status === 'rejected' || !n.value).length
+      console.log(`Bonus task notifications: ${successful} successful, ${failed} failed`)
+      
+    } else if (validatedData.assignedTo !== session.user.id) {
+      // Regular task assignment notification
       createNotificationWithSMS(
         {
           userId: validatedData.assignedTo,

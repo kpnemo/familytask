@@ -15,7 +15,7 @@ interface Task {
   assignee: {
     name: string
     id: string
-  }
+  } | null
   creator?: {
     name: string
     id: string
@@ -137,7 +137,7 @@ export function WeeklyView() {
                         </div>
                         
                         <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
-                          <span>{task.assignee.name}</span>
+                          <span>{task.assignee ? task.assignee.name : '💰 Bonus - Available to Claim'}</span>
                           <span>•</span>
                           <span>{task.points} pts</span>
                           <span>•</span>
