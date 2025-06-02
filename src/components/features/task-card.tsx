@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { DeclineTaskDialog } from "./decline-task-dialog"
 
-interface Task {
+export interface Task {
   id: string
   title: string
   description?: string
@@ -189,16 +189,16 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
             )}
 
             <div className="flex flex-wrap gap-2 mb-3">
-              {task.tags.map(tag => (
-                <span
-                  key={tag.id}
-                  className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                  style={{ backgroundColor: tag.color }}
-                >
-                  {tag.name}
-                </span>
-              ))}
-            </div>
+              {(task.tags || []).map(tag => (
+                 <span
+                   key={tag.id}
+                   className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                   style={{ backgroundColor: tag.color }}
+                 >
+                   {tag.name}
+                 </span>
+               ))}
+             </div>
           </div>
 
           <div className="text-right ml-4">

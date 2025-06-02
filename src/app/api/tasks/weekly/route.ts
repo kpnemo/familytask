@@ -25,7 +25,8 @@ export async function GET() {
 
     const where: any = {
       familyId: familyMember.familyId,
-      dueDate: { gte: startDate, lte: endDate }
+      dueDate: { gte: startDate, lte: endDate },
+      status: "PENDING"
     }
     if (session.user.role === "CHILD") {
       where.assignedTo = session.user.id

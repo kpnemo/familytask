@@ -67,34 +67,21 @@ export function WeeklyView() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "COMPLETED":
-        return "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700"
-      case "IN_PROGRESS":
-        return "text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700"
-      case "PENDING_VERIFICATION":
-        return "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700"
-      default:
-        return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-    }
-  }
-
-  const handleTaskAction = async (taskId: string, action: string) => {
-    try {
-      const res = await fetch(`/api/tasks/${taskId}/${action}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      })
-      
-      if (res.ok) {
-        // Refresh tasks after action
-        const fetchRes = await fetch("/api/tasks/weekly")
-        const data = await fetchRes.json()
-        if (data.success) setTasks(data.tasks)
-      }
-    } catch (error) {
-      // Silent fail for production
+  const getDateColor = (dueDate: string) => {
+    const today = new Date()
+    const taskDate = new Date(dueDate)
+    today.setHours(0, 0, 0, 0)
+    taskDate.setHours(0, 0, 0, 0)
+    
+    if (taskDate < today) {
+      // Overdue - red
+      return "text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700"
+    } else if (taskDate.getTime() === today.getTime()) {
+      // Today - yellow
+      return "text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700"
+    } else {
+      // Future - white/default
+      return "text-gray-700 dark:text-gray-400 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
     }
   }
 
@@ -135,20 +122,18 @@ export function WeeklyView() {
               
               <div className="space-y-2">
                 {groupedTasks[date].slice(0, 4).map((task: Task) => (
-                  <div 
-                    key={task.id} 
-                    className={`p-3 rounded-lg border hover:shadow-sm transition-all cursor-pointer ${getStatusColor(task.status)}`}
+                  <Link 
+                    key={task.id}
+                    href={`/tasks/${task.id}`}
+                    className={`block p-3 rounded-lg border hover:shadow-sm transition-all cursor-pointer ${getDateColor(task.dueDate)}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
                           {getStatusIcon(task.status)}
-                          <Link 
-                            href={`/tasks/${task.id}`}
-                            className="font-medium text-sm hover:underline truncate"
-                          >
+                          <span className="font-medium text-sm truncate">
                             {task.title}
-                          </Link>
+                          </span>
                         </div>
                         
                         <div className="flex items-center space-x-3 text-xs text-gray-600 dark:text-gray-400">
@@ -156,7 +141,7 @@ export function WeeklyView() {
                           <span>•</span>
                           <span>{task.points} pts</span>
                           <span>•</span>
-                          <span className="capitalize">{task.status.replace('_', ' ').toLowerCase()}</span>
+                          <span>Due: {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         </div>
                         
                         {task.description && (
@@ -165,45 +150,8 @@ export function WeeklyView() {
                           </p>
                         )}
                       </div>
-                      
-                      {/* Quick Actions */}
-                      <div className="flex items-center space-x-1 ml-2">
-                        {task.status === "PENDING" && (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleTaskAction(task.id, "complete")
-                            }}
-                            className="p-1 text-green-600 hover:bg-green-100 rounded transition-colors"
-                            title="Mark Complete"
-                          >
-                            <Icons.check className="h-3 w-3" />
-                          </button>
-                        )}
-                        
-                        {task.status === "PENDING_VERIFICATION" && (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleTaskAction(task.id, "verify")
-                            }}
-                            className="p-1 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                            title="Verify Task"
-                          >
-                            <Icons.eye className="h-3 w-3" />
-                          </button>
-                        )}
-                        
-                        <Link
-                          href={`/tasks/${task.id}/edit`}
-                          className="p-1 text-gray-600 hover:bg-gray-100 rounded transition-colors"
-                          title="Edit Task"
-                        >
-                          <Icons.edit className="h-3 w-3" />
-                        </Link>
-                      </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
                 
                 {groupedTasks[date].length > 4 && (
