@@ -14,7 +14,8 @@ A comprehensive web-based family task management application that engages kids i
 
 ### Task Management
 - Parents create tasks and assign to children
-- Children can create personal tasks
+- **✅ Children can create tasks** with restrictions (zero points, no bonus tasks)
+- **✅ Bonus Tasks system**: Unassigned tasks available for self-assignment by any family member
 - Task properties: title, description, points (default: 1), due date, tags
 - Workflow: Child completes → Parent verifies → Points awarded
 - Support for recurring tasks
@@ -22,6 +23,7 @@ A comprehensive web-based family task management application that engages kids i
 - **✅ Task completion**: Complete, verify, decline functionality
 - **✅ Task deletion**: Parents/admins can delete any task with proper points reversal
 - **✅ Overdue detection**: Visual indicators for past-due tasks
+- **✅ Self-assignment**: "Assign to Me" button for available bonus tasks
 
 ### Points System
 - Points earned for verified task completion
@@ -32,20 +34,22 @@ A comprehensive web-based family task management application that engages kids i
 - Hall of Fame leaderboard for all family children
 
 ### Notifications
-- **✅ Enhanced in-app notifications** (no email)
-- Real-time updates for task assignments, completions, verifications
+- **✅ Enhanced in-app notifications** with mobile-responsive popup positioning
+- **✅ SMS notifications** for task events (when Twilio configured)
+- Real-time updates for task assignments, completions, verifications, bonus task creation
 - **✅ Notification bell with unread count**
 - **✅ Clickable task notifications**: Navigate directly to task details
 - **✅ Individual notification management**: Mark read, delete individual notifications
 - **✅ Bulk actions**: Clear all notifications
+- **✅ Bonus task notifications**: All family members notified when bonus tasks are created
 
 ### Core Pages
-- Dashboard (role-specific views)
-- **✅ Task management** (list, create, details, edit)
+- **✅ Dashboard with dual styles**: Classic and Enhanced dashboards with bonus tasks prominently displayed
+- **✅ Task management** (list, create, details, edit) with bonus task support
 - **✅ Points overview and history with reward shop**
 - Hall of Fame leaderboard
 - **✅ Enhanced family management** with family code display and member management
-- **✅ Settings page** with profile management and family member controls
+- **✅ Settings page** with profile management, family member controls, and SMS settings
 - Basic analytics for parents
 
 ## Technical Stack
@@ -67,6 +71,9 @@ Users {
   password_hash: String
   role: Enum(PARENT, CHILD)
   avatar_url: String?
+  dashboard_style: Enum(STYLE1, STYLE2) (default: STYLE1)
+  phone_number: String?
+  sms_notifications_enabled: Boolean (default: false)
   created_at: DateTime
   updated_at: DateTime
 }
@@ -91,17 +98,18 @@ Tasks {
   id: UUID (PK)
   title: String
   description: String?
-  points: Integer (default: 1)
+  points: Integer (default: 1, minimum: 0)
   due_date: DateTime
-  status: Enum(PENDING, COMPLETED, VERIFIED, OVERDUE)
+  status: Enum(PENDING, AVAILABLE, COMPLETED, VERIFIED, OVERDUE)
   created_by: UUID (FK)
-  assigned_to: UUID (FK)
+  assigned_to: UUID? (FK) - nullable for bonus tasks
   family_id: UUID (FK)
   completed_at: DateTime?
   verified_at: DateTime?
   verified_by: UUID? (FK)
   is_recurring: Boolean (default: false)
   recurrence_pattern: String? (DAILY, WEEKLY, MONTHLY)
+  is_bonus_task: Boolean (default: false)
   created_at: DateTime
   updated_at: DateTime
 }
@@ -135,7 +143,7 @@ Notifications {
   user_id: UUID (FK)
   title: String
   message: String
-  type: Enum(TASK_ASSIGNED, TASK_COMPLETED, TASK_VERIFIED, TASK_DECLINED, POINTS_EARNED, POINTS_DEDUCTED)
+  type: Enum(TASK_ASSIGNED, TASK_COMPLETED, TASK_VERIFIED, TASK_DECLINED, TASK_DELETED, BONUS_TASK_SELF_ASSIGNED, POINTS_EARNED, POINTS_DEDUCTED)
   read: Boolean (default: false)
   related_task_id: UUID? (FK)
   created_at: DateTime
@@ -149,9 +157,9 @@ Notifications {
 /login                   # Login
 /register                # Registration with family code option
 /dashboard               # Role-specific dashboard
-/tasks                   # Task list with filters
-/tasks/new               # Create task
-/tasks/[id]              # ✅ Single task view with actions
+/tasks                   # Task list with filters and bonus task section
+/tasks/new               # Create task (parents) or request task (kids with restrictions)
+/tasks/[id]              # ✅ Single task view with actions including self-assignment
 /tasks/[id]/edit         # Edit task
 /points                  # ✅ Points overview with reward shop
 /settings                # ✅ Profile and family management
@@ -213,10 +221,11 @@ POST /api/tasks
 Body: {
   title: string;
   description?: string;
-  points: number;
+  points: number; // 0+ for kids, 1+ for parents
   dueDate: string;
-  assignedTo: string;
+  assignedTo?: string; // optional for bonus tasks
   tagIds?: string[];
+  isBonusTask?: boolean; // parent-only feature
 }
 
 GET /api/tasks/[id]
@@ -233,6 +242,11 @@ Purpose: Verify completed task (parents only)
 
 POST /api/tasks/[id]/decline
 Purpose: Decline completed task, reset to pending (parents only)
+
+POST /api/tasks/[id]/assign
+Purpose: Self-assign available bonus task (any family member)
+Body: {} // No body required
+Response: { success: boolean; data: { message: string; } }
 
 DELETE /api/tasks/[id]
 Purpose: Delete task with proper cleanup (parents/admins only)
@@ -370,7 +384,8 @@ Body: { currentPassword: string; newPassword: string; }
 
 ### Child
 - Complete assigned tasks
-- Create personal tasks
+- **Create tasks with restrictions** (zero points, no bonus tasks, cannot assign to others)
+- **Self-assign available bonus tasks**
 - View own points and transaction history
 - View family leaderboard
 - Read-only access to family member list
@@ -499,15 +514,18 @@ src/
 ### ✅ Completed Features
 - **User Authentication & Registration**
 - **Family Management with Invite Codes**
-- **Task CRUD Operations**
+- **Task CRUD Operations** with bonus task support
+- **Bonus Tasks System** (unassigned tasks with self-assignment)
+- **Kids Can Create Tasks** (with zero points restriction)
 - **Task Workflow** (Create → Assign → Complete → Verify)
 - **Points System with History Tracking**
 - **Reward Shop** for point deductions
-- **Enhanced Notifications** with clickable tasks
-- **Single Task View** with role-based actions
+- **Enhanced Notifications** with SMS support and mobile-responsive popup
+- **Single Task View** with role-based actions and self-assignment
 - **Family Member Management**
 - **Role-Based UI** (different views for parents/kids)
-- **Settings Page** with profile management
+- **Settings Page** with profile management and SMS settings
+- **Dual Dashboard Styles** (Classic and Enhanced with bonus tasks at top)
 - **Responsive Design** with proper navigation
 
 ### 🔄 In Progress / Future Enhancements

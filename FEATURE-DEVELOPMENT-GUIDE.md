@@ -86,6 +86,50 @@ git push origin main
 ```
 
 ### 8. Deploy to Production
+
+⚠️ **CRITICAL: Database Schema Changes**
+
+**If your changes include database schema modifications (Prisma schema changes):**
+
+1. **ALWAYS backup production data first:**
+```bash
+# Switch to production database
+./scripts/switch-to-prod.sh
+
+# Create backup of current production data
+npx prisma studio  # Verify current data exists
+# OR use Neon Console to create manual backup
+
+# Document what data exists before migration
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+async function backup() {
+  const users = await prisma.user.count();
+  const tasks = await prisma.task.count();
+  const families = await prisma.family.count();
+  console.log(\`📊 Pre-migration data: \${users} users, \${tasks} tasks, \${families} families\`);
+  console.log(\`⏰ Backup taken at: \${new Date().toISOString()}\`);
+  await prisma.\$disconnect();
+}
+backup();"
+```
+
+2. **Apply migration safely:**
+```bash
+# Apply schema changes (do NOT use migrate reset or drop database)
+npx prisma db push --accept-data-loss
+
+# Verify data is still intact after migration
+node -e "/* same script as above to verify data */"
+```
+
+3. **If data is lost - restore from backup:**
+   - Use Neon Console Point-in-time Recovery
+   - Restore to time before migration
+   - Re-apply schema migration correctly
+
+**For regular deployments (no schema changes):**
 ```bash
 # Automated deployment with version bump
 npm run deploy
@@ -102,6 +146,7 @@ npm run deploy
 - Must be on `main` branch
 - Working directory must be clean (no uncommitted changes)
 - Must have latest changes pulled from remote
+- **Production data backed up if schema changes**
 
 **Manual verification:**
 ```bash
