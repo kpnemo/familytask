@@ -31,7 +31,11 @@ interface CreateTaskFormProps {
 export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole }: CreateTaskFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([{
+    id: currentUserId,
+    name: currentUserName,
+    role: currentUserRole
+  }])
   const [tags, setTags] = useState<Tag[]>([])
   const router = useRouter()
 
@@ -50,23 +54,26 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     }
   })
 
+  const assignedTo = watch("assignedTo")
+
   const isRecurring = watch("isRecurring")
 
   useEffect(() => {
     const fetchData = async () => {
+      // Immediately set current user as fallback to ensure UI shows something
+      const currentUserFallback = [{
+        id: currentUserId,
+        name: currentUserName,
+        role: currentUserRole
+      }]
+
       try {
         // Fetch family members
         const membersResponse = await fetch("/api/families/members")
         
         if (!membersResponse.ok) {
           console.error("Failed to fetch family members:", membersResponse.status, membersResponse.statusText)
-          // Fallback: add current user to the list
-          setFamilyMembers([{
-            id: currentUserId,
-            name: currentUserName,
-            role: currentUserRole
-          }])
-          setValue("assignedTo", currentUserId)
+          setFamilyMembers(currentUserFallback)
           return
         }
         
@@ -83,16 +90,8 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
           setFamilyMembers(members)
         } else {
           console.error("Family members API failed:", membersResult)
-          // Fallback: add current user to the list
-          setFamilyMembers([{
-            id: currentUserId,
-            name: currentUserName,
-            role: currentUserRole
-          }])
+          setFamilyMembers(currentUserFallback)
         }
-        
-        // Always set current user as default assignee
-        setValue("assignedTo", currentUserId)
 
         // Fetch tags
         const tagsResponse = await fetch("/api/tags")
@@ -104,18 +103,12 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
         }
       } catch (error) {
         console.error("Error fetching data:", error)
-        // Fallback: add current user to the list
-        setFamilyMembers([{
-          id: currentUserId,
-          name: currentUserName,
-          role: currentUserRole
-        }])
-        setValue("assignedTo", currentUserId)
+        setFamilyMembers(currentUserFallback)
       }
     }
 
     fetchData()
-  }, [currentUserId, currentUserName, currentUserRole, setValue])
+  }, [currentUserId, currentUserName, currentUserRole])
 
   const onSubmit = async (data: CreateTaskInput) => {
     setIsLoading(true)
@@ -229,9 +222,10 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
             <select
               id="assignedTo"
               {...register("assignedTo")}
+              value={assignedTo || ""}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select a family member</option>
+              {!assignedTo && <option value="">Select a family member</option>}
               {familyMembers.map(member => (
                 <option key={member.id} value={member.id}>
                   {member.name} ({member.role})
