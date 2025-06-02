@@ -87,8 +87,26 @@ git push origin main
 
 ### 8. Deploy to Production
 ```bash
-# Deploy to Vercel production
-vercel --prod
+# Automated deployment with version bump
+npm run deploy
+```
+
+**The deployment script automatically:**
+- ✅ Increments the patch version (e.g., 1.0.0 → 1.0.1)
+- ✅ Commits the version bump
+- ✅ Pushes to main branch (triggers Vercel deployment)
+- ✅ Verifies the new version is deployed
+- ✅ Reports deployment success with live URL
+
+**Prerequisites:**
+- Must be on `main` branch
+- Working directory must be clean (no uncommitted changes)
+- Must have latest changes pulled from remote
+
+**Manual verification:**
+```bash
+# Check deployed version
+curl -s https://family-tasks-beta.vercel.app/api/health | jq .version
 ```
 
 ## 📋 Commit Message Guidelines

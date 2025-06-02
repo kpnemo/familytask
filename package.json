@@ -19,7 +19,8 @@
     "test:clean": "node scripts/setup-test-db.js clean",
     "migrate:apply": "node scripts/apply-migration.js",
     "db:push": "npx prisma db push",
-    "db:migrate": "npx prisma migrate deploy"
+    "db:migrate": "npx prisma migrate deploy",
+    "deploy": "node scripts/deploy.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
