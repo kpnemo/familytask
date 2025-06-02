@@ -22,11 +22,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { phoneNumber } = testSmsSchema.parse(body)
 
-    // Debug logging
-    console.log('Test SMS Request - Phone Number:', phoneNumber)
-    console.log('Test SMS Request - Phone Number Length:', phoneNumber.length)
-    console.log('Test SMS Request - Phone Number Type:', typeof phoneNumber)
-
     // Send test SMS
     const result = await sendSMS(
       phoneNumber,
