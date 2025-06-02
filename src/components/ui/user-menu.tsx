@@ -127,6 +127,24 @@ export function UserMenu({ user }: UserMenuProps) {
               <span>Points & Rewards</span>
             </Link>
 
+            <Link
+              href="/tasks/new"
+              className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <Icons.plus className="h-4 w-4" />
+              <span>New Task</span>
+            </Link>
+
+            <Link
+              href="/tasks"
+              className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <Icons.tasks className="h-4 w-4" />
+              <span>Tasks</span>
+            </Link>
+
             <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
               <Link
                 href="/api/auth/signout"
