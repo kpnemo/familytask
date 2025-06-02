@@ -63,7 +63,7 @@ export function formatSMSMessage(type: string, data: any): string {
   switch (type) {
     case 'TASK_ASSIGNED':
       if (data.isBonus) {
-        return `New Bonus task added - ${data.title} - ${data.points} Points`
+        return `🚨🔥 Urgent! New Bonus task available - ${data.title} - ${data.points} Points. Open app: https://family-tasks-beta.vercel.app/dashboard`
       }
       return `New task: ${data.title} - Due: ${formatDate(data.dueDate)}`
     
