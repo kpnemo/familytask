@@ -51,6 +51,8 @@ server.log
 .env.backup
 .env.vercel
 .env.rollback
+migrations_backup/
+.env.production
 
 # vercel
 .vercel
