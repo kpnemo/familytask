@@ -110,24 +110,6 @@ export function UserMenu({ user }: UserMenuProps) {
           {/* Menu Items */}
           <div className="py-2">
             <Link
-              href="/settings"
-              className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Icons.settings className="h-4 w-4" />
-              <span>Settings</span>
-            </Link>
-            
-            <Link
-              href="/points"
-              className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Icons.points className="h-4 w-4" />
-              <span>Points & Rewards</span>
-            </Link>
-
-            <Link
               href="/tasks/new"
               className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               onClick={() => setIsOpen(false)}
@@ -143,6 +125,24 @@ export function UserMenu({ user }: UserMenuProps) {
             >
               <Icons.tasks className="h-4 w-4" />
               <span>Tasks</span>
+            </Link>
+
+            <Link
+              href="/settings"
+              className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <Icons.settings className="h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+            
+            <Link
+              href="/points"
+              className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <Icons.points className="h-4 w-4" />
+              <span>Points & Rewards</span>
             </Link>
 
             <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
