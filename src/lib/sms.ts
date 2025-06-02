@@ -24,6 +24,12 @@ export async function sendSMS(to: string, message: string): Promise<SMSResult> {
     }
   }
 
+  // Debug logging
+  console.log('SMS Service - To:', to)
+  console.log('SMS Service - To Length:', to.length)
+  console.log('SMS Service - From:', fromNumber)
+  console.log('SMS Service - Message:', message)
+
   try {
     const result = await client.messages.create({
       body: message,
