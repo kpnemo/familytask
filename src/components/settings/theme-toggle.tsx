@@ -6,6 +6,8 @@ import { useTheme } from "@/components/theme-provider"
 
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
+  // Always call hooks at the top level
+  const { theme, setTheme } = useTheme()
 
   useEffect(() => {
     setMounted(true)
@@ -25,9 +27,6 @@ export function ThemeToggle() {
       </div>
     )
   }
-
-  // Only call useTheme after component is mounted
-  const { theme, setTheme } = useTheme()
 
   return (
     <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
