@@ -2,16 +2,37 @@
 
 import { useEffect, useState } from "react"
 import { Icons } from "@/components/ui/icons"
-import { useTheme } from "@/components/theme-provider"
 
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
-  // Always call hooks at the top level
-  const { theme, setTheme } = useTheme()
+  const [theme, setTheme] = useState<"light" | "dark">("light")
 
   useEffect(() => {
     setMounted(true)
+    // Get theme from localStorage or system preference
+    const savedTheme = localStorage.getItem("theme")
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    const initialTheme = savedTheme || systemTheme
+    setTheme(initialTheme as "light" | "dark")
+    
+    // Apply theme to document
+    if (initialTheme === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
   }, [])
+
+  const handleThemeChange = (newTheme: "light" | "dark") => {
+    setTheme(newTheme)
+    localStorage.setItem("theme", newTheme)
+    
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }
 
   if (!mounted) {
     return (
@@ -31,7 +52,7 @@ export function ThemeToggle() {
   return (
     <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
       <button
-        onClick={() => setTheme("light")}
+        onClick={() => handleThemeChange("light")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-all duration-200 ${
           theme === "light"
             ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
@@ -43,7 +64,7 @@ export function ThemeToggle() {
         <span className="text-sm font-medium">Light</span>
       </button>
       <button
-        onClick={() => setTheme("dark")}
+        onClick={() => handleThemeChange("dark")}
         className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-all duration-200 ${
           theme === "dark"
             ? "bg-gray-900 dark:bg-gray-600 text-white shadow-sm"
