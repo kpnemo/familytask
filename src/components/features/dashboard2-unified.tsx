@@ -29,6 +29,8 @@ export default function Dashboard2Unified({ user }: Props) {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       
+      console.log("Enhanced Dashboard Debug - Fetching tasks for user:", user.id, "role:", user.role)
+      
       const [pendingRes, completedRes, verifiedRes, bonusRes] = await Promise.all([
         fetch("/api/tasks?status=PENDING"),
         fetch("/api/tasks?status=COMPLETED"),
@@ -40,6 +42,12 @@ export default function Dashboard2Unified({ user }: Props) {
       const verifiedData = await verifiedRes.json()
       const bonusData = await bonusRes.json()
       
+      console.log("Enhanced Dashboard Debug - Raw API responses:")
+      console.log("- Pending tasks:", pendingData.success ? pendingData.data.length : 0, pendingData.success ? pendingData.data : "Failed")
+      console.log("- Completed tasks:", completedData.success ? completedData.data.length : 0) 
+      console.log("- Verified tasks:", verifiedData.success ? verifiedData.data.length : 0)
+      console.log("- Bonus tasks:", bonusData.success ? bonusData.data.length : 0)
+      
       if (pendingData.success) setPendingTasks(pendingData.data)
       
       if (completedData.success) {
@@ -48,6 +56,7 @@ export default function Dashboard2Unified({ user }: Props) {
           const taskDate = new Date(task.updatedAt || task.createdAt)
           return taskDate >= thirtyDaysAgo
         })
+        console.log("Enhanced Dashboard Debug - Completed tasks after 30-day filter:", recentCompleted.length)
         setCompletedTasks(recentCompleted)
       }
       
@@ -57,6 +66,7 @@ export default function Dashboard2Unified({ user }: Props) {
           const taskDate = new Date(task.updatedAt || task.createdAt)
           return taskDate >= thirtyDaysAgo
         })
+        console.log("Enhanced Dashboard Debug - Verified tasks after 30-day filter:", recentVerified.length)
         setVerifiedTasks(recentVerified)
       }
       
@@ -127,6 +137,15 @@ export default function Dashboard2Unified({ user }: Props) {
   const upcomingTasks = todayTasks.length > 0
     ? [...overdueTasks, ...todayTasks]
     : futureTasks.slice(0, 5)
+    
+  console.log("Enhanced Dashboard Debug - Task breakdown:")
+  console.log("- Filtered pending tasks:", filteredPendingTasks.length)
+  console.log("- Overdue tasks:", overdueTasks.length)
+  console.log("- Today tasks:", todayTasks.length)
+  console.log("- Future tasks:", futureTasks.length)
+  console.log("- Upcoming tasks (Next Up):", upcomingTasks.length)
+  console.log("- Show my tasks only:", showMyTasksOnly)
+  console.log("- All tasks are mine:", allTasksAreMine)
 
   
   // Calculate total tasks for "All" filter
