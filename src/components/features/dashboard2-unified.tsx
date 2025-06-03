@@ -111,21 +111,6 @@ export default function Dashboard2Unified({ user }: Props) {
     const allTasks = [...pendingTasks, ...completedTasks, ...verifiedTasks]
     const allTasksAreMine = allTasks.every(task => task.assignedTo === user.id || task.assignee?.id === user.id)
     
-    // Debug for parents
-    if (user.role === "PARENT") {
-      console.log("PARENT DEBUG - Total tasks:", allTasks.length)
-      console.log("PARENT DEBUG - User ID:", user.id)
-      console.log("PARENT DEBUG - All tasks are mine:", allTasksAreMine)
-      console.log("PARENT DEBUG - Show my tasks only:", showMyTasksOnly)
-      console.log("PARENT DEBUG - Sample task assignments:", allTasks.slice(0, 3).map(t => ({
-        id: t.id, 
-        title: t.title, 
-        assignedTo: t.assignedTo, 
-        assigneeId: t.assignee?.id,
-        createdBy: t.createdBy || t.creator?.id
-      })))
-    }
-    
     const shouldShowOnlyMineButton = !allTasksAreMine && (pendingTasks.length > 0 || completedTasks.length > 0 || verifiedTasks.length > 0)
 
     const now = new Date()
@@ -145,29 +130,9 @@ export default function Dashboard2Unified({ user }: Props) {
       .filter(t => new Date(t.dueDate) >= tomorrowStart)
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     
-    // Determine upcoming display: if any today, show overdue + today; else first 5 future
-    const upcomingTasks = todayTasks.length > 0
-      ? [...overdueTasks, ...todayTasks]
-      : futureTasks.slice(0, 5)
-      
-    // Debug date filtering for parents
-    if (user.role === "PARENT") {
-      console.log("PARENT DEBUG - Date filtering:")
-      console.log("- Today start:", todayStart.toISOString())
-      console.log("- Tomorrow start:", tomorrowStart.toISOString())
-      console.log("- Filtered pending tasks:", filteredPendingTasks.length)
-      console.log("- Overdue tasks:", overdueTasks.length)
-      console.log("- Today tasks:", todayTasks.length)
-      console.log("- Future tasks:", futureTasks.length)
-      console.log("- Upcoming tasks (final):", upcomingTasks.length)
-      if (filteredPendingTasks.length > 0) {
-        console.log("- Sample pending task dates:", filteredPendingTasks.slice(0, 3).map(t => ({
-          title: t.title,
-          dueDate: t.dueDate,
-          dueDateObj: new Date(t.dueDate).toISOString()
-        })))
-      }
-    }
+    // For Enhanced dashboard, show all pending tasks in "Next Up" section
+    // Combine overdue, today, and future tasks in chronological order
+    const upcomingTasks = [...overdueTasks, ...todayTasks, ...futureTasks]
       
     const totalTasks = filteredPendingTasks.length + filteredCompletedTasks.length + filteredVerifiedTasks.length + bonusTasks.length
 
@@ -202,7 +167,6 @@ export default function Dashboard2Unified({ user }: Props) {
   // Reset "Only Mine" toggle when button should be hidden (all tasks are mine)
   useEffect(() => {
     if (!shouldShowOnlyMineButton && showMyTasksOnly) {
-      console.log("PARENT DEBUG - Resetting showMyTasksOnly from true to false")
       setShowMyTasksOnly(false)
     }
   }, [shouldShowOnlyMineButton, showMyTasksOnly])
