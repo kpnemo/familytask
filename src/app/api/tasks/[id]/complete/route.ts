@@ -53,6 +53,29 @@ export async function POST(
       )
     }
 
+    // Check due date constraint for dueDateOnly tasks
+    if (task.dueDateOnly) {
+      const today = new Date()
+      const dueDate = new Date(task.dueDate)
+      
+      // Set both dates to start of day for comparison (ignore time)
+      today.setHours(0, 0, 0, 0)
+      dueDate.setHours(0, 0, 0, 0)
+      
+      if (today.getTime() !== dueDate.getTime()) {
+        const dueDateStr = dueDate.toLocaleDateString()
+        return NextResponse.json(
+          { 
+            error: { 
+              code: "DUE_DATE_CONSTRAINT", 
+              message: `This task can only be completed on its due date: ${dueDateStr}` 
+            } 
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // Only auto-verify if the parent is completing their own task
     // If a parent completes a task assigned to someone else, it should still follow normal workflow
     const isParentCompletingOwnTask = session.user.role === "PARENT" && task.assignedTo === session.user.id

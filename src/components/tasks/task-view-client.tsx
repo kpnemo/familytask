@@ -37,6 +37,7 @@ interface Task {
   verifier?: User
   tags: Tag[]
   isBonusTask?: boolean
+  dueDateOnly?: boolean
 }
 
 interface TaskViewClientProps {
@@ -227,6 +228,15 @@ export function TaskViewClient({
   }
 
   const isOverdue = new Date(task.dueDate) < new Date() && currentStatus === "PENDING"
+  
+  // Check if due date only task can be completed today
+  const canCompleteToday = !task.dueDateOnly || (() => {
+    const today = new Date()
+    const dueDate = new Date(task.dueDate)
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    return today.getTime() === dueDate.getTime()
+  })()
 
   return (
     <div className="space-y-6">
@@ -264,9 +274,17 @@ export function TaskViewClient({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Due Date:</span>
-                  <span className={`font-medium ${isOverdue ? "text-red-600" : ""}`}>
-                    {formatDateTime(new Date(task.dueDate))}
-                  </span>
+                  <div className="text-right">
+                    <span className={`font-medium ${isOverdue ? "text-red-600" : ""}`}>
+                      {formatDateTime(new Date(task.dueDate))}
+                    </span>
+                    {task.dueDateOnly && (
+                      <div className="text-xs text-amber-600 flex items-center justify-end gap-1 mt-1">
+                        <span>⏰</span>
+                        <span>Due date only</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Created:</span>
@@ -367,23 +385,31 @@ export function TaskViewClient({
 
             {/* Complete Task - for assignee when pending */}
             {isAssignee && currentStatus === "PENDING" && (
-              <Button
-                onClick={handleCompleteTask}
-                disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isLoading ? (
-                  <>
-                    <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
-                    Completing...
-                  </>
-                ) : (
-                  <>
-                    <Icons.check className="w-4 h-4 mr-2" />
-                    Complete Task
-                  </>
+              <div className="space-y-2">
+                <Button
+                  onClick={handleCompleteTask}
+                  disabled={isLoading || !canCompleteToday}
+                  className={`${canCompleteToday ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
+                      Completing...
+                    </>
+                  ) : (
+                    <>
+                      <Icons.check className="w-4 h-4 mr-2" />
+                      Complete Task
+                    </>
+                  )}
+                </Button>
+                {task.dueDateOnly && !canCompleteToday && (
+                  <p className="text-sm text-amber-600 flex items-center gap-1">
+                    <span>⏰</span>
+                    <span>This task can only be completed on {new Date(task.dueDate).toLocaleDateString()}</span>
+                  </p>
                 )}
-              </Button>
+              </div>
             )}
 
             {/* Verify Task - for parents when completed */}

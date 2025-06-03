@@ -51,6 +51,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
       points: currentUserRole === "CHILD" ? 0 : 1,
       isRecurring: false,
       isBonusTask: false,
+      dueDateOnly: false,
       assignedTo: currentUserId
     }
   })
@@ -58,6 +59,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
   const assignedTo = watch("assignedTo")
   const isBonusTask = watch("isBonusTask")
   const isRecurring = watch("isRecurring")
+  const dueDateOnly = watch("dueDateOnly")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -300,6 +302,26 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
               </div>
             </div>
           )}
+
+          {/* Due Date Only Constraint */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="dueDateOnly"
+                {...register("dueDateOnly")}
+                className="text-blue-600"
+              />
+              <Label htmlFor="dueDateOnly">⏰ On Due Date Only</Label>
+            </div>
+            {dueDateOnly && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-700">
+                  ⏰ <strong>Due Date Only:</strong> This task can only be completed on its specific due date. Perfect for daily routines like "do the dishes" that shouldn't be done early.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Recurring Task */}
           <div className="space-y-3">

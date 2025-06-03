@@ -179,6 +179,7 @@ export async function POST(req: NextRequest) {
           isRecurring: validatedData.isRecurring || false,
           recurrencePattern: validatedData.recurrencePattern,
           isBonusTask: validatedData.isBonusTask || false,
+          dueDateOnly: validatedData.dueDateOnly || false,
           status: validatedData.isBonusTask ? "AVAILABLE" : "PENDING"
         }
       })

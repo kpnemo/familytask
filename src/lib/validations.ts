@@ -43,6 +43,7 @@ export const createTaskSchema = z.object({
   isRecurring: z.boolean().optional(),
   recurrencePattern: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
   isBonusTask: z.boolean().optional(),
+  dueDateOnly: z.boolean().optional(),
 }).refine((data) => {
   // For bonus tasks, assignedTo should be null
   if (data.isBonusTask) {
@@ -61,6 +62,7 @@ export const updateTaskSchema = z.object({
   points: z.number().int().min(0, "Points must be at least 0").max(100, "Points cannot exceed 100").optional(),
   dueDate: z.string().min(1, "Due date is required").optional(),
   tagIds: z.array(z.string().cuid()).optional(),
+  dueDateOnly: z.boolean().optional(),
 })
 
 export const declineTaskSchema = z.object({

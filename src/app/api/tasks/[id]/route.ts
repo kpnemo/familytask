@@ -127,6 +127,7 @@ export async function PUT(
           ...(validatedData.description !== undefined && { description: validatedData.description }),
           ...(validatedData.points && { points: validatedData.points }),
           ...(validatedData.dueDate && { dueDate: new Date(validatedData.dueDate + "T23:59:59.999Z") }),
+          ...(validatedData.dueDateOnly !== undefined && { dueDateOnly: validatedData.dueDateOnly }),
         }
       })
 

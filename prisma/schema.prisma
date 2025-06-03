@@ -84,6 +84,7 @@ model Task {
   isRecurring       Boolean           @default(false) @map("is_recurring")
   recurrencePattern String?           @map("recurrence_pattern")
   isBonusTask       Boolean           @default(false) @map("is_bonus_task")
+  dueDateOnly       Boolean           @default(false) @map("due_date_only")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 

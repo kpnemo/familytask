@@ -17,6 +17,7 @@ interface TaskData {
   points: number
   dueDate: string
   assignedTo: string
+  dueDateOnly?: boolean
   tags: Array<{ tag: { id: string; name: string; color: string } }>
 }
 
@@ -47,6 +48,7 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors }
   } = useForm<UpdateTaskInput>({
     resolver: zodResolver(updateTaskSchema),
@@ -55,9 +57,12 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
       description: task.description || "",
       points: task.points,
       dueDate: new Date(task.dueDate).toISOString().slice(0, 10),
+      dueDateOnly: task.dueDateOnly || false,
       tagIds: task.tags.map(t => t.tag.id)
     }
   })
+
+  const dueDateOnly = watch("dueDateOnly")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -223,6 +228,26 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
             <p className="text-xs text-gray-500">
               Note: Assignment cannot be changed after task creation
             </p>
+          </div>
+
+          {/* Due Date Only Constraint */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="dueDateOnly"
+                {...register("dueDateOnly")}
+                className="text-blue-600"
+              />
+              <Label htmlFor="dueDateOnly">⏰ On Due Date Only</Label>
+            </div>
+            {dueDateOnly && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-700">
+                  ⏰ <strong>Due Date Only:</strong> This task can only be completed on its specific due date. Perfect for daily routines like "do the dishes" that shouldn't be done early.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Tags */}
