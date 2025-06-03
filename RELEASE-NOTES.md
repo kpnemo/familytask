@@ -1,5 +1,25 @@
 # FamilyTasks Release Notes
 
+## [1.0.14] - 2025-06-03
+
+### ✨ New Features
+- unify Enhanced dashboard and improve completed task display
+- make dashboard styles available to all users
+- add Kids Style dashboard and release notes system
+- add 'Due Date Only' constraint for tasks
+- onboarding notifications for new admin parents
+
+### 🔧 Improvements
+- chore: bump version to 1.0.13 and update release notes
+
+### 🐛 Bug Fixes
+- resolve timezone and due date only task completion issues
+- improve recurring tasks and UI issues
+
+### 🔄 Other Changes
+- CLAUDE.md added
+
+
 ## [1.0.14] - 2025-06-04
 
 ### 🐛 Bug Fixes
