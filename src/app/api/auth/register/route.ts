@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { registerSchema } from "@/lib/validations"
 import { generateFamilyCode } from "@/lib/utils"
+import { createNotificationWithSMS } from "@/lib/notification-helpers"
 
 export async function POST(req: NextRequest) {
   try {
@@ -89,12 +90,27 @@ export async function POST(req: NextRequest) {
         data: {
           userId: user.id,
           familyId: family!.id,
-          role: familyRole as any
+          role: familyRole as "ADMIN_PARENT" | "PARENT" | "CHILD"
         }
       })
 
       return { user, membership }
     })
+
+    // Create onboarding notification for new admin parents
+    if (familyRole === "ADMIN_PARENT") {
+      try {
+        await createNotificationWithSMS({
+          userId: result.user.id,
+          title: "🎉 Welcome to FamilyTasks!",
+          message: `Hi ${result.user.name}! Your family "${family!.name}" is ready. Visit Settings to get your family code and invite family members to join.`,
+          type: "FAMILY_SETUP_GUIDE"
+        })
+      } catch (error) {
+        console.error("Failed to create onboarding notification:", error)
+        // Don't fail registration if notification creation fails
+      }
+    }
 
     const { passwordHash: _, ...userWithoutPassword } = result.user
 

@@ -42,7 +42,7 @@ export async function createNotificationWithSMS(data: CreateNotificationData, sm
           name: true,
         },
       });
-    } catch (error) {
+    } catch {
       // SMS columns don't exist yet, get basic user info
       user = await db.user.findUnique({
         where: { id: data.userId },

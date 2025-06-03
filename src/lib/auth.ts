@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import { db } from "./db"
+import { createNotificationWithSMS } from "./notification-helpers"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -40,6 +41,31 @@ export const authOptions: NextAuthOptions = {
 
         if (!isPasswordValid) {
           return null
+        }
+
+        // Check if this is the first login for an admin parent
+        const isFirstLogin = !user.lastLoginAt
+        const isAdminParent = user.familyMemberships[0]?.role === "ADMIN_PARENT"
+
+        // Update last login time
+        await db.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() }
+        })
+
+        // Create onboarding notification for first login of admin parent
+        if (isFirstLogin && isAdminParent) {
+          try {
+            await createNotificationWithSMS({
+              userId: user.id,
+              title: "👋 Ready to invite your family?",
+              message: "Visit Settings to find your family code and invite family members. They'll need this code to join your family and start earning points!",
+              type: "FAMILY_SETUP_GUIDE"
+            })
+          } catch (error) {
+            console.error("Failed to create first login notification:", error)
+            // Don't fail login if notification creation fails
+          }
         }
 
         return {

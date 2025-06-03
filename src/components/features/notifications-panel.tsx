@@ -90,6 +90,14 @@ export function NotificationsPanel() {
     router.push(`/tasks/${taskId}`)
   }
 
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.type === "FAMILY_SETUP_GUIDE") {
+      router.push("/settings")
+    } else if (notification.relatedTask) {
+      router.push(`/tasks/${notification.relatedTask.id}`)
+    }
+  }
+
   const deleteNotification = async (notificationId: string) => {
     setActionLoading(notificationId)
     try {
@@ -220,9 +228,10 @@ export function NotificationsPanel() {
         {notifications.map((notification) => (
           <div 
             key={notification.id}
-            className={`bg-white rounded p-3 border-l-4 relative ${
+            className={`bg-white rounded p-3 border-l-4 relative cursor-pointer hover:bg-gray-50 transition-colors ${
               notification.read ? 'border-l-gray-300' : 'border-l-yellow-500'
-            }`}
+            } ${notification.type === 'FAMILY_SETUP_GUIDE' ? 'border-l-blue-500' : ''}`}
+            onClick={() => handleNotificationClick(notification)}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1 pr-8">
@@ -231,9 +240,17 @@ export function NotificationsPanel() {
                 <p className="text-xs text-gray-500 mt-1">
                   {formatDateTime(new Date(notification.createdAt))}
                 </p>
+                {notification.type === "FAMILY_SETUP_GUIDE" && (
+                  <p className="text-xs text-blue-600 mt-1 font-medium">
+                    🔧 Click to go to Settings
+                  </p>
+                )}
                 {notification.relatedTask && (
                   <button
-                    onClick={() => handleTaskClick(notification.relatedTask!.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleTaskClick(notification.relatedTask!.id)
+                    }}
                     className="inline-block text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 cursor-pointer"
                     title="Click to view task"
                   >
@@ -245,7 +262,10 @@ export function NotificationsPanel() {
                 <div className="flex gap-2 mt-2">
                   {!notification.read && (
                     <button
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        markAsRead(notification.id)
+                      }}
                       disabled={actionLoading === notification.id}
                       className="text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50"
                     >
@@ -257,7 +277,10 @@ export function NotificationsPanel() {
               
               {/* X Delete Button */}
               <button
-                onClick={() => deleteNotification(notification.id)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  deleteNotification(notification.id)
+                }}
                 disabled={actionLoading === notification.id}
                 className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
                 title="Delete notification"

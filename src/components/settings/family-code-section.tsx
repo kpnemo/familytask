@@ -69,7 +69,7 @@ export function FamilyCodeSection({ familyName, familyCode, userRole }: FamilyCo
       <div>
         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Family Invitation Code</label>
         <div className="mt-1 flex items-center space-x-3">
-          <div className="flex-1 font-mono text-lg bg-gray-50 dark:bg-gray-800 border dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100">
+          <div className="flex-1 font-mono text-lg bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 shadow-sm">
             {familyCode}
           </div>
           <Button
@@ -96,9 +96,14 @@ export function FamilyCodeSection({ familyName, familyCode, userRole }: FamilyCo
             )}
           </Button>
         </div>
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          Share this code with family members so they can join your family.
-        </p>
+        <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-600 rounded-lg">
+          <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+            💡 Share this code with family members so they can join your family!
+          </p>
+          <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+            Family members will enter this code during registration to join your family and start earning points.
+          </p>
+        </div>
       </div>
 
       {canManageFamily && (

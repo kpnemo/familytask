@@ -44,7 +44,7 @@ export async function sendSMS(to: string, message: string): Promise<SMSResult> {
       success: true,
       messageId: result.sid
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('SMS sending failed:', {
       message: error.message,
       status: error.status,
@@ -59,7 +59,7 @@ export async function sendSMS(to: string, message: string): Promise<SMSResult> {
   }
 }
 
-export function formatSMSMessage(type: string, data: any): string {
+export function formatSMSMessage(type: string, data: Record<string, unknown>): string {
   switch (type) {
     case 'TASK_ASSIGNED':
       if (data.isBonus) {
@@ -84,6 +84,9 @@ export function formatSMSMessage(type: string, data: any): string {
     
     case 'POINTS_DEDUCTED':
       return `${data.points} points deducted: ${data.reason}`
+    
+    case 'FAMILY_SETUP_GUIDE':
+      return `Welcome to FamilyTasks! Visit Settings to get your family code and invite family members: https://family-tasks-beta.vercel.app/settings`
     
     default:
       return `Notification: ${data.title || 'Update from FamilyTasks'}`
