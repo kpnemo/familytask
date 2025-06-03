@@ -6,6 +6,8 @@ import { TaskCard } from "./task-card"
 import { TaskFilters } from "./task-filters"
 import { BonusTaskCard } from "./bonus-task-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Icons } from "@/components/ui/icons"
+import { cn } from "@/lib/utils"
 
 interface Task {
   id: string
@@ -20,6 +22,8 @@ interface Task {
   tags: Array<{ id: string; name: string; color: string }>
   completedAt?: string
   verifiedAt?: string
+  updatedAt?: string
+  createdAt?: string
   isBonusTask?: boolean
 }
 
@@ -32,6 +36,7 @@ export function TaskList() {
     assignedTo: "",
     createdBy: ""
   })
+  const [showMoreVerified, setShowMoreVerified] = useState(false)
 
   const fetchTasks = async () => {
     try {
@@ -75,7 +80,17 @@ export function TaskList() {
   const bonusTasks = tasks.filter(task => task.isBonusTask && task.status === "AVAILABLE")
   const pendingTasks = tasks.filter(task => task.status === "PENDING") // Include ALL pending tasks (regular + assigned bonus)
   const completedTasks = tasks.filter(task => task.status === "COMPLETED")
-  const verifiedTasks = tasks.filter(task => task.status === "VERIFIED")
+  
+  // Filter verified tasks to last 30 days only
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const verifiedTasks = tasks.filter(task => {
+    if (task.status !== "VERIFIED") return false
+    // Use verifiedAt or updatedAt or createdAt for filtering
+    const taskDate = new Date(task.verifiedAt || task.updatedAt || task.createdAt)
+    return taskDate >= thirtyDaysAgo
+  })
+  
   const overdueTasks = tasks.filter(task => {
     const isOverdue = new Date(task.dueDate) < new Date() && task.status === "PENDING"
     return isOverdue
@@ -216,18 +231,32 @@ export function TaskList() {
 
       {verifiedTasks.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-green-700 mb-3">
-            🎉 Verified Tasks ({verifiedTasks.length})
-          </h2>
-          <div className="grid gap-4">
-            {verifiedTasks.map(task => (
-              <TaskCard 
-                key={task.id} 
-                task={task} 
-                onUpdate={handleTaskUpdate}
-              />
-            ))}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-green-700">
+              🎉 Verified Tasks ({verifiedTasks.length})
+            </h2>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Last 30 days</span>
           </div>
+          <div className="grid gap-4">
+            {verifiedTasks
+              .slice(0, showMoreVerified ? verifiedTasks.length : 10)
+              .map(task => (
+                <TaskCard 
+                  key={task.id} 
+                  task={task} 
+                  onUpdate={handleTaskUpdate}
+                />
+              ))}
+          </div>
+          {verifiedTasks.length > 10 && (
+            <button
+              onClick={() => setShowMoreVerified(!showMoreVerified)}
+              className="mt-3 inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              <span>{showMoreVerified ? `Show Less` : `Show More (${verifiedTasks.length - 10} more)`}</span>
+              <Icons.chevronRight className={cn("h-3 w-3 transition-transform", showMoreVerified && "rotate-90")} />
+            </button>
+          )}
         </div>
       )}
 

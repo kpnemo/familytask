@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/ui/icons"
-import { formatDateTime } from "@/lib/utils"
+import { formatDateTime, formatDate } from "@/lib/utils"
 
 interface User {
   id: string
@@ -238,14 +238,15 @@ export function TaskViewClient({
 
   const isOverdue = new Date(task.dueDate) < new Date() && currentStatus === "PENDING"
   
-  // Check if due date only task can be completed today
+  // Check if due date only task can be completed (on or after due date)
   const canCompleteToday = !task.dueDateOnly || (() => {
     const today = new Date()
     const dueDate = new Date(task.dueDate)
-    // Use local date strings for comparison to avoid timezone issues
-    const todayStr = today.toLocaleDateString()
-    const dueDateStr = dueDate.toLocaleDateString()
-    return todayStr === dueDateStr
+    // Normalize dates to remove time component for comparison
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    // Allow completion on or after the due date
+    return today >= dueDate
   })()
 
   return (
@@ -286,7 +287,7 @@ export function TaskViewClient({
                   <span className="text-gray-500">Due Date:</span>
                   <div className="text-right">
                     <span className={`font-medium ${isOverdue ? "text-red-600" : ""}`}>
-                      {new Date(task.dueDate).toLocaleDateString()}
+                      {formatDate(new Date(task.dueDate))}
                     </span>
                     {task.dueDateOnly && (
                       <div className="text-xs text-amber-600 flex items-center justify-end gap-1 mt-1">
@@ -419,7 +420,7 @@ export function TaskViewClient({
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                 <p className="text-sm text-amber-700 flex items-center gap-2">
                   <span>⏰</span>
-                  <span>This task can only be completed on {new Date(task.dueDate).toLocaleDateString()}</span>
+                  <span>This task can only be completed on {formatDate(new Date(task.dueDate))}</span>
                 </p>
               </div>
             )}

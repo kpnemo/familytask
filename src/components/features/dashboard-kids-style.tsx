@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/ui/icons"
+import { formatDate } from "@/lib/utils"
 
 interface Task {
   id: string
@@ -102,9 +103,13 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
   const canCompleteToday = (task: Task) => {
     if (!task.dueDateOnly) return true
     
-    const today = new Date().toLocaleDateString()
-    const dueDate = new Date(task.dueDate).toLocaleDateString()
-    return today === dueDate
+    const today = new Date()
+    const dueDate = new Date(task.dueDate)
+    // Normalize dates to remove time component for comparison
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    // Allow completion on or after the due date
+    return today >= dueDate
   }
 
   if (loading) {
@@ -212,7 +217,7 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
                       <span className="text-amber-600">⏰</span>
                     </CardTitle>
                     <p className="text-amber-700 text-sm mt-1">
-                      This task will be available on {new Date(task.dueDate).toLocaleDateString()}
+                      This task will be available on {formatDate(new Date(task.dueDate))}
                     </p>
                   </div>
                   <div className="text-right">

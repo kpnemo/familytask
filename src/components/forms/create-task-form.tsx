@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createTaskSchema, type CreateTaskInput } from "@/lib/validations"
+import { dateToInputString } from "@/lib/utils"
 
 interface FamilyMember {
   id: string
@@ -142,10 +143,43 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     }
   }
 
-  // Set default due date to today
+  // Set default due date to today - fetch user's timezone setting
   useEffect(() => {
-    const today = new Date()
-    setValue("dueDate", today.toISOString().slice(0, 10)) // YYYY-MM-DD format
+    const setTodayDate = async () => {
+      try {
+        // Try to get user's stored timezone first
+        const response = await fetch('/api/user/timezone')
+        let userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data?.timezone) {
+            userTimezone = result.data.timezone
+          }
+        }
+        
+        // Create date in user's timezone
+        const now = new Date()
+        const todayInUserTz = new Date(now.toLocaleString("en-US", {timeZone: userTimezone}))
+        
+        const year = todayInUserTz.getFullYear()
+        const month = String(todayInUserTz.getMonth() + 1).padStart(2, '0')
+        const day = String(todayInUserTz.getDate()).padStart(2, '0')
+        const todayString = `${year}-${month}-${day}`
+        
+        setValue("dueDate", todayString)
+      } catch (error) {
+        // Fallback to browser timezone
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const day = String(now.getDate()).padStart(2, '0')
+        const todayString = `${year}-${month}-${day}`
+        setValue("dueDate", todayString)
+      }
+    }
+    
+    setTodayDate()
   }, [setValue])
 
   return (

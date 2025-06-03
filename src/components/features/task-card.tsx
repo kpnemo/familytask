@@ -41,13 +41,15 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
   const [showDeclineDialog, setShowDeclineDialog] = useState(false)
   const router = useRouter()
 
-  // Check if due date only task can be completed today
+  // Check if due date only task can be completed (on or after due date)
   const canCompleteToday = !task.dueDateOnly || (() => {
     const today = new Date()
     const dueDate = new Date(task.dueDate)
-    const todayStr = today.toLocaleDateString()
-    const dueDateStr = dueDate.toLocaleDateString()
-    return todayStr === dueDateStr
+    // Normalize dates to remove time component for comparison
+    today.setHours(0, 0, 0, 0)
+    dueDate.setHours(0, 0, 0, 0)
+    // Allow completion on or after the due date
+    return today >= dueDate
   })()
 
   const canComplete = task.assignee.id === session?.user.id && task.status === "PENDING" && canCompleteToday
@@ -271,7 +273,7 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
             {task.dueDateOnly && task.assignee.id === session?.user.id && task.status === "PENDING" && !canCompleteToday && (
               <div className="text-amber-600 dark:text-amber-400 text-sm flex items-center gap-1 mt-2">
                 <span>⏰</span>
-                <span>Available on {new Date(task.dueDate).toLocaleDateString()}</span>
+                <span>Available on {formatDate(new Date(task.dueDate))}</span>
               </div>
             )}
           </div>

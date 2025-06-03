@@ -8,6 +8,38 @@ const updateTimezoneSchema = z.object({
   timezone: z.string().min(1, "Timezone is required")
 })
 
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: { code: "UNAUTHORIZED", message: "Not authenticated" } },
+        { status: 401 }
+      )
+    }
+
+    // Get user's timezone
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { timezone: true }
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: { timezone: user?.timezone }
+    })
+
+  } catch (error) {
+    console.error("Get timezone error:", error)
+
+    return NextResponse.json(
+      { error: { code: "SERVER_ERROR", message: "Internal server error" } },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

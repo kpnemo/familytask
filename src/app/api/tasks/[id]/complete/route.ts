@@ -58,24 +58,25 @@ export async function POST(
       const today = new Date()
       const dueDate = new Date(task.dueDate)
       
-      // Use local date strings for comparison to avoid timezone issues
-      const todayStr = today.toLocaleDateString()
-      const dueDateStr = dueDate.toLocaleDateString()
+      // Normalize dates to remove time component for comparison
+      today.setHours(0, 0, 0, 0)
+      dueDate.setHours(0, 0, 0, 0)
       
       console.log("Due date constraint check:", {
         taskId: task.id,
         dueDateOnly: task.dueDateOnly,
-        todayStr,
-        dueDateStr,
-        canComplete: todayStr === dueDateStr
+        today: today.toDateString(),
+        dueDate: dueDate.toDateString(),
+        canComplete: today >= dueDate
       })
       
-      if (todayStr !== dueDateStr) {
+      // Allow completion on or after the due date
+      if (today < dueDate) {
         return NextResponse.json(
           { 
             error: { 
               code: "DUE_DATE_CONSTRAINT", 
-              message: `This task can only be completed on its due date: ${dueDateStr}` 
+              message: `This task can only be completed on or after its due date: ${dueDate.toLocaleDateString()}` 
             } 
           },
           { status: 400 }

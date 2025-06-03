@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { updateTaskSchema, type UpdateTaskInput } from "@/lib/validations"
+import { dateToInputString } from "@/lib/utils"
 
 interface TaskData {
   id: string
@@ -56,7 +57,13 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
       title: task.title,
       description: task.description || "",
       points: task.points,
-      dueDate: new Date(task.dueDate).toLocaleDateString('en-CA'), // YYYY-MM-DD format
+      dueDate: (() => {
+        const date = new Date(task.dueDate)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      })(), // Direct date formatting
       dueDateOnly: task.dueDateOnly || false,
       tagIds: task.tags.map(t => t.tag.id)
     }

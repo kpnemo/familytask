@@ -1,5 +1,18 @@
 # FamilyTasks Release Notes
 
+## [1.0.14] - 2025-06-04
+
+### 🐛 Bug Fixes
+- Fixed task creation form showing wrong default date due to timezone issues - now uses user's timezone setting
+- Fixed "due date only" task completion logic to allow completion on or after due date (not just exact date)
+- Fixed backend API validation for overdue "due date only" tasks
+- Added timezone API endpoint to properly fetch user's stored timezone
+
+### 🔧 Improvements  
+- Enhanced date handling consistency between frontend and backend
+- Improved timezone-aware date calculations for task creation
+- Better error messages for due date constraint violations
+
 ## [1.0.13] - 2025-06-03
 
 ### ✨ New Features
