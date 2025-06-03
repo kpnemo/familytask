@@ -1,5 +1,23 @@
 # FamilyTasks Release Notes
 
+## [1.0.16] - 2025-06-03
+
+### ✨ New Features
+- debug: add date filtering debug for parents
+- debug: add parent-specific debugging to identify task filtering issue
+- debug: add detailed logging to Enhanced dashboard to trace task filtering bug
+- debug: add logging to tasks API to investigate Enhanced dashboard filtering issue
+
+### 🔧 Improvements
+- chore: bump version to 1.0.14 and update release notes
+
+### 🐛 Bug Fixes
+- Enhanced dashboard now shows all pending tasks in Next Up section
+- hotfix: remove incorrect empty check that was causing missing tasks
+- hotfix: resolve Enhanced dashboard state timing issue causing missing tasks
+- resolve timezone and due date only task completion issues
+
+
 ## [1.0.15] - 2025-06-04
 
 ### 🐛 Bug Fixes
