@@ -187,6 +187,7 @@ enum TaskStatus {
 enum DashboardStyle {
   STYLE1
   STYLE2
+  KIDS_STYLE
 }
 
 enum NotificationType {

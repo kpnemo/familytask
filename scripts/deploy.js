@@ -48,6 +48,112 @@ function incrementVersion() {
   return newVersion;
 }
 
+function generateReleaseNotes(version) {
+  log(`Generating release notes for version ${version}...`);
+  
+  try {
+    // Get commit messages since last tag/version
+    const commits = execCommand(
+      'git log --oneline --pretty=format:"%s" HEAD --not $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")',
+      'Getting commit messages since last release'
+    );
+    
+    if (!commits.trim()) {
+      log('No new commits found, skipping release notes update');
+      return;
+    }
+    
+    const commitLines = commits.split('\n').filter(line => line.trim());
+    
+    // Categorize commits
+    const features = [];
+    const improvements = [];
+    const bugFixes = [];
+    const other = [];
+    
+    commitLines.forEach(commit => {
+      const lowerCommit = commit.toLowerCase();
+      if (lowerCommit.includes('feat:') || lowerCommit.includes('add ') || lowerCommit.includes('new ')) {
+        features.push(commit.replace(/^(feat:|add |new )/i, '').trim());
+      } else if (lowerCommit.includes('fix:') || lowerCommit.includes('bug') || lowerCommit.includes('error')) {
+        bugFixes.push(commit.replace(/^fix:/i, '').trim());
+      } else if (lowerCommit.includes('improve') || lowerCommit.includes('enhance') || lowerCommit.includes('update')) {
+        improvements.push(commit.replace(/^(improve|enhance|update):/i, '').trim());
+      } else if (!lowerCommit.includes('chore:') && !lowerCommit.includes('bump version')) {
+        other.push(commit.trim());
+      }
+    });
+    
+    // Generate new release notes entry
+    const today = new Date().toISOString().split('T')[0];
+    let newEntry = `## [${version}] - ${today}\n\n`;
+    
+    if (features.length > 0) {
+      newEntry += `### ✨ New Features\n`;
+      features.forEach(feature => {
+        newEntry += `- ${feature}\n`;
+      });
+      newEntry += '\n';
+    }
+    
+    if (improvements.length > 0) {
+      newEntry += `### 🔧 Improvements\n`;
+      improvements.forEach(improvement => {
+        newEntry += `- ${improvement}\n`;
+      });
+      newEntry += '\n';
+    }
+    
+    if (bugFixes.length > 0) {
+      newEntry += `### 🐛 Bug Fixes\n`;
+      bugFixes.forEach(fix => {
+        newEntry += `- ${fix}\n`;
+      });
+      newEntry += '\n';
+    }
+    
+    if (other.length > 0) {
+      newEntry += `### 🔄 Other Changes\n`;
+      other.forEach(change => {
+        newEntry += `- ${change}\n`;
+      });
+      newEntry += '\n';
+    }
+    
+    // Read existing release notes
+    const releaseNotesPath = path.join(__dirname, '..', 'RELEASE-NOTES.md');
+    let existingContent = '';
+    
+    if (fs.existsSync(releaseNotesPath)) {
+      existingContent = fs.readFileSync(releaseNotesPath, 'utf8');
+      
+      // Find where to insert new entry (after the title)
+      const lines = existingContent.split('\n');
+      const titleIndex = lines.findIndex(line => line.startsWith('# '));
+      
+      if (titleIndex >= 0) {
+        // Insert after title and empty line
+        lines.splice(titleIndex + 2, 0, newEntry);
+        existingContent = lines.join('\n');
+      } else {
+        // No title found, prepend
+        existingContent = newEntry + existingContent;
+      }
+    } else {
+      // Create new file
+      existingContent = `# FamilyTasks Release Notes\n\n${newEntry}`;
+    }
+    
+    fs.writeFileSync(releaseNotesPath, existingContent);
+    log(`Release notes updated for version ${version}`);
+    
+    return true;
+  } catch (err) {
+    log(`Warning: Could not generate release notes: ${err.message}`);
+    return false;
+  }
+}
+
 async function verifyDeployment(expectedVersion, maxRetries = 10) {
   log(`Verifying deployment with version ${expectedVersion}...`);
   
@@ -101,15 +207,23 @@ async function main() {
     // Increment version
     const newVersion = incrementVersion();
     
-    // Commit version bump
-    execCommand('git add package.json', 'Staging package.json');
+    // Generate release notes
+    const releaseNotesGenerated = generateReleaseNotes(newVersion);
+    
+    // Commit version bump and release notes
+    const filesToAdd = ['package.json'];
+    if (releaseNotesGenerated) {
+      filesToAdd.push('RELEASE-NOTES.md');
+    }
+    
+    execCommand(`git add ${filesToAdd.join(' ')}`, 'Staging files for commit');
     execCommand(
-      `git commit -m "chore: bump version to ${newVersion}
+      `git commit -m "chore: bump version to ${newVersion}${releaseNotesGenerated ? ' and update release notes' : ''}
 
 🤖 Generated with [Claude Code](https://claude.ai/code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>"`,
-      'Committing version bump'
+      'Committing version bump and release notes'
     );
     
     // Push to main (triggers Vercel deployment)

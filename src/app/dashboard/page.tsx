@@ -10,6 +10,7 @@ import { WeeklyView } from "@/components/features/weekly-view"
 import { BonusTasksWidget } from "@/components/features/bonus-tasks-widget"
 import Dashboard2Parent from "@/components/features/dashboard2-parent"
 import Dashboard2Kid from "@/components/features/dashboard2-kid"
+import { KidsStyleDashboard } from "@/components/features/dashboard-kids-style"
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions)
@@ -28,7 +29,19 @@ export default async function Dashboard() {
   const defaultStyle = session.user.role === "CHILD" ? "STYLE2" : "STYLE1"
   const dashboardStyle = user?.dashboardStyle || defaultStyle
 
-  // If user prefers STYLE2 or is a kid without preference, show dashboard2 components
+  // Kids Style - Simple dashboard showing only today's tasks
+  if (dashboardStyle === "KIDS_STYLE") {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
+        <AppHeader title="FamilyTasks" user={session.user} />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <KidsStyleDashboard user={session.user} />
+        </main>
+      </div>
+    )
+  }
+
+  // Enhanced dashboard (STYLE2)
   if (dashboardStyle === "STYLE2") {
     return (
       <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">

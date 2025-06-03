@@ -63,7 +63,7 @@ export function DashboardStyleSection() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Style 1 - Classic */}
           <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
             currentStyle === "STYLE1" 
@@ -132,6 +132,45 @@ export function DashboardStyleSection() {
               </Button>
             </div>
           </div>
+
+          {/* Kids Style - Simple */}
+          {userRole === "CHILD" && (
+            <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              currentStyle === "KIDS_STYLE" 
+                ? "border-green-500 bg-green-50 dark:bg-green-900/20" 
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+            }`}>
+              <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded mb-3 relative overflow-hidden">
+                <div className="absolute inset-2 space-y-1">
+                  <div className="h-3 bg-green-300 dark:bg-green-600 rounded flex items-center justify-center text-xs text-white">
+                    Today
+                  </div>
+                  <div className="space-y-1">
+                    <div className="h-4 bg-yellow-300 dark:bg-yellow-600 rounded"></div>
+                    <div className="h-4 bg-blue-300 dark:bg-blue-600 rounded"></div>
+                  </div>
+                  <div className="text-center text-xs text-gray-500 mt-2">
+                    👋 Hi!
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-medium">Kids Style</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Simple view showing only today's tasks - perfect for young kids!
+                </p>
+                <Button
+                  onClick={() => updateDashboardStyle("KIDS_STYLE")}
+                  disabled={isLoading}
+                  variant={currentStyle === "KIDS_STYLE" ? "default" : "outline"}
+                  size="sm"
+                  className="w-full"
+                >
+                  {currentStyle === "KIDS_STYLE" ? "Current Style" : "Select Style"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {userRole === "CHILD" && (
