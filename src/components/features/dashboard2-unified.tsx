@@ -150,6 +150,25 @@ export default function Dashboard2Unified({ user }: Props) {
       ? [...overdueTasks, ...todayTasks]
       : futureTasks.slice(0, 5)
       
+    // Debug date filtering for parents
+    if (user.role === "PARENT") {
+      console.log("PARENT DEBUG - Date filtering:")
+      console.log("- Today start:", todayStart.toISOString())
+      console.log("- Tomorrow start:", tomorrowStart.toISOString())
+      console.log("- Filtered pending tasks:", filteredPendingTasks.length)
+      console.log("- Overdue tasks:", overdueTasks.length)
+      console.log("- Today tasks:", todayTasks.length)
+      console.log("- Future tasks:", futureTasks.length)
+      console.log("- Upcoming tasks (final):", upcomingTasks.length)
+      if (filteredPendingTasks.length > 0) {
+        console.log("- Sample pending task dates:", filteredPendingTasks.slice(0, 3).map(t => ({
+          title: t.title,
+          dueDate: t.dueDate,
+          dueDateObj: new Date(t.dueDate).toISOString()
+        })))
+      }
+    }
+      
     const totalTasks = filteredPendingTasks.length + filteredCompletedTasks.length + filteredVerifiedTasks.length + bonusTasks.length
 
 
