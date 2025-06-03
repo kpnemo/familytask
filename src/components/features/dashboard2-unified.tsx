@@ -1,7 +1,7 @@
 // src/components/features/dashboard2-unified.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { TaskCard, Task as FullTask } from "./task-card"
 import { BonusTaskCard } from "./bonus-task-card"
 import { SessionUser } from "@/types"
@@ -29,8 +29,6 @@ export default function Dashboard2Unified({ user }: Props) {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       
-      console.log("Enhanced Dashboard Debug - Fetching tasks for user:", user.id, "role:", user.role)
-      
       const [pendingRes, completedRes, verifiedRes, bonusRes] = await Promise.all([
         fetch("/api/tasks?status=PENDING"),
         fetch("/api/tasks?status=COMPLETED"),
@@ -42,12 +40,6 @@ export default function Dashboard2Unified({ user }: Props) {
       const verifiedData = await verifiedRes.json()
       const bonusData = await bonusRes.json()
       
-      console.log("Enhanced Dashboard Debug - Raw API responses:")
-      console.log("- Pending tasks:", pendingData.success ? pendingData.data.length : 0, pendingData.success ? pendingData.data : "Failed")
-      console.log("- Completed tasks:", completedData.success ? completedData.data.length : 0) 
-      console.log("- Verified tasks:", verifiedData.success ? verifiedData.data.length : 0)
-      console.log("- Bonus tasks:", bonusData.success ? bonusData.data.length : 0)
-      
       if (pendingData.success) setPendingTasks(pendingData.data)
       
       if (completedData.success) {
@@ -56,7 +48,6 @@ export default function Dashboard2Unified({ user }: Props) {
           const taskDate = new Date(task.updatedAt || task.createdAt)
           return taskDate >= thirtyDaysAgo
         })
-        console.log("Enhanced Dashboard Debug - Completed tasks after 30-day filter:", recentCompleted.length)
         setCompletedTasks(recentCompleted)
       }
       
@@ -66,7 +57,6 @@ export default function Dashboard2Unified({ user }: Props) {
           const taskDate = new Date(task.updatedAt || task.createdAt)
           return taskDate >= thirtyDaysAgo
         })
-        console.log("Enhanced Dashboard Debug - Verified tasks after 30-day filter:", recentVerified.length)
         setVerifiedTasks(recentVerified)
       }
       
@@ -88,26 +78,95 @@ export default function Dashboard2Unified({ user }: Props) {
     fetchData()
   }, [])
 
-  // Apply "Only Mine" filter if enabled (available for both parents and kids)
-  const filteredPendingTasks = showMyTasksOnly 
-    ? pendingTasks.filter(task => task.assignedTo === user.id)
-    : pendingTasks
-  const filteredCompletedTasks = showMyTasksOnly 
-    ? completedTasks.filter(task => task.assignedTo === user.id)
-    : completedTasks
-  const filteredVerifiedTasks = showMyTasksOnly 
-    ? verifiedTasks.filter(task => task.assignedTo === user.id)
-    : verifiedTasks
+  // Memoized calculations to prevent state timing issues
+  const taskCalculations = useMemo(() => {
+    // Don't calculate during loading or with empty data
+    if (loading || pendingTasks.length === 0) {
+      return {
+        filteredPendingTasks: [],
+        filteredCompletedTasks: [],
+        filteredVerifiedTasks: [],
+        allTasksAreMine: true,
+        shouldShowOnlyMineButton: false,
+        overdueTasks: [],
+        todayTasks: [],
+        futureTasks: [],
+        upcomingTasks: [],
+        totalTasks: 0
+      }
+    }
 
-  // Check if all tasks belong to the current user (to hide "Only Mine" button when redundant)
-  const allTasksAreMine = [
-    ...pendingTasks,
-    ...completedTasks, 
-    ...verifiedTasks
-  ].every(task => task.assignedTo === user.id || task.assignee?.id === user.id)
-  
-  // Only show "Only Mine" button if there are tasks that belong to others
-  const shouldShowOnlyMineButton = !allTasksAreMine && (pendingTasks.length > 0 || completedTasks.length > 0 || verifiedTasks.length > 0)
+    // Apply "Only Mine" filter if enabled
+    const filteredPendingTasks = showMyTasksOnly 
+      ? pendingTasks.filter(task => task.assignedTo === user.id)
+      : pendingTasks
+    const filteredCompletedTasks = showMyTasksOnly 
+      ? completedTasks.filter(task => task.assignedTo === user.id)
+      : completedTasks
+    const filteredVerifiedTasks = showMyTasksOnly 
+      ? verifiedTasks.filter(task => task.assignedTo === user.id)
+      : verifiedTasks
+
+    // Check if all tasks belong to the current user
+    const allTasksAreMine = [
+      ...pendingTasks,
+      ...completedTasks, 
+      ...verifiedTasks
+    ].every(task => task.assignedTo === user.id || task.assignee?.id === user.id)
+    
+    const shouldShowOnlyMineButton = !allTasksAreMine && (pendingTasks.length > 0 || completedTasks.length > 0 || verifiedTasks.length > 0)
+
+    const now = new Date()
+    const todayStart = new Date(now.setHours(0,0,0,0))
+    const tomorrowStart = new Date(todayStart);
+    tomorrowStart.setDate(todayStart.getDate() + 1)
+
+    // Overdue: pending tasks due before today
+    const overdueTasks = filteredPendingTasks.filter(t => new Date(t.dueDate) < todayStart)
+    // Today's tasks: pending tasks due today
+    const todayTasks = filteredPendingTasks.filter(t => {
+      const d = new Date(t.dueDate)
+      return d >= todayStart && d < tomorrowStart
+    })
+    // Future tasks: pending tasks due after today
+    const futureTasks = filteredPendingTasks
+      .filter(t => new Date(t.dueDate) >= tomorrowStart)
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    
+    // Determine upcoming display: if any today, show overdue + today; else first 5 future
+    const upcomingTasks = todayTasks.length > 0
+      ? [...overdueTasks, ...todayTasks]
+      : futureTasks.slice(0, 5)
+      
+    const totalTasks = filteredPendingTasks.length + filteredCompletedTasks.length + filteredVerifiedTasks.length + bonusTasks.length
+
+
+    return {
+      filteredPendingTasks,
+      filteredCompletedTasks,
+      filteredVerifiedTasks,
+      allTasksAreMine,
+      shouldShowOnlyMineButton,
+      overdueTasks,
+      todayTasks,
+      futureTasks,
+      upcomingTasks,
+      totalTasks
+    }
+  }, [loading, pendingTasks, completedTasks, verifiedTasks, bonusTasks, showMyTasksOnly, user.id])
+
+  const {
+    filteredPendingTasks,
+    filteredCompletedTasks,
+    filteredVerifiedTasks,
+    allTasksAreMine,
+    shouldShowOnlyMineButton,
+    overdueTasks,
+    todayTasks,
+    futureTasks,
+    upcomingTasks,
+    totalTasks
+  } = taskCalculations
 
   // Reset "Only Mine" toggle when button should be hidden (all tasks are mine)
   useEffect(() => {
@@ -115,41 +174,6 @@ export default function Dashboard2Unified({ user }: Props) {
       setShowMyTasksOnly(false)
     }
   }, [shouldShowOnlyMineButton, showMyTasksOnly])
-
-  const now = new Date()
-  const todayStart = new Date(now.setHours(0,0,0,0))
-  const tomorrowStart = new Date(todayStart);
-  tomorrowStart.setDate(todayStart.getDate() + 1)
-
-  // Overdue: pending tasks due before today
-  const overdueTasks = filteredPendingTasks.filter(t => new Date(t.dueDate) < todayStart)
-  // Today's tasks: pending tasks due today
-  const todayTasks = filteredPendingTasks.filter(t => {
-    const d = new Date(t.dueDate)
-    return d >= todayStart && d < tomorrowStart
-  })
-  // Future tasks: pending tasks due after today
-  const futureTasks = filteredPendingTasks
-    .filter(t => new Date(t.dueDate) >= tomorrowStart)
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-  
-  // Determine upcoming display: if any today, show overdue + today; else first 5 future
-  const upcomingTasks = todayTasks.length > 0
-    ? [...overdueTasks, ...todayTasks]
-    : futureTasks.slice(0, 5)
-    
-  console.log("Enhanced Dashboard Debug - Task breakdown:")
-  console.log("- Filtered pending tasks:", filteredPendingTasks.length)
-  console.log("- Overdue tasks:", overdueTasks.length)
-  console.log("- Today tasks:", todayTasks.length)
-  console.log("- Future tasks:", futureTasks.length)
-  console.log("- Upcoming tasks (Next Up):", upcomingTasks.length)
-  console.log("- Show my tasks only:", showMyTasksOnly)
-  console.log("- All tasks are mine:", allTasksAreMine)
-
-  
-  // Calculate total tasks for "All" filter
-  const totalTasks = filteredPendingTasks.length + filteredCompletedTasks.length + filteredVerifiedTasks.length + bonusTasks.length
 
   // Helper to label dates
   const getDateLabel = (dateString: string) => {

@@ -51,8 +51,6 @@ export async function GET(req: NextRequest) {
     }
 
     // Handle role-based filtering
-    console.log(`API Debug - User: ${session.user.id}, Role: ${session.user.role}, Status filter: ${status}`)
-    
     if (session.user.role === "CHILD") {
       if (status === "AVAILABLE") {
         // If filtering for available bonus tasks specifically
@@ -76,8 +74,6 @@ export async function GET(req: NextRequest) {
     }
     // Parents can see all family tasks including assigned bonus tasks
     // No additional filtering needed for parents - they see everything in their family
-    
-    console.log(`API Debug - Final where clause:`, JSON.stringify(where, null, 2))
 
     const tasks = await db.task.findMany({
       where,
