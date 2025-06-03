@@ -1,24 +1,6 @@
 # FamilyTasks Release Notes
 
-## [1.0.16] - 2025-06-03
-
-### ✨ New Features
-- debug: add date filtering debug for parents
-- debug: add parent-specific debugging to identify task filtering issue
-- debug: add detailed logging to Enhanced dashboard to trace task filtering bug
-- debug: add logging to tasks API to investigate Enhanced dashboard filtering issue
-
-### 🔧 Improvements
-- chore: bump version to 1.0.14 and update release notes
-
-### 🐛 Bug Fixes
-- Enhanced dashboard now shows all pending tasks in Next Up section
-- hotfix: remove incorrect empty check that was causing missing tasks
-- hotfix: resolve Enhanced dashboard state timing issue causing missing tasks
-- resolve timezone and due date only task completion issues
-
-
-## [1.0.15] - 2025-06-04
+## [1.0.16] - 04/06/2025
 
 ### 🐛 Bug Fixes
 - **CRITICAL FIX:** Enhanced dashboard now shows all family tasks for parents instead of only user's own tasks
@@ -34,21 +16,30 @@
 - Moved task filtering calculations into useMemo to prevent race conditions
 - Added timezone API endpoint to properly fetch user's stored timezone
 - Better error messages for due date constraint violations
+- Fixed release notes versioning and date format issues
 
-## [1.0.14] - 2025-06-03
+### 🔄 Other Changes
+- Cleaned up release notes with proper chronological order and DD/MM/YYYY date format
+
+## [1.0.15] - 03/06/2025
 
 ### ✨ New Features
 - Unified Enhanced dashboard (merged parent and kid versions into single adaptive component)
 - Added "Only Mine" button for both parents and kids with smart visibility logic
 - Added 30-day filtering for completed/verified tasks with Show More functionality
-- Make dashboard styles available to all users
-- Kids Style dashboard and release notes system
-- 'Due Date Only' constraint for tasks
-- Onboarding notifications for new admin parents
 
 ### 🔧 Improvements
 - Improved completed task display with recent filtering
 - Enhanced dashboard responsiveness and user experience
+
+## [1.0.14] - 02/06/2025
+
+### ✨ New Features
+- Make dashboard styles available to all users
+- Kids Style dashboard and release notes system
+- 'Due Date Only' constraint for tasks
+- Onboarding notifications for new admin parents
+- Enhanced SMS template for urgent bonus tasks
 
 ### 🐛 Bug Fixes
 - Fixed recurring tasks and various UI issues
@@ -56,23 +47,30 @@
 ### 🔄 Other Changes
 - CLAUDE.md added
 
-## [1.0.13] - 2025-06-02
+## [1.0.13] - 01/06/2025
 
 ### ✨ New Features
-- make dashboard styles available to all users
-- add Kids Style dashboard and release notes system
-- add 'Due Date Only' constraint for tasks
-- onboarding notifications for new admin parents
-- enhance SMS template for urgent bonus tasks
+- Enhanced SMS templates for urgent bonus tasks
+- Improved notification delivery system
 
-### 🐛 Bug Fixes
-- improve recurring tasks and UI issues
+### 🔧 Improvements
+- Better SMS formatting and delivery
+- Enhanced bonus task workflows
+- Improved notification reliability
 
-### 🔄 Other Changes
-- CLAUDE.md added
+## [1.0.12] - 31/05/2025
 
+### ✨ New Features
+- Enhanced notifications with SMS support
+- Onboarding notifications for new admin parents
+- Bonus task notifications for all family members
 
-## [1.0.13] - 2025-01-06
+### 🔧 Improvements
+- Improved notification system reliability
+- Better error handling for SMS delivery
+- Enhanced family setup experience
+
+## [1.0.11] - 30/05/2025
 
 ### ✨ New Features
 - Added "Due Date Only" constraint for tasks - perfect for daily routines like "do the dishes"
@@ -99,30 +97,7 @@
 - Enhanced settings page with timezone selection
 - Better messaging for blocked task completion
 
-## [1.0.12] - 2025-01-05
-
-### ✨ New Features
-- Enhanced notifications with SMS support
-- Onboarding notifications for new admin parents
-- Bonus task notifications for all family members
-
-### 🔧 Improvements
-- Improved notification system reliability
-- Better error handling for SMS delivery
-- Enhanced family setup experience
-
-## [1.0.11] - 2025-01-04
-
-### ✨ New Features
-- Enhanced SMS templates for urgent bonus tasks
-- Improved notification delivery system
-
-### 🔧 Improvements
-- Better SMS formatting and delivery
-- Enhanced bonus task workflows
-- Improved notification reliability
-
-## [1.0.10] - 2025-01-03
+## [1.0.10] - 29/05/2025
 
 ### ✨ New Features
 - Initial release with core task management
