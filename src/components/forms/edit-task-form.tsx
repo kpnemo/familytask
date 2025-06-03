@@ -56,7 +56,7 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
       title: task.title,
       description: task.description || "",
       points: task.points,
-      dueDate: new Date(task.dueDate).toISOString().slice(0, 10),
+      dueDate: new Date(task.dueDate).toLocaleDateString('en-CA'), // YYYY-MM-DD format
       dueDateOnly: task.dueDateOnly || false,
       tagIds: task.tags.map(t => t.tag.id)
     }

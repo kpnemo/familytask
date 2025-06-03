@@ -78,6 +78,7 @@ export async function createNextRecurringTask(taskId: string) {
         familyId: task.familyId,
         isRecurring: true,
         recurrencePattern: task.recurrencePattern,
+        dueDateOnly: task.dueDateOnly, // Preserve dueDateOnly constraint
         status: "PENDING"
       }
     })

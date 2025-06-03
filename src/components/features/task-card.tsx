@@ -23,6 +23,7 @@ export interface Task {
   verifiedAt?: string
   isRecurring?: boolean
   recurrencePattern?: string
+  dueDateOnly?: boolean
   // Legacy field names for backwards compatibility
   assignedTo?: string
   createdBy?: string
@@ -40,7 +41,16 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
   const [showDeclineDialog, setShowDeclineDialog] = useState(false)
   const router = useRouter()
 
-  const canComplete = task.assignee.id === session?.user.id && task.status === "PENDING"
+  // Check if due date only task can be completed today
+  const canCompleteToday = !task.dueDateOnly || (() => {
+    const today = new Date()
+    const dueDate = new Date(task.dueDate)
+    const todayStr = today.toLocaleDateString()
+    const dueDateStr = dueDate.toLocaleDateString()
+    return todayStr === dueDateStr
+  })()
+
+  const canComplete = task.assignee.id === session?.user.id && task.status === "PENDING" && canCompleteToday
   const canVerify = session?.user.role === "PARENT" && task.status === "COMPLETED"
   const canEdit = task.creator.id === session?.user.id || session?.user.role === "PARENT"
   const canDelete = session?.user.role === "PARENT" // Only parents/admins can delete
@@ -192,6 +202,14 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
                     🔄
                   </span>
                 )}
+                {task.dueDateOnly && (
+                  <span 
+                    className="text-amber-600 dark:text-amber-400" 
+                    title="This task can only be completed on its due date"
+                  >
+                    ⏰
+                  </span>
+                )}
               </h3>
               {getStatusBadge()}
             </div>
@@ -248,6 +266,12 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
             {task.verifiedAt && task.verifier && (
               <div>
                 <strong>Verified by:</strong> {task.verifier.name} on {formatDateTime(new Date(task.verifiedAt))}
+              </div>
+            )}
+            {task.dueDateOnly && task.assignee.id === session?.user.id && task.status === "PENDING" && !canCompleteToday && (
+              <div className="text-amber-600 dark:text-amber-400 text-sm flex items-center gap-1 mt-2">
+                <span>⏰</span>
+                <span>Available on {new Date(task.dueDate).toLocaleDateString()}</span>
               </div>
             )}
           </div>

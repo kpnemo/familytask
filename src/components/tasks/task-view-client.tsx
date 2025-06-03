@@ -99,14 +99,23 @@ export function TaskViewClient({
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error?.message || "Failed to complete task")
+        console.error("API Error:", error)
+        console.error("Response status:", response.status)
+        const errorMessage = error.error?.message || "Failed to complete task"
+        console.error("Error message:", errorMessage)
+        throw new Error(errorMessage)
       }
 
       setCurrentStatus("COMPLETED")
       router.refresh()
     } catch (error) {
       console.error("Error completing task:", error)
-      alert(error instanceof Error ? error.message : "Failed to complete task")
+      // Show user-friendly error message
+      if (error instanceof Error) {
+        alert(error.message)
+      } else {
+        alert("Failed to complete task")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -233,9 +242,10 @@ export function TaskViewClient({
   const canCompleteToday = !task.dueDateOnly || (() => {
     const today = new Date()
     const dueDate = new Date(task.dueDate)
-    today.setHours(0, 0, 0, 0)
-    dueDate.setHours(0, 0, 0, 0)
-    return today.getTime() === dueDate.getTime()
+    // Use local date strings for comparison to avoid timezone issues
+    const todayStr = today.toLocaleDateString()
+    const dueDateStr = dueDate.toLocaleDateString()
+    return todayStr === dueDateStr
   })()
 
   return (
@@ -276,7 +286,7 @@ export function TaskViewClient({
                   <span className="text-gray-500">Due Date:</span>
                   <div className="text-right">
                     <span className={`font-medium ${isOverdue ? "text-red-600" : ""}`}>
-                      {formatDateTime(new Date(task.dueDate))}
+                      {new Date(task.dueDate).toLocaleDateString()}
                     </span>
                     {task.dueDateOnly && (
                       <div className="text-xs text-amber-600 flex items-center justify-end gap-1 mt-1">
@@ -384,31 +394,33 @@ export function TaskViewClient({
             )}
 
             {/* Complete Task - for assignee when pending */}
-            {isAssignee && currentStatus === "PENDING" && (
-              <div className="space-y-2">
-                <Button
-                  onClick={handleCompleteTask}
-                  disabled={isLoading || !canCompleteToday}
-                  className={`${canCompleteToday ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"}`}
-                >
-                  {isLoading ? (
-                    <>
-                      <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
-                      Completing...
-                    </>
-                  ) : (
-                    <>
-                      <Icons.check className="w-4 h-4 mr-2" />
-                      Complete Task
-                    </>
-                  )}
-                </Button>
-                {task.dueDateOnly && !canCompleteToday && (
-                  <p className="text-sm text-amber-600 flex items-center gap-1">
-                    <span>⏰</span>
-                    <span>This task can only be completed on {new Date(task.dueDate).toLocaleDateString()}</span>
-                  </p>
+            {isAssignee && currentStatus === "PENDING" && canCompleteToday && (
+              <Button
+                onClick={handleCompleteTask}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isLoading ? (
+                  <>
+                    <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
+                    Completing...
+                  </>
+                ) : (
+                  <>
+                    <Icons.check className="w-4 h-4 mr-2" />
+                    Complete Task
+                  </>
                 )}
+              </Button>
+            )}
+
+            {/* Message for due-date-only tasks not yet due */}
+            {isAssignee && currentStatus === "PENDING" && task.dueDateOnly && !canCompleteToday && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-sm text-amber-700 flex items-center gap-2">
+                  <span>⏰</span>
+                  <span>This task can only be completed on {new Date(task.dueDate).toLocaleDateString()}</span>
+                </p>
               </div>
             )}
 

@@ -58,12 +58,19 @@ export async function POST(
       const today = new Date()
       const dueDate = new Date(task.dueDate)
       
-      // Set both dates to start of day for comparison (ignore time)
-      today.setHours(0, 0, 0, 0)
-      dueDate.setHours(0, 0, 0, 0)
+      // Use local date strings for comparison to avoid timezone issues
+      const todayStr = today.toLocaleDateString()
+      const dueDateStr = dueDate.toLocaleDateString()
       
-      if (today.getTime() !== dueDate.getTime()) {
-        const dueDateStr = dueDate.toLocaleDateString()
+      console.log("Due date constraint check:", {
+        taskId: task.id,
+        dueDateOnly: task.dueDateOnly,
+        todayStr,
+        dueDateStr,
+        canComplete: todayStr === dueDateStr
+      })
+      
+      if (todayStr !== dueDateStr) {
         return NextResponse.json(
           { 
             error: { 
@@ -169,8 +176,8 @@ export async function POST(
       }
     }
 
-    // Create next recurring task instance if needed (outside transaction)
-    if (task.isRecurring && task.recurrencePattern) {
+    // For parent completing their own task, create next recurring task instance if needed
+    if (isParentCompletingOwnTask && task.isRecurring && task.recurrencePattern) {
       try {
         await createNextRecurringTask(id)
       } catch (error) {

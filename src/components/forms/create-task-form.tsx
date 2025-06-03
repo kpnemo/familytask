@@ -142,11 +142,10 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     }
   }
 
-  // Set default due date to tomorrow
+  // Set default due date to today
   useEffect(() => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    setValue("dueDate", tomorrow.toISOString().slice(0, 10)) // YYYY-MM-DD format
+    const today = new Date()
+    setValue("dueDate", today.toISOString().slice(0, 10)) // YYYY-MM-DD format
   }, [setValue])
 
   return (

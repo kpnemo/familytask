@@ -22,6 +22,22 @@ export function formatDate(date: Date): string {
   }).format(date)
 }
 
+export function formatDateOnly(date: Date): string {
+  // Format date for display, ensuring it shows the intended day regardless of timezone
+  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(localDate)
+}
+
+export function dateToInputString(date: Date): string {
+  // Convert date to YYYY-MM-DD format for HTML date inputs, accounting for timezone
+  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000)
+  return localDate.toISOString().slice(0, 10)
+}
+
 export function formatDateTime(date: Date): string {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',

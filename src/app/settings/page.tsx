@@ -12,6 +12,7 @@ import { FamilyMembersWrapper } from "@/components/settings/family-members-wrapp
 import { AppearanceSection } from "@/components/settings/appearance-section"
 import { DashboardStyleSection } from "@/components/settings/dashboard-style-section"
 import { SMSSettingsSection } from "@/components/settings/sms-settings-section"
+import { TimezoneSection } from "@/components/settings/timezone-section"
 import { AppHeader } from "@/components/layout/app-header"
 
 export default async function SettingsPage() {
@@ -29,12 +30,13 @@ export default async function SettingsPage() {
       select: {
         phoneNumber: true,
         smsNotificationsEnabled: true,
+        timezone: true,
       },
     });
   } catch (error) {
     // SMS columns don't exist yet in production, ignore for now
     console.log('SMS columns not available yet, skipping SMS settings');
-    userData = { phoneNumber: null, smsNotificationsEnabled: false };
+    userData = { phoneNumber: null, smsNotificationsEnabled: false, timezone: "UTC" };
   }
 
   // Get user's family information with all members
@@ -137,6 +139,18 @@ export default async function SettingsPage() {
 
           {/* Dashboard Style Section */}
           <DashboardStyleSection />
+
+          {/* Timezone Section */}
+          {userData && (
+            <TimezoneSection 
+              user={{
+                id: session.user.id,
+                name: session.user.name || "",
+                email: session.user.email || "",
+                timezone: userData.timezone || "UTC"
+              }}
+            />
+          )}
 
           {/* SMS Settings Section - Only show if SMS columns exist */}
           {userData && typeof userData.phoneNumber !== 'undefined' && (

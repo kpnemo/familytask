@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
           title: validatedData.title,
           description: validatedData.description,
           points: validatedData.points,
-          dueDate: new Date(validatedData.dueDate + "T23:59:59.999Z"), // Set to end of day
+          dueDate: new Date(validatedData.dueDate + "T12:00:00.000Z"), // Set to noon UTC to avoid timezone issues
           createdBy: session.user.id,
           assignedTo: validatedData.isBonusTask ? null : validatedData.assignedTo,
           familyId: familyMember.familyId,
