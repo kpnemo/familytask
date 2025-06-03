@@ -80,8 +80,8 @@ export default function Dashboard2Unified({ user }: Props) {
 
   // Memoized calculations to prevent state timing issues
   const taskCalculations = useMemo(() => {
-    // Don't calculate during loading or with empty data
-    if (loading || pendingTasks.length === 0) {
+    // Don't calculate during loading
+    if (loading) {
       return {
         filteredPendingTasks: [],
         filteredCompletedTasks: [],
