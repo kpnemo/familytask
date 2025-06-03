@@ -108,11 +108,23 @@ export default function Dashboard2Unified({ user }: Props) {
       : verifiedTasks
 
     // Check if all tasks belong to the current user
-    const allTasksAreMine = [
-      ...pendingTasks,
-      ...completedTasks, 
-      ...verifiedTasks
-    ].every(task => task.assignedTo === user.id || task.assignee?.id === user.id)
+    const allTasks = [...pendingTasks, ...completedTasks, ...verifiedTasks]
+    const allTasksAreMine = allTasks.every(task => task.assignedTo === user.id || task.assignee?.id === user.id)
+    
+    // Debug for parents
+    if (user.role === "PARENT") {
+      console.log("PARENT DEBUG - Total tasks:", allTasks.length)
+      console.log("PARENT DEBUG - User ID:", user.id)
+      console.log("PARENT DEBUG - All tasks are mine:", allTasksAreMine)
+      console.log("PARENT DEBUG - Show my tasks only:", showMyTasksOnly)
+      console.log("PARENT DEBUG - Sample task assignments:", allTasks.slice(0, 3).map(t => ({
+        id: t.id, 
+        title: t.title, 
+        assignedTo: t.assignedTo, 
+        assigneeId: t.assignee?.id,
+        createdBy: t.createdBy || t.creator?.id
+      })))
+    }
     
     const shouldShowOnlyMineButton = !allTasksAreMine && (pendingTasks.length > 0 || completedTasks.length > 0 || verifiedTasks.length > 0)
 
@@ -171,6 +183,7 @@ export default function Dashboard2Unified({ user }: Props) {
   // Reset "Only Mine" toggle when button should be hidden (all tasks are mine)
   useEffect(() => {
     if (!shouldShowOnlyMineButton && showMyTasksOnly) {
+      console.log("PARENT DEBUG - Resetting showMyTasksOnly from true to false")
       setShowMyTasksOnly(false)
     }
   }, [shouldShowOnlyMineButton, showMyTasksOnly])
