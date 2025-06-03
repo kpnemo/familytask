@@ -117,9 +117,7 @@ export function DashboardStyleSection() {
             <div className="space-y-2">
               <h3 className="font-medium">Enhanced Dashboard</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {userRole === "CHILD" 
-                  ? "Kid-friendly interface with engaging task cards" 
-                  : "Modern layout with enhanced task management"}
+                Modern layout with enhanced task management that adapts to your role
               </p>
               <Button
                 onClick={() => updateDashboardStyle("STYLE2")}
@@ -171,13 +169,11 @@ export function DashboardStyleSection() {
           </div>
         </div>
 
-        {userRole === "CHILD" && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 dark:text-blue-200">
-              💡 <strong>Tip:</strong> The Enhanced Dashboard is designed especially for kids with a more engaging and visual interface!
-            </p>
-          </div>
-        )}
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
+            💡 <strong>Tip:</strong> The Enhanced Dashboard adapts its features based on your role - parents get advanced filtering options while kids see a simpler, more engaging interface!
+          </p>
+        </div>
       </CardContent>
     </Card>
   )
