@@ -62,9 +62,9 @@ export async function PUT(req: NextRequest) {
     const { dashboardStyle } = body
 
     // Validate dashboard style
-    if (!dashboardStyle || !["STYLE1", "STYLE2"].includes(dashboardStyle)) {
+    if (!dashboardStyle || !["STYLE1", "STYLE2", "KIDS_STYLE"].includes(dashboardStyle)) {
       return NextResponse.json(
-        { error: { code: "INVALID_STYLE", message: "Invalid dashboard style. Must be STYLE1 or STYLE2" } },
+        { error: { code: "INVALID_STYLE", message: "Invalid dashboard style. Must be STYLE1, STYLE2, or KIDS_STYLE" } },
         { status: 400 }
       )
     }

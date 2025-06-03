@@ -154,6 +154,17 @@ export function UserMenu({ user }: UserMenuProps) {
                 <Icons.logout className="h-4 w-4" />
                 <span>Sign Out</span>
               </Link>
+              
+              <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+                <Link
+                  href="/release-notes"
+                  className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Icons.document className="h-4 w-4" />
+                  <span>Release Notes</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
