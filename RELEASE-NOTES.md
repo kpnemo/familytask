@@ -1,39 +1,44 @@
 # FamilyTasks Release Notes
 
+## [1.0.15] - 2025-06-04
+
+### 🐛 Bug Fixes
+- **CRITICAL FIX:** Enhanced dashboard now shows all family tasks for parents instead of only user's own tasks
+- Fixed Enhanced dashboard "Next Up" section to display all 12 pending tasks instead of just 1
+- Fixed React state timing issue causing task calculations during empty state
+- Resolved timezone issues in task creation form showing wrong default date
+- Fixed "due date only" task completion logic to allow completion on or after due date
+- Fixed backend API validation for overdue "due date only" tasks
+
+### 🔧 Improvements
+- Enhanced date handling consistency between frontend and backend
+- Improved timezone-aware date calculations for task creation
+- Moved task filtering calculations into useMemo to prevent race conditions
+- Added timezone API endpoint to properly fetch user's stored timezone
+- Better error messages for due date constraint violations
+
 ## [1.0.14] - 2025-06-03
 
 ### ✨ New Features
-- unify Enhanced dashboard and improve completed task display
-- make dashboard styles available to all users
-- add Kids Style dashboard and release notes system
-- add 'Due Date Only' constraint for tasks
-- onboarding notifications for new admin parents
+- Unified Enhanced dashboard (merged parent and kid versions into single adaptive component)
+- Added "Only Mine" button for both parents and kids with smart visibility logic
+- Added 30-day filtering for completed/verified tasks with Show More functionality
+- Make dashboard styles available to all users
+- Kids Style dashboard and release notes system
+- 'Due Date Only' constraint for tasks
+- Onboarding notifications for new admin parents
 
 ### 🔧 Improvements
-- chore: bump version to 1.0.13 and update release notes
+- Improved completed task display with recent filtering
+- Enhanced dashboard responsiveness and user experience
 
 ### 🐛 Bug Fixes
-- resolve timezone and due date only task completion issues
-- improve recurring tasks and UI issues
+- Fixed recurring tasks and various UI issues
 
 ### 🔄 Other Changes
 - CLAUDE.md added
 
-
-## [1.0.14] - 2025-06-04
-
-### 🐛 Bug Fixes
-- Fixed task creation form showing wrong default date due to timezone issues - now uses user's timezone setting
-- Fixed "due date only" task completion logic to allow completion on or after due date (not just exact date)
-- Fixed backend API validation for overdue "due date only" tasks
-- Added timezone API endpoint to properly fetch user's stored timezone
-
-### 🔧 Improvements  
-- Enhanced date handling consistency between frontend and backend
-- Improved timezone-aware date calculations for task creation
-- Better error messages for due date constraint violations
-
-## [1.0.13] - 2025-06-03
+## [1.0.13] - 2025-06-02
 
 ### ✨ New Features
 - make dashboard styles available to all users
