@@ -114,8 +114,8 @@ export default function Dashboard2Unified({ user }: Props) {
     const shouldShowOnlyMineButton = !allTasksAreMine && (pendingTasks.length > 0 || completedTasks.length > 0 || verifiedTasks.length > 0)
 
     const now = new Date()
-    const todayStart = new Date(now.setHours(0,0,0,0))
-    const tomorrowStart = new Date(todayStart);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const tomorrowStart = new Date(todayStart)
     tomorrowStart.setDate(todayStart.getDate() + 1)
 
     // Overdue: pending tasks due before today
@@ -183,8 +183,8 @@ export default function Dashboard2Unified({ user }: Props) {
   // Helper to label dates
   const getDateLabel = (dateString: string) => {
     const date = new Date(dateString)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
     
@@ -198,11 +198,11 @@ export default function Dashboard2Unified({ user }: Props) {
   // Calculate days left from today
   const getDaysLeft = (dateString: string) => {
     const target = new Date(dateString)
-    const today = new Date()
-    // normalize
-    today.setHours(0,0,0,0)
-    target.setHours(0,0,0,0)
-    const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    const now = new Date()
+    // Create clean date objects without mutating originals
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate())
+    const diff = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
     return diff
   }
 
