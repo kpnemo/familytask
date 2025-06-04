@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { SessionUser } from "@/types"
 import { Task as FullTask } from "./task-card"
@@ -16,6 +15,12 @@ interface Props {
   user: SessionUser
 }
 
+interface FamilyMember {
+  id: string
+  name: string
+  role: string
+}
+
 export default function CompactDashboard({ user }: Props) {
   const [pendingTasks, setPendingTasks] = useState<FullTask[]>([])
   const [completedTasks, setCompletedTasks] = useState<FullTask[]>([])
@@ -24,6 +29,8 @@ export default function CompactDashboard({ user }: Props) {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL'|'OVERDUE'|'UPCOMING'|'COMPLETED'|'VERIFIED'|'BONUS'>('ALL')
   const [showMyTasksOnly, setShowMyTasksOnly] = useState(false)
+  const [assignedToFilter, setAssignedToFilter] = useState<string>("")
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [loadingComplete, setLoadingComplete] = useState<string | null>(null)
   const [loadingVerify, setLoadingVerify] = useState<string | null>(null)
 
@@ -78,9 +85,29 @@ export default function CompactDashboard({ user }: Props) {
     }
   }
 
+  const fetchFamilyMembers = async () => {
+    try {
+      const response = await fetch("/api/families/members")
+      const result = await response.json()
+      
+      if (result.success) {
+        setFamilyMembers(result.data.map((member: { user: { id: string; name: string; role: string } }) => ({
+          id: member.user.id,
+          name: member.user.name,
+          role: member.user.role
+        })))
+      }
+    } catch (error) {
+      console.error("Error fetching family members:", error)
+    }
+  }
+
   useEffect(() => {
     fetchData()
-  }, [])
+    if (user.role === "PARENT") {
+      fetchFamilyMembers()
+    }
+  }, [user.role])
 
   // Memoized calculations to prevent state timing issues
   const taskCalculations = useMemo(() => {
@@ -100,16 +127,24 @@ export default function CompactDashboard({ user }: Props) {
       }
     }
 
+    // Apply filtering
+    let filteredPendingTasks = pendingTasks
+    let filteredCompletedTasks = completedTasks
+    let filteredVerifiedTasks = verifiedTasks
+
     // Apply "Only Mine" filter if enabled
-    const filteredPendingTasks = showMyTasksOnly 
-      ? pendingTasks.filter(task => task.assignedTo === user.id)
-      : pendingTasks
-    const filteredCompletedTasks = showMyTasksOnly 
-      ? completedTasks.filter(task => task.assignedTo === user.id)
-      : completedTasks
-    const filteredVerifiedTasks = showMyTasksOnly 
-      ? verifiedTasks.filter(task => task.assignedTo === user.id)
-      : verifiedTasks
+    if (showMyTasksOnly) {
+      filteredPendingTasks = filteredPendingTasks.filter(task => task.assignedTo === user.id)
+      filteredCompletedTasks = filteredCompletedTasks.filter(task => task.assignedTo === user.id)
+      filteredVerifiedTasks = filteredVerifiedTasks.filter(task => task.assignedTo === user.id)
+    }
+
+    // Apply assignedTo filter if selected
+    if (assignedToFilter) {
+      filteredPendingTasks = filteredPendingTasks.filter(task => task.assignedTo === assignedToFilter)
+      filteredCompletedTasks = filteredCompletedTasks.filter(task => task.assignedTo === assignedToFilter)
+      filteredVerifiedTasks = filteredVerifiedTasks.filter(task => task.assignedTo === assignedToFilter)
+    }
 
     // Check if all tasks belong to the current user
     const allTasks = [...pendingTasks, ...completedTasks, ...verifiedTasks]
@@ -156,17 +191,13 @@ export default function CompactDashboard({ user }: Props) {
       upcomingTasks,
       totalTasks
     }
-  }, [loading, pendingTasks, completedTasks, verifiedTasks, bonusTasks, showMyTasksOnly, user.id])
+  }, [loading, pendingTasks, completedTasks, verifiedTasks, bonusTasks, showMyTasksOnly, assignedToFilter, user.id])
 
   const {
-    filteredPendingTasks,
     filteredCompletedTasks,
     filteredVerifiedTasks,
-    allTasksAreMine,
     shouldShowOnlyMineButton,
     overdueTasks,
-    todayTasks,
-    futureTasks,
     upcomingTasks,
     totalTasks
   } = taskCalculations
@@ -177,11 +208,6 @@ export default function CompactDashboard({ user }: Props) {
       setShowMyTasksOnly(false)
     }
   }, [shouldShowOnlyMineButton, showMyTasksOnly])
-
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr)
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  }
 
   const handleComplete = async (taskId: string) => {
     setLoadingComplete(taskId)
@@ -259,8 +285,32 @@ export default function CompactDashboard({ user }: Props) {
         </button>
       </div>
 
+      {/* Family Member Filter (Parents only) */}
+      {user.role === "PARENT" && familyMembers.length > 0 && (
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+            Assigned to:
+          </label>
+          <select
+            value={assignedToFilter}
+            onChange={(e) => setAssignedToFilter(e.target.value)}
+            className="px-2 py-1 text-xs border border-gray-300 rounded-md bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">All Members</option>
+            <option value={user.id}>My Tasks</option>
+            {familyMembers
+              .filter(member => member.id !== user.id)
+              .map(member => (
+                <option key={member.id} value={member.id}>
+                  {member.name} ({member.role})
+                </option>
+              ))}
+          </select>
+        </div>
+      )}
+
       {/* Only Mine Toggle */}
-      {shouldShowOnlyMineButton && (
+      {shouldShowOnlyMineButton && !assignedToFilter && (
         <div className="flex items-center justify-between">
           <button
             onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
@@ -286,7 +336,7 @@ export default function CompactDashboard({ user }: Props) {
             <h3 className="text-sm font-medium text-amber-700 mb-1">💰 Bonus Tasks</h3>
             <div className="space-y-1">
               {bonusTasks.map(task => (
-                <BonusTaskCard key={task.id} task={task as any} onAssign={fetchData} />
+                <BonusTaskCard key={task.id} task={task} onAssign={fetchData} />
               ))}
             </div>
           </div>
@@ -298,7 +348,7 @@ export default function CompactDashboard({ user }: Props) {
             <h3 className="text-sm font-medium text-red-700 mb-1">🚨 Overdue</h3>
             <div className="space-y-1">
               {overdueTasks.map(task => (
-                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} user={user} />
+                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} />
               ))}
             </div>
           </div>
@@ -310,7 +360,7 @@ export default function CompactDashboard({ user }: Props) {
             <h3 className="text-sm font-medium text-green-700 mb-1">Next Up</h3>
             <div className="space-y-1">
               {upcomingTasks.map(task => (
-                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} user={user} />
+                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} />
               ))}
             </div>
           </div>
@@ -322,7 +372,7 @@ export default function CompactDashboard({ user }: Props) {
             <h3 className="text-sm font-medium text-orange-700 mb-1">Awaiting Verification</h3>
             <div className="space-y-1">
               {filteredCompletedTasks.map(task => (
-                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} user={user} />
+                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} />
               ))}
             </div>
           </div>
@@ -334,7 +384,7 @@ export default function CompactDashboard({ user }: Props) {
             <h3 className="text-sm font-medium text-green-700 mb-1">Recently Done</h3>
             <div className="space-y-1">
               {filteredVerifiedTasks.map(task => (
-                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} user={user} />
+                <CompactTaskRow key={task.id} task={task} onComplete={handleComplete} onVerify={handleVerify} loadingComplete={loadingComplete} loadingVerify={loadingVerify} />
               ))}
             </div>
           </div>
@@ -361,15 +411,13 @@ function CompactTaskRow({
   onComplete, 
   onVerify, 
   loadingComplete, 
-  loadingVerify, 
-  user 
+  loadingVerify 
 }: { 
   task: FullTask
   onComplete: (id: string) => void
   onVerify: (id: string) => void
   loadingComplete: string | null
   loadingVerify: string | null
-  user: SessionUser
 }) {
   const { data: session } = useSession()
   const taskDate = new Date(task.dueDate)

@@ -1,5 +1,25 @@
 # FamilyTasks Release Notes
 
+## [1.0.25] - 2025-06-04
+
+### ✨ New Features
+- **NEW:** Family member dropdown filter for Compact dashboard view
+- Parents can now filter tasks by specific family members using dropdown selector
+- Shows "All Members", "My Tasks", and individual family members with their roles
+- Children do not see the dropdown (parent-only feature for family management)
+
+### 🔧 Improvements
+- Enhanced Compact dashboard filtering with granular family member selection
+- Improved task visibility and organization for parents managing family tasks
+- Smart UI that hides "Only Mine" toggle when specific family member is selected
+- Seamless integration with existing Compact dashboard filter system
+
+### 🛠️ Technical
+- Reuses existing `/api/families/members` endpoint for efficiency
+- TypeScript interfaces for type-safe family member data handling
+- Optimized rendering with proper memoization and dependency management
+- Clean code with no lint errors and proper error handling
+
 ## [1.0.24] - 2025-06-04
 
 ### 🚨 Critical Hotfix - Comprehensive Date Logic Overhaul
