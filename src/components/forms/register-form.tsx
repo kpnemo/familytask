@@ -62,7 +62,8 @@ export function RegisterForm() {
       if (signInResult?.error) {
         setError("Registration successful but login failed. Please try logging in.")
       } else {
-        router.push("/dashboard")
+        // Navigate to settings with onboarding flag
+        router.push("/settings?showOnboarding=true")
         router.refresh()
       }
     } catch (error) {

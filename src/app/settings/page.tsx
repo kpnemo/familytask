@@ -15,8 +15,13 @@ import { SMSSettingsSection } from "@/components/settings/sms-settings-section"
 import { TimezoneSection } from "@/components/settings/timezone-section"
 import { AppHeader } from "@/components/layout/app-header"
 
-export default async function SettingsPage() {
+interface SettingsPageProps {
+  searchParams?: { showOnboarding?: string }
+}
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const session = await getServerSession(authOptions)
+  const showOnboarding = searchParams?.showOnboarding === 'true'
 
   if (!session) {
     redirect("/login")
@@ -30,6 +35,7 @@ export default async function SettingsPage() {
       select: {
         phoneNumber: true,
         smsNotificationsEnabled: true,
+        // @ts-ignore: timezone column may not exist in TS defs
         timezone: true,
       },
     });
@@ -114,6 +120,31 @@ export default async function SettingsPage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
+          {/* Onboarding banner shown on first settings visit */}
+          {showOnboarding && (
+            <div className="p-4 mb-6 bg-blue-50 border-l-4 border-blue-500 rounded">
+              <h3 className="text-lg font-bold text-blue-700">Welcome to FamilyTasks!</h3>
+              <p className="mt-2 text-sm text-blue-800">To get started, please complete the following:</p>
+              <ul className="list-disc list-inside mt-2 text-sm text-blue-800 space-y-1">
+                <li>
+                  <a href="#dashboard-style" className="text-blue-600 hover:underline">
+                    Select your preferred dashboard style.
+                  </a>
+                </li>
+                <li>
+                  <a href="#sms-settings" className="text-blue-600 hover:underline">
+                    Update your phone number and enable SMS notifications.
+                  </a>
+                </li>
+                <li>
+                  <a href="#timezone-settings" className="text-blue-600 hover:underline">
+                    Set your correct timezone.
+                  </a>
+                </li>
+              </ul>
+            </div>
+          )}
+
           {/* Family Section */}
           {family && (
             <Card>
@@ -138,26 +169,32 @@ export default async function SettingsPage() {
           <AppearanceSection />
 
           {/* Dashboard Style Section */}
-          <DashboardStyleSection />
+          <div id="dashboard-style">
+            <DashboardStyleSection />
+          </div>
 
           {/* Timezone Section */}
           {userData && (
-            <TimezoneSection 
-              user={{
-                id: session.user.id,
-                name: session.user.name || "",
-                email: session.user.email || "",
-                timezone: userData.timezone || "UTC"
-              }}
-            />
+            <div id="timezone-settings">
+              <TimezoneSection 
+                user={{
+                  id: session.user.id,
+                  name: session.user.name || "",
+                  email: session.user.email || "",
+                  timezone: ((userData as any).timezone as string) || "UTC"
+                }}
+              />
+            </div>
           )}
 
           {/* SMS Settings Section - Only show if SMS columns exist */}
           {userData && typeof userData.phoneNumber !== 'undefined' && (
-            <SMSSettingsSection 
-              initialPhoneNumber={userData?.phoneNumber || undefined}
-              initialSmsEnabled={userData?.smsNotificationsEnabled || false}
-            />
+            <div id="sms-settings">
+              <SMSSettingsSection 
+                initialPhoneNumber={userData?.phoneNumber || undefined}
+                initialSmsEnabled={userData?.smsNotificationsEnabled || false}
+              />
+            </div>
           )}
 
           {/* Profile Section */}

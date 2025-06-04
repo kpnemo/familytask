@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
+import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,8 +38,13 @@ export function LoginForm() {
       if (result?.error) {
         setError("Invalid email or password")
       } else {
-        router.push("/dashboard")
-        router.refresh()
+        // After login, check if user is logging in for the first time
+        const session = await getSession()
+        if (session?.user?.isFirstLogin) {
+          router.push("/settings")
+        } else {
+          router.push("/dashboard")
+        }
       }
     } catch (error) {
       setError("Something went wrong. Please try again.")
