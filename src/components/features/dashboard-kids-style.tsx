@@ -168,6 +168,11 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
                         <span className="text-amber-600" title="Due date only">⏰</span>
                       )}
                     </CardTitle>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        📅 {formatDate(new Date(task.dueDate))}
+                      </span>
+                    </div>
                     {task.description && (
                       <p className="text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
                     )}

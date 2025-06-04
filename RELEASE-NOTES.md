@@ -1,5 +1,30 @@
 # FamilyTasks Release Notes
 
+## [1.0.22] - 2025-06-04
+
+### ✨ New Features
+- **NEW:** Kids dashboard now displays task due dates with calendar icons for better clarity
+- **NEW:** Decline task dialog added to single task view (/tasks/[id]) matching /tasks page functionality
+- Task decline reason is now optional - parents can decline tasks with or without providing a reason
+
+### 🐛 Bug Fixes
+- **FIXED:** Enhanced dashboard timeline logic now properly handles date-only comparisons
+- Fixed issue where tasks due today could incorrectly appear as tomorrow's tasks
+- Improved date normalization to prevent time-based comparison issues
+- Enhanced "Today" task detection to be more reliable and timezone-independent
+
+### 🔧 Improvements
+- Simplified decline task workflow - reason field is now optional across all interfaces
+- Enhanced task view experience with consistent decline functionality between list and detail views
+- Improved date handling consistency across all dashboard styles
+- Better visual feedback with calendar emoji (📅) for task dates in kids dashboard
+
+### 🛠️ Technical
+- Updated validation schema to make decline reason optional
+- Enhanced decline task dialog to work without required reason
+- Improved date comparison logic in Enhanced dashboard timeline
+- Fixed database schema migration for compact dashboard style compatibility
+
 ## [1.0.21] - 2025-06-04
 
 ### ✨ New Features

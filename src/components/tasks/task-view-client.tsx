@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/ui/icons"
 import { formatDateTime, formatDate } from "@/lib/utils"
+import { DeclineTaskDialog } from "@/components/features/decline-task-dialog"
 
 interface User {
   id: string
@@ -57,6 +58,7 @@ export function TaskViewClient({
 }: TaskViewClientProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(task.status)
+  const [showDeclineDialog, setShowDeclineDialog] = useState(false)
   const router = useRouter()
 
   const getStatusColor = (status: string) => {
@@ -144,16 +146,13 @@ export function TaskViewClient({
     }
   }
 
-  const handleDeclineTask = async () => {
-    if (!confirm("Are you sure you want to decline this task? It will be reset to pending status.")) {
-      return
-    }
-
+  const handleDeclineTask = async (reason: string) => {
     setIsLoading(true)
     try {
       const response = await fetch(`/api/tasks/${task.id}/decline`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason })
       })
 
       if (!response.ok) {
@@ -449,21 +448,12 @@ export function TaskViewClient({
             {/* Decline Task - for parents when completed */}
             {isParent && currentStatus === "COMPLETED" && (
               <Button
-                onClick={handleDeclineTask}
+                onClick={() => setShowDeclineDialog(true)}
                 disabled={isLoading}
                 variant="destructive"
               >
-                {isLoading ? (
-                  <>
-                    <Icons.circle className="w-4 h-4 mr-2 animate-spin" />
-                    Declining...
-                  </>
-                ) : (
-                  <>
-                    <Icons.warning className="w-4 h-4 mr-2" />
-                    Decline Task
-                  </>
-                )}
+                <Icons.warning className="w-4 h-4 mr-2" />
+                Decline Task
               </Button>
             )}
 
@@ -509,6 +499,15 @@ export function TaskViewClient({
           </div>
         </CardContent>
       </Card>
+
+      {/* Decline Task Dialog */}
+      <DeclineTaskDialog
+        isOpen={showDeclineDialog}
+        onClose={() => setShowDeclineDialog(false)}
+        onDecline={handleDeclineTask}
+        taskTitle={task.title}
+        loading={isLoading}
+      />
     </div>
   )
 }

@@ -33,11 +33,6 @@ export function DeclineTaskDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!reason.trim()) {
-      setError("Please provide a reason for declining this task")
-      return
-    }
 
     if (reason.length > 500) {
       setError("Reason must be under 500 characters")
@@ -62,14 +57,14 @@ export function DeclineTaskDialog({
         <DialogHeader>
           <DialogTitle>Decline Task</DialogTitle>
           <DialogDescription>
-            Send "{taskTitle}" back to the child for rework. Please explain what needs to be improved.
+            Send "{taskTitle}" back to the child for rework. You can optionally explain what needs to be improved.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="reason">
-                Reason for declining <span className="text-red-500">*</span>
+                Reason for declining (optional)
               </Label>
               <textarea
                 id="reason"
@@ -98,7 +93,7 @@ export function DeclineTaskDialog({
             <Button
               type="submit"
               variant="destructive"
-              disabled={loading || !reason.trim()}
+              disabled={loading}
             >
               {loading ? "Declining..." : "Decline Task"}
             </Button>

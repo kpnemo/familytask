@@ -80,7 +80,7 @@ export async function POST(
         data: {
           userId: task.assignedTo,
           title: "Task Needs Rework",
-          message: `Your task "${task.title}" was declined and needs to be redone. Reason: ${reason}`,
+          message: `Your task "${task.title}" was declined and needs to be redone.${reason ? ` Reason: ${reason}` : ''}`,
           type: "TASK_ASSIGNED", // Using existing type since TASK_DECLINED might not be recognized
           relatedTaskId: id
         }

@@ -126,12 +126,17 @@ export default function Dashboard2Unified({ user }: Props) {
     })
     // Today's tasks: pending tasks due today
     const todayTasks = filteredPendingTasks.filter(t => {
-      const d = new Date(t.dueDate)
-      return d >= todayStart && d < tomorrowStart
+      const taskDate = new Date(t.dueDate)
+      const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
+      return taskDateOnly.getTime() === todayStart.getTime()
     })
     // Future tasks: pending tasks due after today
     const futureTasks = filteredPendingTasks
-      .filter(t => new Date(t.dueDate) >= tomorrowStart)
+      .filter(t => {
+        const taskDate = new Date(t.dueDate)
+        const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
+        return taskDateOnly > todayStart
+      })
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     
     // For Enhanced dashboard, show all pending tasks in "Next Up" section
@@ -179,10 +184,14 @@ export default function Dashboard2Unified({ user }: Props) {
   const getDateLabel = (dateString: string) => {
     const date = new Date(dateString)
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
-    if (date.toDateString() === today.toDateString()) return 'Today'
-    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow'
+    
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    
+    if (dateOnly.getTime() === today.getTime()) return 'Today'
+    if (dateOnly.getTime() === tomorrow.getTime()) return 'Tomorrow'
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
 

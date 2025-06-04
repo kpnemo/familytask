@@ -66,7 +66,7 @@ export const updateTaskSchema = z.object({
 })
 
 export const declineTaskSchema = z.object({
-  reason: z.string().min(1, "Decline reason is required").max(500, "Reason must be under 500 characters")
+  reason: z.string().max(500, "Reason must be under 500 characters").optional()
 })
 
 // Tag schemas
