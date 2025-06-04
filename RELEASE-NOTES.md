@@ -1,5 +1,30 @@
 # FamilyTasks Release Notes
 
+## [1.0.18] - 2025-06-04
+
+### ✨ New Features
+- **NEW:** Compact Dashboard style for mobile-optimized task management
+- Added new dashboard style option "Compact" in user settings
+- Single-line task display with title, points, assignee, and due date
+- Clickable task titles that navigate to task detail pages
+- Complete filtering system matching Enhanced dashboard (All, Overdue, Next, Awaiting, Done, Bonus)
+- "Only Mine" toggle for family task filtering
+- Role-based Complete/Verify buttons with proper permissions
+- Visual indicators for overdue tasks and completion status
+
+### 🎨 UI/UX
+- Mobile-first design with compact filter buttons and smaller spacing
+- Touch-friendly interface elements optimized for mobile devices
+- Color-coded status indicators (overdue, awaiting verification, completed)
+- Responsive single-line task layout for better mobile experience
+- Proper task status badges and action buttons
+
+### 🔧 Improvements
+- Database schema updated to support COMPACT dashboard style
+- Enhanced task permission logic matching existing TaskCard component
+- Improved mobile responsiveness across all dashboard styles
+- Added proper session-based role checking for task actions
+
 ## [1.0.17] - 2025-06-04
 
 ### ✨ New Features
