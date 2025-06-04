@@ -405,7 +405,7 @@ function CompactTaskRow({
     )}>
       <div className="flex-1 flex items-center gap-2 min-w-0">
         <Link 
-          href={`/tasks/${task.id}`}
+          href={`/tasks/${task.id}/edit`}
           className="truncate font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
         >
           {task.title}
