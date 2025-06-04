@@ -3,24 +3,6 @@
 ## [1.0.18] - 2025-06-04
 
 ### ✨ New Features
-- compact dashboard style for mobile-optimized task view
-- feat(settings): add onboarding banner with anchor links and link from registration to settings
-- add elegant landing page and comprehensive how-it-works guide
-
-### 🔧 Improvements
-- docs: update release notes for v1.0.18 compact dashboard
-- chore: bump version to 1.0.17 and update release notes
-- chore: update package-lock.json
-- docs: update release notes for v1.0.17 landing page redesign
-- chore: bump version to 1.0.16 and update release notes
-
-### 🐛 Bug Fixes
-- correct release notes dates and chronological order
-
-
-## [1.0.18] - 2025-06-04
-
-### ✨ New Features
 - **NEW:** Compact Dashboard style for mobile-optimized task management
 - Added new dashboard style option "Compact" in user settings
 - Single-line task display with title, points, assignee, and due date
@@ -29,6 +11,7 @@
 - "Only Mine" toggle for family task filtering
 - Role-based Complete/Verify buttons with proper permissions
 - Visual indicators for overdue tasks and completion status
+- Enhanced onboarding banner with anchor links and navigation from registration to settings
 
 ### 🎨 UI/UX
 - Mobile-first design with compact filter buttons and smaller spacing
