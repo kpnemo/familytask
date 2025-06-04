@@ -121,21 +121,55 @@ export default function Dashboard2Unified({ user }: Props) {
     // Overdue: pending tasks due before today
     const overdueTasks = filteredPendingTasks.filter(t => {
       const taskDate = new Date(t.dueDate)
-      const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
-      return taskDateOnly < todayStart
+      
+      const taskYear = taskDate.getFullYear()
+      const taskMonth = taskDate.getMonth()
+      const taskDay = taskDate.getDate()
+      
+      const todayYear = now.getFullYear()
+      const todayMonth = now.getMonth()
+      const todayDay = now.getDate()
+      
+      // Create date objects for comparison (same day = 0, before today = negative)
+      const taskDateNum = taskYear * 10000 + taskMonth * 100 + taskDay
+      const todayDateNum = todayYear * 10000 + todayMonth * 100 + todayDay
+      
+      return taskDateNum < todayDateNum
     })
     // Today's tasks: pending tasks due today
     const todayTasks = filteredPendingTasks.filter(t => {
+      // Get the task date in local timezone
       const taskDate = new Date(t.dueDate)
-      const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
-      return taskDateOnly.getTime() === todayStart.getTime()
+      
+      // Compare just the date parts (ignore time)
+      const taskYear = taskDate.getFullYear()
+      const taskMonth = taskDate.getMonth()
+      const taskDay = taskDate.getDate()
+      
+      const todayYear = now.getFullYear()
+      const todayMonth = now.getMonth()
+      const todayDay = now.getDate()
+      
+      return taskYear === todayYear && taskMonth === todayMonth && taskDay === todayDay
     })
     // Future tasks: pending tasks due after today
     const futureTasks = filteredPendingTasks
       .filter(t => {
         const taskDate = new Date(t.dueDate)
-        const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
-        return taskDateOnly > todayStart
+        
+        const taskYear = taskDate.getFullYear()
+        const taskMonth = taskDate.getMonth()
+        const taskDay = taskDate.getDate()
+        
+        const todayYear = now.getFullYear()
+        const todayMonth = now.getMonth()
+        const todayDay = now.getDate()
+        
+        // Create date objects for comparison
+        const taskDateNum = taskYear * 10000 + taskMonth * 100 + taskDay
+        const todayDateNum = todayYear * 10000 + todayMonth * 100 + todayDay
+        
+        return taskDateNum > todayDateNum
       })
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     
@@ -184,14 +218,32 @@ export default function Dashboard2Unified({ user }: Props) {
   const getDateLabel = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const tomorrow = new Date(today)
-    tomorrow.setDate(today.getDate() + 1)
     
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    // Compare date parts directly
+    const dateYear = date.getFullYear()
+    const dateMonth = date.getMonth()
+    const dateDay = date.getDate()
     
-    if (dateOnly.getTime() === today.getTime()) return 'Today'
-    if (dateOnly.getTime() === tomorrow.getTime()) return 'Tomorrow'
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    
+    // Check if it's today
+    if (dateYear === todayYear && dateMonth === todayMonth && dateDay === todayDay) {
+      return 'Today'
+    }
+    
+    // Check if it's tomorrow
+    const tomorrow = new Date(now)
+    tomorrow.setDate(now.getDate() + 1)
+    const tomorrowYear = tomorrow.getFullYear()
+    const tomorrowMonth = tomorrow.getMonth()
+    const tomorrowDay = tomorrow.getDate()
+    
+    if (dateYear === tomorrowYear && dateMonth === tomorrowMonth && dateDay === tomorrowDay) {
+      return 'Tomorrow'
+    }
+    
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
 
@@ -199,9 +251,35 @@ export default function Dashboard2Unified({ user }: Props) {
   const getDaysLeft = (dateString: string) => {
     const target = new Date(dateString)
     const now = new Date()
-    // Create clean date objects without mutating originals
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate())
+    
+    // Compare using the same date logic
+    const targetYear = target.getFullYear()
+    const targetMonth = target.getMonth()
+    const targetDay = target.getDate()
+    
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    
+    // Check if it's today
+    if (targetYear === todayYear && targetMonth === todayMonth && targetDay === todayDay) {
+      return 0  // Today
+    }
+    
+    // Check if it's tomorrow
+    const tomorrow = new Date(now)
+    tomorrow.setDate(now.getDate() + 1)
+    const tomorrowYear = tomorrow.getFullYear()
+    const tomorrowMonth = tomorrow.getMonth()
+    const tomorrowDay = tomorrow.getDate()
+    
+    if (targetYear === tomorrowYear && targetMonth === tomorrowMonth && targetDay === tomorrowDay) {
+      return 1  // Tomorrow
+    }
+    
+    // For other days, use proper date calculation
+    const today = new Date(todayYear, todayMonth, todayDay)
+    const targetDate = new Date(targetYear, targetMonth, targetDay)
     const diff = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
     return diff
   }
@@ -322,7 +400,9 @@ export default function Dashboard2Unified({ user }: Props) {
             <div className="mt-4 space-y-6">
               {Object.entries(
                 upcomingTasks.reduce((acc, task) => {
-                  const dateKey = task.dueDate.split('T')[0]
+                  // Use the same date logic as filtering to ensure consistency
+                  const taskDate = new Date(task.dueDate)
+                  const dateKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}-${String(taskDate.getDate()).padStart(2, '0')}`
                   acc[dateKey] = acc[dateKey] || []
                   acc[dateKey].push(task)
                   return acc
