@@ -1,5 +1,19 @@
 # FamilyTasks Release Notes
 
+## [1.0.23] - 2025-06-04
+
+### 🚨 Critical Hotfix
+- **CRITICAL FIX:** Enhanced dashboard timeline now correctly displays today's tasks under "Today" section
+- Fixed date object mutation causing tomorrow's tasks to appear as today's tasks
+- Eliminated date.setHours() mutations in favor of clean date object creation
+- Fixed getDateLabel() and getDaysLeft() functions to prevent date object corruption
+- Enhanced date-only comparison logic for accurate task timeline grouping
+
+### 🛠️ Technical
+- Replaced problematic date.setHours() with new Date(year, month, date) constructors
+- Improved date handling consistency across all timeline calculation functions
+- Fixed timezone-independent date comparisons in Enhanced dashboard
+
 ## [1.0.22] - 2025-06-04
 
 ### ✨ New Features
