@@ -1,5 +1,17 @@
 # FamilyTasks Release Notes
 
+## [1.0.19] - 2025-06-04
+
+### 🐛 Bug Fixes
+- **FIXED:** Tasks due today incorrectly appearing as overdue across all dashboard views
+- Corrected date comparison logic to use date-only comparison instead of timestamp comparison
+- Fixed overdue task filtering in task list page, compact dashboard, and unified dashboard
+- Tasks are now only marked overdue if their due date is actually before today's date
+
+### 🧹 Code Cleanup
+- Removed unused dashboard2-parent.tsx component file
+- Consolidated dashboard components to use only dashboard2-unified.tsx
+
 ## [1.0.18] - 2025-06-04
 
 ### ✨ New Features

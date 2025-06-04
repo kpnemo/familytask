@@ -92,8 +92,16 @@ export function TaskList() {
   })
   
   const overdueTasks = tasks.filter(task => {
-    const isOverdue = new Date(task.dueDate) < new Date() && task.status === "PENDING"
-    return isOverdue
+    if (task.status !== "PENDING") return false
+    
+    const taskDate = new Date(task.dueDate)
+    const today = new Date()
+    
+    // Compare dates only, ignoring time
+    const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    
+    return taskDateOnly < todayOnly
   })
 
   return (

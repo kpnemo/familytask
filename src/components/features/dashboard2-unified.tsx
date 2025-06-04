@@ -119,7 +119,11 @@ export default function Dashboard2Unified({ user }: Props) {
     tomorrowStart.setDate(todayStart.getDate() + 1)
 
     // Overdue: pending tasks due before today
-    const overdueTasks = filteredPendingTasks.filter(t => new Date(t.dueDate) < todayStart)
+    const overdueTasks = filteredPendingTasks.filter(t => {
+      const taskDate = new Date(t.dueDate)
+      const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
+      return taskDateOnly < todayStart
+    })
     // Today's tasks: pending tasks due today
     const todayTasks = filteredPendingTasks.filter(t => {
       const d = new Date(t.dueDate)
