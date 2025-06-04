@@ -1,18 +1,33 @@
 # FamilyTasks Release Notes
 
-## [1.0.23] - 2025-06-04
+## [1.0.24] - 2025-06-04
 
-### 🚨 Critical Hotfix
-- **CRITICAL FIX:** Enhanced dashboard timeline now correctly displays today's tasks under "Today" section
-- Fixed date object mutation causing tomorrow's tasks to appear as today's tasks
-- Eliminated date.setHours() mutations in favor of clean date object creation
-- Fixed getDateLabel() and getDaysLeft() functions to prevent date object corruption
-- Enhanced date-only comparison logic for accurate task timeline grouping
+### 🚨 Critical Hotfix - Comprehensive Date Logic Overhaul
+- **CRITICAL FIX:** All dashboard styles now correctly display tasks under proper date sections
+- **Enhanced Dashboard:** Fixed timeline grouping to show today's tasks under "Today", tomorrow's under "Tomorrow"
+- **Classic Dashboard:** Fixed "Next 7 Days" section date filtering and color coding
+- **Kids Dashboard:** Fixed today-only filtering to prevent tomorrow's tasks from appearing
+- Eliminated all timezone-related date comparison issues across the application
 
-### 🛠️ Technical
-- Replaced problematic date.setHours() with new Date(year, month, date) constructors
-- Improved date handling consistency across all timeline calculation functions
-- Fixed timezone-independent date comparisons in Enhanced dashboard
+### 🐛 Major Bug Fixes
+- Fixed date object mutation causing incorrect date classifications throughout app
+- Replaced problematic toISOString().split('T')[0] with direct date part comparisons
+- Fixed getDateLabel(), getDaysLeft(), and getDateColor() functions across all components
+- Eliminated date.setHours() mutations that caused timezone confusion
+- Fixed task grouping logic to align with filtering logic for consistency
+
+### 🛠️ Technical Improvements
+- Implemented consistent date comparison using year/month/day parts directly
+- Removed all UTC timezone dependencies in favor of local date logic
+- Applied uniform date handling across Enhanced, Classic, and Kids dashboard styles
+- Enhanced date-only comparison logic that completely ignores time components
+- Improved WeeklyView, Dashboard2Unified, and KidsStyleDashboard date consistency
+
+### 📋 Components Updated
+- `dashboard2-unified.tsx` - Fixed Enhanced dashboard timeline and task grouping
+- `weekly-view.tsx` - Fixed Classic dashboard Next 7 Days section
+- `dashboard-kids-style.tsx` - Fixed today-only task filtering and completion logic
+- All dashboard styles now use identical, timezone-independent date logic
 
 ## [1.0.22] - 2025-06-04
 
