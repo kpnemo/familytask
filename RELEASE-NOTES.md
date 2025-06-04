@@ -1,5 +1,32 @@
 # FamilyTasks Release Notes
 
+## [1.0.21] - 2025-06-04
+
+### ✨ New Features
+- **NEW:** Family Points History - Parents can now view comprehensive points activity for all family members
+- Added family-wide points log showing all earnings and deductions across the family
+- Current balance summary for each family member at a glance
+- Detailed activity timeline with timestamps, reasons, and transaction creators
+- Visual indicators for earnings (💰) and deductions (💸)
+- Parent-only access with proper permission controls
+
+### 🔧 Improvements
+- Fixed database switching scripts for development environment
+- Corrected PostgreSQL connection strings for local development
+- Enhanced development workflow with proper .env.local configuration
+- Updated script messaging to accurately reflect database connections
+
+### 🛠️ Technical
+- Created new `/api/points/family-history` endpoint for parent access
+- Built `FamilyPointsHistory` React component with real-time updates
+- Added family points history section to points page (parents only)
+- Integrated with existing refresh triggers from reward shop
+
+## [1.0.20] - 2025-06-04
+
+### 🔧 Internal Updates
+- Version bump without user-facing changes
+
 ## [1.0.19] - 2025-06-04
 
 ### 🐛 Bug Fixes

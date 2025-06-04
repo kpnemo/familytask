@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { RewardShop } from "./reward-shop"
 import { PointsHistory } from "./points-history"
+import { FamilyPointsHistory } from "./family-points-history"
 
 interface FamilyMember {
   userId: string
@@ -116,6 +117,15 @@ export function PointsPageClient({
           refreshTrigger={refreshTrigger}
         />
       </div>
+
+      {/* Family Points History - Only for Parents */}
+      {isParent && (
+        <div className="lg:col-span-2">
+          <FamilyPointsHistory
+            refreshTrigger={refreshTrigger}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -1,12 +1,8 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppHeader } from "@/components/layout/app-header"
-import { RewardShop } from "@/components/points/reward-shop"
-import { PointsHistory } from "@/components/points/points-history"
 import { PointsPageClient } from "@/components/points/points-page-client"
 
 export default async function PointsPage() {
