@@ -45,12 +45,33 @@ export function WeeklyView() {
 
   const getDateLabel = (dateString: string) => {
     const date = new Date(dateString)
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const now = new Date()
     
-    if (date.toDateString() === today.toDateString()) return "Today"
-    if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow"
+    // Compare date parts directly
+    const dateYear = date.getFullYear()
+    const dateMonth = date.getMonth()
+    const dateDay = date.getDate()
+    
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    
+    // Check if it's today
+    if (dateYear === todayYear && dateMonth === todayMonth && dateDay === todayDay) {
+      return 'Today'
+    }
+    
+    // Check if it's tomorrow
+    const tomorrow = new Date(now)
+    tomorrow.setDate(now.getDate() + 1)
+    const tomorrowYear = tomorrow.getFullYear()
+    const tomorrowMonth = tomorrow.getMonth()
+    const tomorrowDay = tomorrow.getDate()
+    
+    if (dateYear === tomorrowYear && dateMonth === tomorrowMonth && dateDay === tomorrowDay) {
+      return 'Tomorrow'
+    }
+    
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
 
@@ -68,15 +89,26 @@ export function WeeklyView() {
   }
 
   const getDateColor = (dueDate: string) => {
-    const today = new Date()
     const taskDate = new Date(dueDate)
-    today.setHours(0, 0, 0, 0)
-    taskDate.setHours(0, 0, 0, 0)
+    const now = new Date()
     
-    if (taskDate < today) {
+    // Compare date parts directly
+    const taskYear = taskDate.getFullYear()
+    const taskMonth = taskDate.getMonth()
+    const taskDay = taskDate.getDate()
+    
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    
+    // Create date numbers for comparison
+    const taskDateNum = taskYear * 10000 + taskMonth * 100 + taskDay
+    const todayDateNum = todayYear * 10000 + todayMonth * 100 + todayDay
+    
+    if (taskDateNum < todayDateNum) {
       // Overdue - red
       return "text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700"
-    } else if (taskDate.getTime() === today.getTime()) {
+    } else if (taskDateNum === todayDateNum) {
       // Today - yellow
       return "text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700"
     } else {
@@ -86,7 +118,9 @@ export function WeeklyView() {
   }
 
   const groupedTasks = tasks.reduce((acc: any, task: Task) => {
-    const dateKey = task.dueDate.split('T')[0]
+    // Use the same date logic as other functions to ensure consistency
+    const taskDate = new Date(task.dueDate)
+    const dateKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}-${String(taskDate.getDate()).padStart(2, '0')}`
     if (!acc[dateKey]) acc[dateKey] = []
     acc[dateKey].push(task)
     return acc
