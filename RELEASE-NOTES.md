@@ -1,5 +1,23 @@
 # FamilyTasks Release Notes
 
+## [1.0.17] - 2025-06-04
+
+### ✨ New Features
+- add elegant landing page and comprehensive how-it-works guide
+- debug: add date filtering debug for parents
+- debug: add parent-specific debugging to identify task filtering issue
+
+### 🔧 Improvements
+- chore: update package-lock.json
+- docs: update release notes for v1.0.17 landing page redesign
+- chore: bump version to 1.0.16 and update release notes
+
+### 🐛 Bug Fixes
+- correct release notes dates and chronological order
+- Enhanced dashboard now shows all pending tasks in Next Up section
+- hotfix: remove incorrect empty check that was causing missing tasks
+
+
 ## [1.0.17] - 06/01/2025
 
 ### ✨ New Features
