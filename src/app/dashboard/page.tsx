@@ -9,6 +9,7 @@ import { AppHeader } from "@/components/layout/app-header"
 import { WeeklyView } from "@/components/features/weekly-view"
 import { BonusTasksWidget } from "@/components/features/bonus-tasks-widget"
 import Dashboard2Unified from "@/components/features/dashboard2-unified"
+import CompactDashboard from "@/components/features/dashboard-compact"
 import { KidsStyleDashboard } from "@/components/features/dashboard-kids-style"
 
 export default async function Dashboard() {
@@ -35,6 +36,18 @@ export default async function Dashboard() {
         <AppHeader title="FamilyTasks" user={session.user} />
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <KidsStyleDashboard user={session.user} />
+        </main>
+      </div>
+    )
+  }
+
+  // Compact Style - mobile friendly single-line task view
+  if (dashboardStyle === "COMPACT") {
+    return (
+      <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900">
+        <AppHeader title="FamilyTasks" user={session.user} />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <CompactDashboard user={session.user} />
         </main>
       </div>
     )

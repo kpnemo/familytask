@@ -167,6 +167,40 @@ export function DashboardStyleSection() {
               </Button>
             </div>
           </div>
+
+          {/* Compact Style - Mobile/Compact */}
+          <div className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+            currentStyle === "COMPACT"
+              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+          }`}>
+            <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded mb-3 relative overflow-hidden">
+              <div className="absolute inset-2 space-y-1">
+                {/* Simplified single-line task placeholders */}
+                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full mt-1"></div>
+                <div className="flex gap-1 mt-2 text-xs text-gray-500">
+                  <span className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">Filter</span>
+                  <span className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded-full">All</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-medium">Compact Dashboard</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Compact, single-line task view with smaller filters—ideal for mobile.
+              </p>
+              <Button
+                onClick={() => updateDashboardStyle("COMPACT")}
+                disabled={isLoading}
+                variant={currentStyle === "COMPACT" ? "default" : "outline"}
+                size="sm"
+                className="w-full"
+              >
+                {currentStyle === "COMPACT" ? "Current Style" : "Select Style"}
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">

@@ -188,6 +188,7 @@ enum DashboardStyle {
   STYLE1
   STYLE2
   KIDS_STYLE
+  COMPACT @map("COMPACT")
 }
 
 enum NotificationType {
