@@ -38,7 +38,7 @@
 - Improved mobile responsiveness across all dashboard styles
 - Added proper session-based role checking for task actions
 
-## [1.0.17] - 2025-06-01
+## [1.0.17] - 2025-06-04
 
 ### ✨ New Features
 - **NEW:** Elegant landing page with Anthropic-inspired design
