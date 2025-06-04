@@ -1,5 +1,27 @@
 # FamilyTasks Release Notes
 
+## [1.0.17] - 06/01/2025
+
+### ✨ New Features
+- **NEW:** Elegant landing page with Anthropic-inspired design
+- **NEW:** Comprehensive "How it Works" page explaining all features
+- Added navigation between landing page and how-it-works guide
+- Detailed explanations of family setup, dashboard styles, and task types
+- Kid-friendly feature descriptions with visual examples
+
+### 🎨 UI/UX
+- Complete landing page redesign with clean, modern aesthetics
+- Professional navigation with backdrop blur effects
+- Responsive design optimized for all devices
+- Enhanced typography and color scheme using slate palette
+- Improved call-to-action sections and feature highlights
+
+### 📚 Documentation
+- Added comprehensive guide covering family codes, dashboard options, and task workflows
+- Explained three types of tasks: Regular, Bonus, and Due Date Only
+- Highlighted kid-friendly features and family management tools
+- Visual mockups showing actual interface elements
+
 ## [1.0.16] - 04/06/2025
 
 ### 🐛 Bug Fixes
