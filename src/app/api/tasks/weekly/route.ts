@@ -23,7 +23,7 @@ export async function GET() {
     endDate.setDate(endDate.getDate() + 6)
     endDate.setHours(23, 59, 59, 999)
 
-    let where: any = {
+    const where: any = {
       familyId: familyMember.familyId,
       dueDate: { gte: startDate, lte: endDate }
     }
