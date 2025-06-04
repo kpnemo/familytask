@@ -36,17 +36,24 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
 
   const fetchTodaysTasks = async () => {
     try {
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date().toISOString().split('T')[0]
-      
       const response = await fetch(`/api/tasks?assignedTo=${user.id}&status=PENDING`)
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          // Filter tasks that are due today only
+          // Filter tasks that are due today only using consistent date logic
+          const now = new Date()
+          const todayYear = now.getFullYear()
+          const todayMonth = now.getMonth()
+          const todayDay = now.getDate()
+          
           const todaysTasks = result.data.filter((task: Task) => {
-            const taskDate = new Date(task.dueDate).toISOString().split('T')[0]
-            return taskDate === today
+            const taskDate = new Date(task.dueDate)
+            const taskYear = taskDate.getFullYear()
+            const taskMonth = taskDate.getMonth()
+            const taskDay = taskDate.getDate()
+            
+            // Only show tasks due today (ignore time completely)
+            return taskYear === todayYear && taskMonth === todayMonth && taskDay === todayDay
           })
           setTasks(todaysTasks)
         }
@@ -103,13 +110,24 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
   const canCompleteToday = (task: Task) => {
     if (!task.dueDateOnly) return true
     
-    const today = new Date()
+    const now = new Date()
     const dueDate = new Date(task.dueDate)
-    // Normalize dates to remove time component for comparison
-    today.setHours(0, 0, 0, 0)
-    dueDate.setHours(0, 0, 0, 0)
+    
+    // Compare date parts directly (ignore time completely)
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    
+    const dueYear = dueDate.getFullYear()
+    const dueMonth = dueDate.getMonth()
+    const dueDateDay = dueDate.getDate()
+    
+    // Create date numbers for comparison  
+    const todayDateNum = todayYear * 10000 + todayMonth * 100 + todayDay
+    const dueDateNum = dueYear * 10000 + dueMonth * 100 + dueDateDay
+    
     // Allow completion on or after the due date
-    return today >= dueDate
+    return todayDateNum >= dueDateNum
   }
 
   if (loading) {
