@@ -1,5 +1,35 @@
 # FamilyTasks Release Notes
 
+## [1.0.28] - 2025-06-05
+
+### ✨ New Features
+- **NEW:** Add Points functionality in Rewards Shop for parents
+- Parents can now both ADD and DEDUCT points for any family member
+- Action toggle with visual icons: 💰 Add Points / 🎁 Deduct Points
+- Smart filtering shows all family members for both add and deduct actions
+- Dynamic button styling: green for add, red for deduct operations
+
+### 🔧 Improvements
+- **Enhanced Rewards Shop**: Complete redesign with dual add/deduct functionality
+- **Visual Indicators**: Clear icons and color coding for different point actions
+- **Smart Balance Preview**: Shows "total" vs "remaining" points based on action
+- **All Family Members**: Dropdown now includes parents and children (not just kids)
+- **Full Audit Trail**: All add/deduct transactions visible in Family Points History
+
+### 🛠️ Technical Changes
+- Created new `/api/points/add` endpoint for positive point transactions
+- Updated RewardShop component with action state management
+- Enhanced UI with conditional styling and dynamic form validation
+- Improved balance calculation logic for both add and deduct scenarios
+- Added "Bonus Points: {reason}" format for add transactions in audit trail
+
+### 📋 User Experience
+- Parents can reward good behavior, extra chores, birthdays with bonus points
+- Comprehensive family point management for all members regardless of role
+- Real-time balance preview shows expected outcome before submission
+- Clear distinction between earning points (add) and spending points (deduct)
+- Maintains existing validation: cannot deduct more points than available
+
 ## [1.0.27] - 2025-06-04
 
 ### 🚨 Critical Hotfix - Family Points History Audit Trail
