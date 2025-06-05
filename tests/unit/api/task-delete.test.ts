@@ -56,7 +56,7 @@ describe('DELETE /api/tasks/[id]', () => {
 
     const db = await getTestDb()
     
-    // Create points history entry for verified task
+    // Create points history entry for verified task (child starts with 0, gets 5 points)
     await db.pointsHistory.create({
       data: {
         userId: child.id,
@@ -67,6 +67,8 @@ describe('DELETE /api/tasks/[id]', () => {
         createdBy: adminParent.id
       }
     })
+    
+    // Child now has 5 points, but after deletion should return to 0
 
     const session = createMockSession(adminParent.id, adminParent.email, adminParent.name, 'PARENT')
     getServerSession.mockResolvedValue(session)
@@ -83,21 +85,40 @@ describe('DELETE /api/tasks/[id]', () => {
     expect(data.data.pointsAdjustment).toBeDefined()
     expect(data.data.pointsAdjustment.pointsReversed).toBe(5)
 
-    // Verify no points history entries remain for the deleted task
-    const remainingPointsEntries = await db.pointsHistory.findMany({
+    // Verify no entries remain linked to the deleted task
+    const remainingTaskEntries = await db.pointsHistory.findMany({
       where: {
         userId: child.id,
         taskId: task.id
       }
     })
-    expect(remainingPointsEntries).toHaveLength(0)
+    expect(remainingTaskEntries).toHaveLength(0)
     
-    // Verify the child's points balance is back to 0 (no entries = 0 balance)
+    // Verify we have exactly 2 entries after deletion
     const allPointsEntries = await db.pointsHistory.findMany({
       where: { userId: child.id }
     })
+    expect(allPointsEntries).toHaveLength(2)
+    
+    // Find the original entry (now with null taskId and updated reason)
+    const originalEntry = allPointsEntries.find(entry => 
+      entry.points === 5 && entry.reason.includes('task deleted')
+    )
+    expect(originalEntry).toBeDefined()
+    expect(originalEntry!.taskId).toBeNull()
+    expect(originalEntry!.reason).toContain('Task completed: Test Task (task deleted)')
+    
+    // Find the reversal entry
+    const reversalEntry = allPointsEntries.find(entry => 
+      entry.points === -5 && entry.reason.includes('points reversed')
+    )
+    expect(reversalEntry).toBeDefined()
+    expect(reversalEntry!.taskId).toBeNull()
+    expect(reversalEntry!.reason).toContain('Task deleted: Test Task (points reversed)')
+    
+    // Verify the child's points balance is correct (5 - 5 = 0)
     const currentBalance = allPointsEntries.reduce((sum, entry) => sum + entry.points, 0)
-    expect(currentBalance).toBe(0)
+    expect(currentBalance).toBe(0) // Original balance restored
   })
 
   it('should prevent children from deleting tasks', async () => {

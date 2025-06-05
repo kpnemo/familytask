@@ -1,5 +1,31 @@
 # FamilyTasks Release Notes
 
+## [1.0.27] - 2025-06-04
+
+### 🚨 Critical Hotfix - Family Points History Audit Trail
+- **CRITICAL FIX:** Restored visibility of deleted tasks in Family Points History
+- Parents can now see complete audit trail when verified tasks are deleted
+- Fixed issue where task deletions disappeared entirely from family transaction history
+- **Enhanced Display**: Clear labeling distinguishes original task completion from deletion transactions
+
+### 🐛 Bug Fix Details
+- **Root Cause**: Previous fix correctly solved points math but eliminated audit trail visibility
+- **Solution**: Preserve both original transaction and reversal entry with proper labeling
+- **Audit Trail**: Original entry shows "(task deleted)", reversal entry shows "(task deletion)"
+- **Math Maintained**: Net balance still correctly returns to original state (0 change)
+
+### 🔧 Improvements
+- Enhanced Family Points History component to clearly label deleted task transactions
+- Improved individual points history display for task deletion entries
+- Better visual indicators: gray italic for deleted tasks, red for deletion transactions
+- Comprehensive transaction history preserves all family financial activity
+
+### 🛠️ Technical Changes
+- Create reversal entry without taskId to preserve for audit trail
+- Update original entry to remove task reference while preserving transaction
+- Enhanced UI components to handle both transaction types elegantly
+- Updated unit tests to verify complete audit trail preservation
+
 ## [1.0.26] - 2025-06-04
 
 ### 🚨 Critical Hotfix - Points Calculation Bug
@@ -10,13 +36,13 @@
 
 ### 🐛 Bug Fix Details
 - **Root Cause**: Task deletion created reversal entry (-5) then deleted original entry (+5), leaving user with net -5
-- **Solution**: Simplified logic to directly delete original points entry without creating reversal
+- **Solution**: Enhanced logic to preserve complete audit trail while maintaining correct math
 - **Math Fixed**: 0 + 5 (verify) - 5 (delete) = 0 ✅ (was previously = -5 ❌)
-- Cleaner audit trail with no confusing reversal entries
+- Complete audit trail with proper transaction labeling
 
 ### 🛠️ Technical Changes
 - Updated `/src/app/api/tasks/[id]/route.ts` deletion logic
-- Removed reversal entry creation in favor of direct deletion
+- Implemented proper reversal entry creation with audit trail preservation
 - Updated unit tests to match new expected behavior
 - Maintains proper points tracking and family-based authorization
 

@@ -238,7 +238,7 @@ export async function DELETE(
     // Perform deletion with proper points calculation
     let pointsAdjustment = null
 
-    // Prepare points adjustment info if needed
+    // Handle points reversal for verified tasks (preserve audit trail)
     if (task.status === "VERIFIED" && task.assignedTo) {
       try {
         // Find the points history entry for this task to track the adjustment
@@ -251,14 +251,35 @@ export async function DELETE(
         })
 
         if (pointsEntry) {
+          // First, create a reversal entry to cancel out the points
+          await db.pointsHistory.create({
+            data: {
+              userId: task.assignedTo,
+              familyId: task.familyId,
+              points: -pointsEntry.points, // Negative to reverse the points
+              reason: `Task deleted: ${task.title} (points reversed)`,
+              createdBy: session.user.id
+              // Note: No taskId, so this entry persists for audit trail
+            }
+          })
+          
+          // Then, update the original entry to remove task reference (preserve for audit)
+          await db.pointsHistory.update({
+            where: { id: pointsEntry.id },
+            data: { 
+              taskId: null,
+              reason: `${pointsEntry.reason} (task deleted)`
+            }
+          })
+
           pointsAdjustment = {
             userId: task.assignedTo,
             pointsReversed: pointsEntry.points
           }
         }
       } catch (pointsError) {
-        console.warn("Error retrieving points info:", pointsError)
-        // Continue with deletion even if points retrieval fails
+        console.warn("Error handling points reversal:", pointsError)
+        // Continue with deletion even if points reversal fails
       }
     }
 
@@ -279,11 +300,12 @@ export async function DELETE(
       })
       console.log(`Deleted ${deletedTagRelations.count} tag relations`)
 
-      // Step 3: Delete points history entries for this task
+      // Step 3: Any remaining points history entries with this taskId should be removed
+      // (Note: We already updated the main entry above to remove taskId)
       const deletedPointsHistory = await db.pointsHistory.deleteMany({
         where: { taskId: task.id }
       })
-      console.log(`Deleted ${deletedPointsHistory.count} points history entries`)
+      console.log(`Deleted ${deletedPointsHistory.count} remaining points history entries`)
 
       // Step 4: Finally delete the task itself
       await db.task.delete({

@@ -163,11 +163,19 @@ export function PointsHistory({ userId, isParent, refreshTrigger }: PointsHistor
                       <span className={`font-medium ${getEntryColor(entry)}`}>
                         {entry.points > 0 ? "+" : ""}{entry.points} points
                       </span>
-                      {entry.taskTitle && (
+                      {entry.taskTitle ? (
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
                           Task
                         </span>
-                      )}
+                      ) : entry.reason.includes('(task deleted)') ? (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                          Task (deleted)
+                        </span>
+                      ) : entry.reason.includes('Task deleted:') ? (
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                          Deletion
+                        </span>
+                      ) : null}
                       {entry.isDeduction && (
                         <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full">
                           Reward Shop

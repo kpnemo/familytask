@@ -169,11 +169,19 @@ export function FamilyPointsHistory({ refreshTrigger = 0 }: FamilyPointsHistoryP
                     
                     <div className="text-sm text-gray-600 dark:text-gray-300">
                       {entry.reason}
-                      {entry.taskTitle && (
+                      {entry.taskTitle ? (
                         <span className="text-blue-600 dark:text-blue-400 ml-1">
                           • {entry.taskTitle}
                         </span>
-                      )}
+                      ) : entry.reason.includes('(task deleted)') ? (
+                        <span className="text-gray-500 dark:text-gray-400 ml-1 italic">
+                          • (task deleted)
+                        </span>
+                      ) : entry.reason.includes('Task deleted:') ? (
+                        <span className="text-red-500 dark:text-red-400 ml-1 italic">
+                          • (task deletion)
+                        </span>
+                      ) : null}
                     </div>
                     
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
