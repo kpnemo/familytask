@@ -80,6 +80,17 @@ All API routes follow consistent patterns:
 - Role-based permission checks
 - Standardized response format: `{ success: boolean, data: any, error?: string }`
 
+### Points Management APIs
+- `/api/points/add` - Add bonus points to family members (parents only)
+- `/api/points/deduct` - Deduct points from family members (parents only)
+- `/api/points/history` - Individual user's points transaction history
+- `/api/points/family-history` - Family-wide points transaction history (parents only)
+- **Transaction Formats**:
+  - Task completion: "Task completed: {taskTitle}"
+  - Bonus points: "Bonus Points: {reason}"
+  - Reward shop: "Reward Shop: {reason}"
+  - Task deletion: "Task deleted: {taskTitle} (points reversed)"
+
 ### Task Workflow
 1. **PENDING**: Created and assigned
 2. **AVAILABLE**: Bonus tasks ready for self-assignment
@@ -90,8 +101,10 @@ All API routes follow consistent patterns:
 ### Points System
 - Earned on task verification
 - Tracked with running balance in `PointsHistory`
-- Deductible by parents through reward shop
-- All transactions logged with before/after amounts
+- **Add/Deduct functionality**: Parents can both add bonus points and deduct points through reward shop
+- **Comprehensive Audit Trail**: All transactions logged with before/after amounts and detailed reasons
+- **Task Deletion Logic**: Verified task deletions create reversal entries while preserving audit trail
+- **Family-wide Management**: Parents can manage points for all family members (parents and children)
 
 ### Component Organization
 ```
@@ -157,7 +170,10 @@ The project includes automated deployment scripts:
 - Create and manage all tasks
 - Verify task completions
 - Manage family members
-- Deduct points through reward shop
+- **Add bonus points** to any family member for good behavior, extra chores, birthdays
+- **Deduct points** from any family member through reward shop
+- **Family Points History** - view all family transactions with complete audit trail
+- **Compact Dashboard Filtering** - filter tasks by specific family members
 - Access all family data
 
 **Children:**
@@ -166,3 +182,35 @@ The project includes automated deployment scripts:
 - Self-assign bonus tasks
 - View own points and history
 - Limited family member visibility
+
+## Recent Critical Updates (v1.0.25-1.0.28)
+
+### 🚨 Task Deletion Points Bug Fix (v1.0.26-1.0.27)
+**Critical Issue**: Deleting verified tasks caused double-deduction, leaving users with negative points.
+- **Example**: Child had 0 points → completed 5-point task → deleted task → ended with -5 points ❌
+- **Root Cause**: Deletion created reversal entry (-5) then deleted original entry (+5) = net -5
+- **Solution**: Preserve both original and reversal entries while removing task references
+- **Result**: 0 + 5 (verify) - 5 (delete) = 0 ✅ with complete audit trail
+
+### 🎯 Family Member Dropdown Filter (v1.0.25)
+**Enhancement**: Added family member filtering to Compact dashboard for parents.
+- Dropdown shows "All Members", "My Tasks", and individual family members
+- Parent-only feature (children don't see dropdown)
+- Reuses existing `/api/families/members` endpoint
+- Smart UI hides "Only Mine" toggle when specific member selected
+
+### 💰 Add Points Feature (v1.0.28)
+**Major Enhancement**: Parents can now ADD points (not just deduct) through Rewards Shop.
+- **Action Toggle**: Switch between Add Points 💰 and Deduct Points 🎁
+- **Visual Design**: Green styling for add, red for deduct, with emoji icons
+- **All Family Members**: Dropdown includes parents and children (not role-restricted)
+- **Smart Validation**: Prevents deducting more than available, allows unlimited adding
+- **Audit Trail**: "Bonus Points: {reason}" format for add transactions
+- **Use Cases**: Reward good behavior, extra chores, birthdays, achievements
+
+### 🔧 Key Technical Learnings
+1. **Points Math**: Always ensure net-zero when reversing transactions
+2. **Audit Trail Preservation**: Never delete historical data, only remove references
+3. **Browser Caching**: Hard refresh needed when updating React components
+4. **Family Filtering**: Role-based filtering can be limiting - consider showing all members
+5. **API Design**: Consistent patterns across add/deduct endpoints with proper validation

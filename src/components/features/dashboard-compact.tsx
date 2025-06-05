@@ -426,6 +426,10 @@ function CompactTaskRow({
   const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const isOverdue = taskDateOnly < todayOnly
   
+  // Determine the correct link based on user role
+  const isParent = session?.user?.role === "PARENT" || session?.user?.familyRole === "ADMIN_PARENT" || session?.user?.familyRole === "PARENT"
+  const taskLink = isParent ? `/tasks/${task.id}/edit` : `/tasks/${task.id}`
+  
   // Check if due date only task can be completed (on or after due date)
   const canCompleteToday = !task.dueDateOnly || (() => {
     const today = new Date()
@@ -453,7 +457,7 @@ function CompactTaskRow({
     )}>
       <div className="flex-1 flex items-center gap-2 min-w-0">
         <Link 
-          href={`/tasks/${task.id}/edit`}
+          href={taskLink}
           className="truncate font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
         >
           {task.title}

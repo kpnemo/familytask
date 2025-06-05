@@ -76,6 +76,9 @@ export function formatSMSMessage(type: string, data: Record<string, unknown>): s
     case 'TASK_DECLINED':
       return `Task declined: ${data.title} - Try again`
     
+    case 'TASK_REASSIGNED':
+      return `Task reassigned: ${data.title} - Now assigned to ${data.userName}`
+    
     case 'TASK_DELETED':
       return `Task deleted: ${data.title}`
     

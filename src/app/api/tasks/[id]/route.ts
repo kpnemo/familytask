@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { updateTaskSchema } from "@/lib/validations"
+import { createNotificationWithSMS } from "@/lib/notification-helpers"
 
 export async function GET(
   req: NextRequest,
@@ -100,6 +101,11 @@ export async function PUT(
             some: { userId: session.user.id }
           }
         }
+      },
+      include: {
+        assignee: {
+          select: { id: true, name: true }
+        }
       }
     })
 
@@ -118,6 +124,79 @@ export async function PUT(
       )
     }
 
+    console.log("🔍 Task update debugging:", {
+      taskId: task.id,
+      taskTitle: task.title,
+      currentAssignedTo: task.assignedTo,
+      newAssignedTo: validatedData.assignedTo,
+      requestBody: body,
+      validatedData: validatedData
+    })
+
+    // Check if assignment is being changed (reassignment logic)
+    const isReassigning = validatedData.assignedTo && validatedData.assignedTo !== task.assignedTo
+    
+    console.log("🎯 Reassignment check:", {
+      isReassigning: isReassigning,
+      hasNewAssignedTo: !!validatedData.assignedTo,
+      isDifferentFromCurrent: validatedData.assignedTo !== task.assignedTo,
+      currentAssignedTo: task.assignedTo,
+      newAssignedTo: validatedData.assignedTo
+    })
+    
+    // Only parents can reassign tasks
+    if (isReassigning && session.user.role === "CHILD") {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Only parents can reassign tasks" } },
+        { status: 403 }
+      )
+    }
+
+    // Only allow reassignment for PENDING tasks
+    if (isReassigning && task.status !== "PENDING") {
+      return NextResponse.json(
+        { error: { code: "INVALID_STATUS", message: "Can only reassign tasks in PENDING status" } },
+        { status: 400 }
+      )
+    }
+
+    // Validate that new assignee is a family member
+    let newAssignee = null
+    if (isReassigning) {
+      const familyMember = await db.familyMember.findFirst({
+        where: { 
+          userId: session.user.id,
+        },
+        select: { familyId: true }
+      })
+
+      if (!familyMember) {
+        return NextResponse.json(
+          { error: { code: "FAMILY_NOT_FOUND", message: "Family not found" } },
+          { status: 404 }
+        )
+      }
+
+      newAssignee = await db.familyMember.findFirst({
+        where: {
+          userId: validatedData.assignedTo,
+          familyId: familyMember.familyId
+        },
+        include: {
+          user: {
+            select: { id: true, name: true }
+          }
+        }
+      })
+
+      if (!newAssignee) {
+        return NextResponse.json(
+          { error: { code: "INVALID_ASSIGNEE", message: "New assignee is not a family member" } },
+          { status: 400 }
+        )
+      }
+    }
+
     // Update task in transaction
     const result = await db.$transaction(async (tx) => {
       const updatedTask = await tx.task.update({
@@ -127,6 +206,7 @@ export async function PUT(
           ...(validatedData.description !== undefined && { description: validatedData.description }),
           ...(validatedData.points && { points: validatedData.points }),
           ...(validatedData.dueDate && { dueDate: new Date(validatedData.dueDate + "T12:00:00.000Z") }),
+          ...(validatedData.assignedTo && { assignedTo: validatedData.assignedTo }),
           ...(validatedData.dueDateOnly !== undefined && { dueDateOnly: validatedData.dueDateOnly }),
         }
       })
@@ -151,6 +231,74 @@ export async function PUT(
 
       return updatedTask
     })
+
+    // Send reassignment notifications after successful update
+    if (isReassigning && newAssignee) {
+      console.log("🔔 Sending reassignment notifications:", {
+        taskTitle: task.title,
+        previousAssignee: task.assignedTo,
+        newAssignee: validatedData.assignedTo,
+        reassignedBy: session.user.name
+      })
+      
+      try {
+        // Notify previous assignee (if different from current user)
+        if (task.assignedTo && task.assignedTo !== session.user.id) {
+          console.log("📤 Notifying previous assignee:", task.assignedTo)
+          const notification = await createNotificationWithSMS(
+            {
+              userId: task.assignedTo,
+              title: "Task Reassigned Away",
+              message: `Task "${task.title}" was reassigned from you to ${newAssignee.user.name} by ${session.user.name}`,
+              type: "TASK_REASSIGNED",
+              relatedTaskId: task.id
+            },
+            {
+              title: task.title,
+              userName: newAssignee.user.name
+            }
+          )
+          console.log("✅ Previous assignee notification created:", notification.id)
+        } else {
+          console.log("⏭️ Skipping previous assignee notification (same as current user)")
+        }
+
+        // Notify new assignee (if different from current user)
+        if (validatedData.assignedTo !== session.user.id) {
+          console.log("📤 Notifying new assignee:", validatedData.assignedTo)
+          const notification = await createNotificationWithSMS(
+            {
+              userId: validatedData.assignedTo,
+              title: "Task Assigned to You",
+              message: `Task "${task.title}" was assigned to you by ${session.user.name}`,
+              type: "TASK_REASSIGNED",
+              relatedTaskId: task.id
+            },
+            {
+              title: task.title,
+              userName: session.user.name
+            }
+          )
+          console.log("✅ New assignee notification created:", notification.id)
+        } else {
+          console.log("⏭️ Skipping new assignee notification (same as current user)")
+        }
+        
+        // Final check - let's see what notifications exist in the database
+        const allNotifications = await db.notification.findMany({
+          where: {
+            relatedTaskId: task.id
+          },
+          orderBy: { createdAt: 'desc' }
+        })
+        console.log("🔍 All notifications for this task:", allNotifications)
+      } catch (error) {
+        console.error("❌ Failed to send reassignment notifications:", error)
+        // Don't fail the update if notifications fail
+      }
+    } else {
+      console.log("ℹ️ Not sending notifications - isReassigning:", isReassigning, "newAssignee:", !!newAssignee)
+    }
 
     return NextResponse.json({
       success: true,

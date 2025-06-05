@@ -1,5 +1,47 @@
 # FamilyTasks Release Notes
 
+## [1.0.29] - 2025-06-05
+
+### ✨ New Features
+- **NEW:** Task Reassignment functionality for parents
+- Parents can now reassign PENDING tasks to any family member through task edit form
+- Smart assignment dropdown shows all family members with roles
+- Real-time notifications for both previous and new assignees
+- Role-based task navigation: parents get edit access, children get view-only access
+
+### 🔔 Enhanced Notifications
+- **TASK_REASSIGNED**: New notification type for task reassignment events
+- Previous assignee gets: "Task 'X' was reassigned from you to Y by Z"
+- New assignee gets: "Task 'X' was assigned to you by Z"
+- Auto-refresh notifications every 30 seconds + manual refresh button
+- SMS support for reassignment notifications with proper formatting
+
+### 🎯 Smart UI Navigation
+- **Compact Dashboard**: Task titles link to edit (parents) or view (children)
+- **Single Task View**: Dynamic "Edit Task" / "View Task" button based on role
+- **Edit Form**: Assignment dropdown only visible for parents with PENDING tasks
+- Clear messaging when reassignment is not available (status/permission reasons)
+
+### 🔒 Security & Validation
+- **Parent-Only Reassignment**: Only parents/admin parents can reassign tasks
+- **PENDING Status Requirement**: Only pending tasks can be reassigned
+- **Family Member Validation**: Can only reassign to members of same family
+- **Comprehensive API Validation**: Prevents unauthorized reassignment attempts
+
+### 🛠️ Technical Implementation
+- Enhanced `PUT /api/tasks/[id]` with reassignment detection and notifications
+- Updated `updateTaskSchema` to include `assignedTo` field validation
+- **Database Schema**: Added `TASK_REASSIGNED` to `NotificationType` enum
+- Improved notification polling system with automatic background refresh
+- Enhanced debug logging for troubleshooting notification delivery
+
+### 📋 User Experience
+- Parents can easily reassign tasks when family schedules change
+- Children receive clear notifications about task reassignments
+- Seamless role-based navigation preserves appropriate access levels
+- Complete audit trail maintains transparency for all reassignment activity
+- Responsive design works perfectly on mobile and desktop devices
+
 ## [1.0.28] - 2025-06-05
 
 ### ✨ New Features

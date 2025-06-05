@@ -61,6 +61,7 @@ export const updateTaskSchema = z.object({
   description: z.string().max(500, "Description too long").optional(),
   points: z.number().int().min(0, "Points must be at least 0").max(100, "Points cannot exceed 100").optional(),
   dueDate: z.string().min(1, "Due date is required").optional(),
+  assignedTo: z.string().cuid("Invalid user ID").optional(),
   tagIds: z.array(z.string().cuid()).optional(),
   dueDateOnly: z.boolean().optional(),
 })

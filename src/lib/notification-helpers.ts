@@ -20,6 +20,13 @@ interface SMSData {
 
 export async function createNotificationWithSMS(data: CreateNotificationData, smsData?: SMSData) {
   try {
+    console.log("🔔 Creating notification:", {
+      userId: data.userId,
+      title: data.title,
+      type: data.type,
+      relatedTaskId: data.relatedTaskId
+    })
+    
     // Create in-app notification
     const notification = await db.notification.create({
       data: {
@@ -30,6 +37,8 @@ export async function createNotificationWithSMS(data: CreateNotificationData, sm
         relatedTaskId: data.relatedTaskId,
       },
     })
+    
+    console.log("✅ Notification created successfully:", notification.id)
 
     // Check if user has SMS notifications enabled (backwards compatible)
     let user = null;

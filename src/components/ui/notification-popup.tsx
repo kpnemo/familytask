@@ -27,7 +27,7 @@ export function NotificationPopup() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  // Fetch unread count on mount
+  // Fetch unread count on mount and set up polling
   useEffect(() => {
     const fetchCount = async () => {
       try {
@@ -38,7 +38,14 @@ export function NotificationPopup() {
         console.error("Error fetching count:", error)
       }
     }
+    
+    // Initial fetch
     fetchCount()
+    
+    // Set up polling every 30 seconds
+    const interval = setInterval(fetchCount, 30000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   // Fetch notifications when popup opens
@@ -172,15 +179,25 @@ export function NotificationPopup() {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
-              {notifications.length > 0 && (
+              <div className="flex gap-2">
                 <button
-                  onClick={clearAllNotifications}
-                  disabled={actionLoading === "clear_all"}
-                  className="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 disabled:opacity-50"
+                  onClick={fetchNotifications}
+                  disabled={loading}
+                  className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 disabled:opacity-50"
+                  title="Refresh notifications"
                 >
-                  {actionLoading === "clear_all" ? "Clearing..." : "Clear All"}
+                  {loading ? "Refreshing..." : "🔄 Refresh"}
                 </button>
-              )}
+                {notifications.length > 0 && (
+                  <button
+                    onClick={clearAllNotifications}
+                    disabled={actionLoading === "clear_all"}
+                    className="text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 disabled:opacity-50"
+                  >
+                    {actionLoading === "clear_all" ? "Clearing..." : "Clear All"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           

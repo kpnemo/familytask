@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,6 +19,7 @@ interface TaskData {
   points: number
   dueDate: string
   assignedTo: string
+  status: string
   dueDateOnly?: boolean
   tags: Array<{ tag: { id: string; name: string; color: string } }>
 }
@@ -44,6 +46,13 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [tags, setTags] = useState<Tag[]>([])
   const router = useRouter()
+  const { data: session } = useSession()
+  
+  // Check if current user is a parent
+  const isParent = session?.user?.role === "PARENT" || session?.user?.familyRole === "ADMIN_PARENT" || session?.user?.familyRole === "PARENT"
+  
+  // Check if task can be reassigned (PENDING status and user is parent)
+  const canReassign = isParent && task.status === "PENDING"
 
   const {
     register,
@@ -64,6 +73,7 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
         const day = String(date.getDate()).padStart(2, '0')
         return `${year}-${month}-${day}`
       })(), // Direct date formatting
+      assignedTo: task.assignedTo,
       dueDateOnly: task.dueDateOnly || false,
       tagIds: task.tags.map(t => t.tag.id)
     }
@@ -224,17 +234,44 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
             </div>
           </div>
 
-          {/* Current Assignment (Read-only) */}
+          {/* Task Assignment */}
           <div className="space-y-2">
-            <Label>Currently Assigned To</Label>
-            <div className="bg-gray-50 rounded-md p-3 border">
-              <p className="text-sm text-gray-700">
-                {familyMembers.find(m => m.id === task.assignedTo)?.name || "Loading..."}
+            <Label htmlFor="assignedTo">
+              {canReassign ? "Assigned To" : "Currently Assigned To"}
+            </Label>
+            {canReassign ? (
+              // Editable dropdown for parents with PENDING tasks
+              <select
+                id="assignedTo"
+                {...register("assignedTo")}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {familyMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name} ({member.role.toLowerCase()})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              // Read-only display for children or non-PENDING tasks
+              <div className="bg-gray-50 rounded-md p-3 border">
+                <p className="text-sm text-gray-700">
+                  {familyMembers.find(m => m.id === task.assignedTo)?.name || "Loading..."}
+                </p>
+              </div>
+            )}
+            {!canReassign && (
+              <p className="text-xs text-gray-500">
+                {!isParent 
+                  ? "Only parents can reassign tasks" 
+                  : task.status !== "PENDING"
+                  ? "Only pending tasks can be reassigned"
+                  : "Assignment cannot be changed after task creation"}
               </p>
-            </div>
-            <p className="text-xs text-gray-500">
-              Note: Assignment cannot be changed after task creation
-            </p>
+            )}
+            {errors.assignedTo && (
+              <p className="text-sm text-destructive">{errors.assignedTo.message}</p>
+            )}
           </div>
 
           {/* Due Date Only Constraint */}

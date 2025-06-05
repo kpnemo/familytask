@@ -457,12 +457,12 @@ export function TaskViewClient({
               </Button>
             )}
 
-            {/* Edit Task - for creator when pending */}
-            {isCreator && currentStatus === "PENDING" && (
+            {/* Edit Task - for parents when pending, view only for children */}
+            {currentStatus === "PENDING" && (
               <Button asChild variant="outline">
-                <Link href={`/tasks/${task.id}/edit`}>
+                <Link href={isParent ? `/tasks/${task.id}/edit` : `/tasks/${task.id}`}>
                   <Icons.edit className="w-4 h-4 mr-2" />
-                  Edit Task
+                  {isParent ? "Edit Task" : "View Task"}
                 </Link>
               </Button>
             )}
