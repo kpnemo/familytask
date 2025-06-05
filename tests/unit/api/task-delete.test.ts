@@ -48,7 +48,7 @@ describe('DELETE /api/tasks/[id]', () => {
     expect(deletedTask).toBeNull()
   })
 
-  it('should reverse points when deleting verified tasks', async () => {
+  it('should remove original points entry when deleting verified tasks', async () => {
     const { adminParent, child } = await createTestUsers()
     const { family } = await createTestFamily(adminParent.id)
     await addFamilyMember(family.id, child.id, 'CHILD')
@@ -83,15 +83,21 @@ describe('DELETE /api/tasks/[id]', () => {
     expect(data.data.pointsAdjustment).toBeDefined()
     expect(data.data.pointsAdjustment.pointsReversed).toBe(5)
 
-    // Verify reversal entry was created
-    const reversalEntry = await db.pointsHistory.findFirst({
+    // Verify no points history entries remain for the deleted task
+    const remainingPointsEntries = await db.pointsHistory.findMany({
       where: {
         userId: child.id,
-        points: -5,
-        reason: { contains: 'points reversed' }
+        taskId: task.id
       }
     })
-    expect(reversalEntry).toBeDefined()
+    expect(remainingPointsEntries).toHaveLength(0)
+    
+    // Verify the child's points balance is back to 0 (no entries = 0 balance)
+    const allPointsEntries = await db.pointsHistory.findMany({
+      where: { userId: child.id }
+    })
+    const currentBalance = allPointsEntries.reduce((sum, entry) => sum + entry.points, 0)
+    expect(currentBalance).toBe(0)
   })
 
   it('should prevent children from deleting tasks', async () => {

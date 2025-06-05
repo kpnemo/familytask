@@ -238,10 +238,10 @@ export async function DELETE(
     // Perform deletion with proper points calculation
     let pointsAdjustment = null
 
-    // First, handle points reversal if needed (outside transaction for safety)
+    // Prepare points adjustment info if needed
     if (task.status === "VERIFIED" && task.assignedTo) {
       try {
-        // Find the points history entry for this task
+        // Find the points history entry for this task to track the adjustment
         const pointsEntry = await db.pointsHistory.findFirst({
           where: {
             taskId: task.id,
@@ -251,25 +251,14 @@ export async function DELETE(
         })
 
         if (pointsEntry) {
-          // Create a reversal entry
-          await db.pointsHistory.create({
-            data: {
-              userId: task.assignedTo,
-              familyId: task.familyId,
-              points: -pointsEntry.points,
-              reason: `Task deleted: ${task.title} (points reversed)`,
-              createdBy: session.user.id
-            }
-          })
-
           pointsAdjustment = {
             userId: task.assignedTo,
             pointsReversed: pointsEntry.points
           }
         }
       } catch (pointsError) {
-        console.warn("Error handling points reversal:", pointsError)
-        // Continue with deletion even if points reversal fails
+        console.warn("Error retrieving points info:", pointsError)
+        // Continue with deletion even if points retrieval fails
       }
     }
 

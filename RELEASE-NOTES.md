@@ -1,5 +1,25 @@
 # FamilyTasks Release Notes
 
+## [1.0.26] - 2025-06-04
+
+### 🚨 Critical Hotfix - Points Calculation Bug
+- **CRITICAL FIX:** Fixed incorrect points calculation when deleting verified tasks
+- Users no longer lose extra points when tasks are deleted after verification
+- Resolved double-deduction issue where points were incorrectly subtracted twice
+- **Example**: Deleting a verified 5-point task now correctly returns balance to original state instead of -5 points
+
+### 🐛 Bug Fix Details
+- **Root Cause**: Task deletion created reversal entry (-5) then deleted original entry (+5), leaving user with net -5
+- **Solution**: Simplified logic to directly delete original points entry without creating reversal
+- **Math Fixed**: 0 + 5 (verify) - 5 (delete) = 0 ✅ (was previously = -5 ❌)
+- Cleaner audit trail with no confusing reversal entries
+
+### 🛠️ Technical Changes
+- Updated `/src/app/api/tasks/[id]/route.ts` deletion logic
+- Removed reversal entry creation in favor of direct deletion
+- Updated unit tests to match new expected behavior
+- Maintains proper points tracking and family-based authorization
+
 ## [1.0.25] - 2025-06-04
 
 ### ✨ New Features
