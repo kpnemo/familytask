@@ -18,7 +18,8 @@ export class TaskParser {
     input: string, 
     familyContext: FamilyContext,
     targetDate?: string,
-    defaultPoints?: number
+    defaultPoints?: number,
+    retryCount: number = 0
   ): Promise<{
     parsedTasks: ParsedTask[];
     clarificationQuestions: ClarificationQuestion[];
@@ -45,7 +46,14 @@ export class TaskParser {
 
       return this.parseAIResponse(content.text);
     } catch (error) {
-      console.error('Error parsing natural language:', error);
+      console.error(`Error parsing natural language (attempt ${retryCount + 1}):`, error);
+      
+      // Retry once if this is the first attempt and the error is parsing-related
+      if (retryCount === 0 && (error instanceof SyntaxError || error.message.includes('JSON'))) {
+        console.log('Retrying task parsing due to parsing error...');
+        return this.parseNaturalLanguage(input, familyContext, targetDate, defaultPoints, 1);
+      }
+      
       throw new Error('Failed to parse natural language input');
     }
   }
@@ -187,13 +195,20 @@ Remember: Use ONLY date part (YYYY-MM-DD), NO time component!`;
     clarificationQuestions: ClarificationQuestion[];
   } {
     try {
-      // Clean up the response to extract JSON
+      // Clean up the response to extract JSON and remove control characters
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No valid JSON found in AI response');
       }
 
-      const parsed = JSON.parse(jsonMatch[0]) as {
+      // Clean control characters that can break JSON parsing
+      const cleanedJson = jsonMatch[0]
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, '') // Remove control characters
+        .replace(/\n/g, '\\n') // Escape remaining newlines
+        .replace(/\r/g, '\\r') // Escape carriage returns
+        .replace(/\t/g, '\\t'); // Escape tabs
+
+      const parsed = JSON.parse(cleanedJson) as {
         parsedTasks: unknown[];
         clarificationQuestions?: unknown[];
       };

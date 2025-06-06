@@ -2,32 +2,20 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Icons } from '@/components/ui/icons';
+import { ParsedTask, ClarificationQuestion } from '@/types/ai';
 
 interface Message {
   id: string;
   type: 'user' | 'ai' | 'system';
   content: string;
   timestamp: Date;
+  intent?: string;
   tasks?: ParsedTask[];
   clarificationQuestions?: ClarificationQuestion[];
+  analytics?: any;
+  followUpActions?: string[];
 }
 
-interface ParsedTask {
-  title: string;
-  description?: string;
-  suggestedPoints: number;
-  suggestedAssignee?: string;
-  suggestedDueDate: string;
-  confidence: number;
-}
-
-interface ClarificationQuestion {
-  id: string;
-  question: string;
-  taskIndex: number;
-  field: string;
-  suggestedAnswers?: string[];
-}
 
 interface User {
   id: string;
@@ -48,12 +36,21 @@ interface FamilyMember {
 }
 
 export function AIAssistantClient({ user }: AIAssistantClientProps) {
+  const [mounted, setMounted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'ai',
-      content: `Hi ${user.name}! 👋 I'm your AI Assistant. I can help you create tasks for your family just by describing what needs to be done. Try something like: "Tomorrow the kids need to clean their rooms and do homework"`,
+      content: `Hi ${user.name}! 👋 I'm your AI Assistant. I can help you with:
+
+📝 **Create tasks**: "Tomorrow Johnny needs to clean his room"
+📊 **Check progress**: "How is Erik doing this week?"
+🔍 **Get insights**: "Show me family stats" or "Who needs encouragement?"
+🎯 **Quick status**: "What's overdue?" or "What tasks does Sarah have?"
+
+What would you like me to help you with?`,
       timestamp: new Date(),
+      intent: 'CLARIFICATION'
     }
   ]);
   const [input, setInput] = useState('');
@@ -61,6 +58,10 @@ export function AIAssistantClient({ user }: AIAssistantClientProps) {
   const [pendingTasks, setPendingTasks] = useState<ParsedTask[]>([]);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -109,35 +110,38 @@ export function AIAssistantClient({ user }: AIAssistantClientProps) {
     setIsLoading(true);
 
     try {
-      // Call AI parsing endpoint
-      const response = await fetch('/api/ai/parse-tasks', {
+      // Call AI chat endpoint with conversation history
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          input: input.trim(),
+          message: input.trim(),
+          conversationHistory: messages.map(msg => ({
+            id: msg.id,
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content,
+            timestamp: msg.timestamp.toISOString()
+          }))
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        let aiResponseContent = '';
+        const aiResponseContent = data.data.message;
+        const intent = data.data.intent;
         
-        if (data.data.parsedTasks && data.data.parsedTasks.length > 0) {
-          const tasksCount = data.data.parsedTasks.length;
-          aiResponseContent = `Great! I found ${tasksCount} task${tasksCount > 1 ? 's' : ''} from your message. `;
-          
-          if (data.data.clarificationQuestions && data.data.clarificationQuestions.length > 0) {
-            aiResponseContent += `I have a few questions to make sure I get the details right. `;
-          } else {
-            aiResponseContent += `The tasks look ready to create! Review them below and click "Create Tasks" when you're satisfied.`;
-          }
-
-          setPendingTasks(data.data.parsedTasks);
+        // Handle different response types based on intent
+        if (intent === 'CREATE_TASKS' && data.data.data?.tasks) {
+          setPendingTasks(data.data.data.tasks);
+        } else if (intent === 'ANALYZE_DATA' || intent === 'QUERY_TASKS') {
+          // For analytics, we'll display the response but no pending tasks
+          setPendingTasks([]);
         } else {
-          aiResponseContent = "I couldn't find any clear tasks in your message. Could you try being more specific? For example: 'Tomorrow Johnny needs to clean his room and do homework'";
+          // Clear pending tasks for other intents
+          setPendingTasks([]);
         }
 
         const aiMessage: Message = {
@@ -145,8 +149,11 @@ export function AIAssistantClient({ user }: AIAssistantClientProps) {
           type: 'ai',
           content: aiResponseContent,
           timestamp: new Date(),
-          tasks: data.data.parsedTasks,
-          clarificationQuestions: data.data.clarificationQuestions,
+          intent: intent,
+          tasks: data.data.data?.tasks,
+          clarificationQuestions: data.data.data?.clarificationQuestions,
+          analytics: data.data.data?.analytics || data.data.data?.quickStats,
+          followUpActions: data.data.followUpActions,
         };
 
         setMessages(prev => [...prev, aiMessage]);
@@ -321,8 +328,71 @@ export function AIAssistantClient({ user }: AIAssistantClientProps) {
               }`}
             >
               <p className="text-sm">{message.content}</p>
+              
+              {/* Analytics Display */}
+              {message.analytics && (
+                <div className="mt-3 p-3 bg-white/50 dark:bg-gray-800/50 rounded border">
+                  {message.analytics.totalActiveTasks !== undefined && (
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>📋 Active: {message.analytics.totalActiveTasks}</div>
+                      <div>⚠️ Overdue: {message.analytics.overdueTasks || 0}</div>
+                      <div>✅ This week: {message.analytics.completedThisWeek || 0}</div>
+                      <div>⭐ Top: {message.analytics.topPerformer || 'None'}</div>
+                    </div>
+                  )}
+                  
+                  {message.analytics.metrics && (
+                    <div className="mt-2 text-xs">
+                      <div className="font-medium">Key Metrics:</div>
+                      {Object.entries(message.analytics.metrics).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span>{key}:</span>
+                          <span>{typeof value === 'number' ? value.toFixed(1) : String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {message.analytics.insights && message.analytics.insights.length > 0 && (
+                    <div className="mt-2 text-xs">
+                      <div className="font-medium">💡 Insights:</div>
+                      <ul className="list-disc list-inside space-y-1">
+                        {message.analytics.insights.map((insight: string, index: number) => (
+                          <li key={index}>{insight}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Follow-up Actions */}
+              {message.followUpActions && message.followUpActions.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {message.followUpActions.map((action, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setInput(action)}
+                      className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded border"
+                    >
+                      {action}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
               <p className="text-xs opacity-70 mt-1">
-                {message.timestamp.toLocaleTimeString()}
+                {mounted ? message.timestamp.toLocaleTimeString('en-US', { 
+                  hour12: false, 
+                  hour: '2-digit', 
+                  minute: '2-digit', 
+                  second: '2-digit' 
+                }) : '--:--:--'}
+                {message.intent && (
+                  <span className="ml-2 px-1 bg-white/20 rounded text-xs">
+                    {message.intent.toLowerCase().replace('_', ' ')}
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -413,7 +483,7 @@ export function AIAssistantClient({ user }: AIAssistantClientProps) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe what you want your family to do..."
+            placeholder="Ask me anything: create tasks, check progress, get insights..."
             className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
             disabled={isLoading}
           />
@@ -427,7 +497,7 @@ export function AIAssistantClient({ user }: AIAssistantClientProps) {
         </form>
         
         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          💡 Try: "Tomorrow Johnny clean room and Sarah do homework" or "This weekend everyone help with chores"
+          💡 Try: "Tomorrow Johnny clean room" • "How is Erik doing?" • "Show me overdue tasks" • "Who needs encouragement?"
         </div>
       </div>
     </div>

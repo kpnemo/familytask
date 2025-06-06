@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { AIAssistantClient } from '@/components/features/ai/ai-assistant-client';
+import { AppHeader } from '@/components/layout/app-header';
 
 export default async function AIAssistantPage() {
   const session = await getServerSession(authOptions);
@@ -17,6 +18,7 @@ export default async function AIAssistantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <AppHeader user={session.user} />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
