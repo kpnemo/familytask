@@ -38,16 +38,16 @@ export const createTaskSchema = z.object({
   description: z.string().max(500, "Description too long").optional(),
   points: z.number().int().min(0, "Points must be at least 0").max(100, "Points cannot exceed 100"),
   dueDate: z.string().min(1, "Due date is required"),
-  assignedTo: z.string().cuid("Invalid user ID").optional(),
+  assignedTo: z.string().optional(),
   tagIds: z.array(z.string().cuid()).optional(),
   isRecurring: z.boolean().optional(),
   recurrencePattern: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
   isBonusTask: z.boolean().optional(),
   dueDateOnly: z.boolean().optional(),
 }).refine((data) => {
-  // For bonus tasks, assignedTo should not be present or should be empty
-  if (data.isBonusTask) {
-    return !data.assignedTo || data.assignedTo === "";
+  // For bonus tasks, assignedTo is not required
+  if (data.isBonusTask === true) {
+    return true; // Always pass validation for bonus tasks
   }
   // For regular tasks, assignedTo is required and not empty
   return data.assignedTo && data.assignedTo.trim() !== "";

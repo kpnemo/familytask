@@ -116,6 +116,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
   }, [currentUserId, currentUserName, currentUserRole])
 
   const onSubmit = async (data: CreateTaskInput) => {
+    console.log("Form submission started with data:", data);
     setIsLoading(true)
     setError("")
 
@@ -287,13 +288,16 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
                 <input
                   type="checkbox"
                   id="isBonusTask"
-                  {...register("isBonusTask")}
                   className="text-blue-600"
                   onChange={(e) => {
+                    // Update the form value
+                    setValue("isBonusTask", e.target.checked, { shouldValidate: true });
+                    
+                    // Update assignedTo based on bonus task status
                     if (e.target.checked) {
-                      setValue("assignedTo", "");
+                      setValue("assignedTo", "", { shouldValidate: true });
                     } else {
-                      setValue("assignedTo", currentUserId);
+                      setValue("assignedTo", currentUserId, { shouldValidate: true });
                     }
                   }}
                 />
@@ -429,6 +433,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
               type="submit"
               disabled={isLoading}
               className="flex-1"
+              onClick={() => console.log("Submit button clicked, isBonusTask:", isBonusTask)}
             >
               {isLoading ? "Creating..." : isBonusTask ? "Create Bonus Task" : "Create Task"}
             </Button>
