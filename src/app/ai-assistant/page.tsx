@@ -18,7 +18,7 @@ export default async function AIAssistantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AppHeader user={session.user} />
+      <AppHeader title="FamilyTasks" user={session.user} />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
@@ -44,7 +44,7 @@ export default async function AIAssistantPage() {
               <div>
                 <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">How to use AI Assistant</h3>
                 <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                  Simply type what you want your family to do: "Tomorrow Johnny should clean his room and Sarah needs to do homework". 
+                  Simply type what you want your family to do: &quot;Tomorrow Johnny should clean his room and Sarah needs to do homework&quot;. 
                   The AI will create structured tasks for you!
                 </p>
               </div>

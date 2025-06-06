@@ -27,7 +27,13 @@ export function AppHeader({ title, user, showBackButton = false, backHref = "/da
                 <Icons.chevronLeft className="h-5 w-5" />
               </Link>
             )}
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h1>
+            {title === "FamilyTasks" ? (
+              <Link href="/dashboard" className="text-xl font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                {title}
+              </Link>
+            ) : (
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h1>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
