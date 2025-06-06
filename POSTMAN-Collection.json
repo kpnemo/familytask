@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "FamilyTasks AI - MCP Integration Tests",
+    "description": "Test collection for AI task parsing with MCP database integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "ai-mcp-tests-v1"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3000",
+      "description": "Base URL for the FamilyTasks application"
+    },
+    {
+      "key": "FAMILY_ID", 
+      "value": "cmbkmidho0000sbdiwq2qfzwh",
+      "description": "Test family ID"
+    }
+  ],
+  "item": [
+    {
+      "name": "AI Health Check",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/ai/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "ai", "health"]
+        },
+        "description": "Verify AI system configuration and readiness"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('AI services configured', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.data.ai.anthropic).to.eql('configured');",
+              "    pm.expect(response.data.mcp.database).to.eql('configured');",
+              "    pm.expect(response.data.features.taskParsing).to.be.true;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Task Parsing - Simple",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"input\": \"Tomorrow Johnny needs to clean his room and do homework\",\n  \"targetDate\": \"2025-06-07T18:00:00Z\",\n  \"defaultPoints\": 3\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/ai/test-parse",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "ai", "test-parse"]
+        },
+        "description": "Test simple natural language task parsing"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('AI parsed tasks successfully', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.data.parsedTasks).to.be.an('array');",
+              "    pm.expect(response.data.parsedTasks.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "pm.test('Family context loaded', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.data.familyContext).to.be.an('object');",
+              "    pm.expect(response.data.familyContext.memberNames).to.include('Johnny');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Task Parsing - Complex",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"input\": \"This weekend the kids need to wash dishes, take out trash, and someone should vacuum the living room. Also prepare for the math test on Monday.\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/ai/test-parse",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "ai", "test-parse"]
+        },
+        "description": "Test complex multi-task parsing with ambiguous assignments"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Multiple tasks parsed', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.data.parsedTasks.length).to.be.greaterThan(2);",
+              "});",
+              "",
+              "pm.test('Clarification questions generated', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.data.clarificationQuestions).to.be.an('array');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mock AI Response Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"input\": \"Test MCP database integration without AI\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/ai/test-mock",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "ai", "test-mock"]
+        },
+        "description": "Test MCP database integration with mock AI responses"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('MCP family context working', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.data.familyContext.familyId).to.eql('cmbkmidho0000sbdiwq2qfzwh');",
+              "    pm.expect(response.data.familyContext.memberCount).to.be.greaterThan(0);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Handling - Empty Input",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"input\": \"\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/ai/test-parse",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "ai", "test-parse"]
+        },
+        "description": "Test error handling for empty input"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Error message returned', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.false;",
+              "    pm.expect(response.error).to.include('required');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -118,6 +118,19 @@ export function UserMenu({ user }: UserMenuProps) {
               <span>New Task</span>
             </Link>
 
+            {/* AI Assistant - Parents Only */}
+            {user.role === 'PARENT' && (
+              <Link
+                href="/ai-assistant"
+                className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <Icons.sparkles className="h-4 w-4 text-purple-500" />
+                <span>AI Assistant</span>
+                <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">Beta</span>
+              </Link>
+            )}
+
             <Link
               href="/tasks"
               className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

@@ -157,8 +157,11 @@ Notifications {
 /login                   # Login
 /register                # Registration with family code option
 /dashboard               # Role-specific dashboard
+/dashboard/ai            # 🤖 AI-powered kids dashboard (children only)
+/dashboard/ai-parent     # 🤖 AI analytics dashboard (parents only)
 /tasks                   # Task list with filters and bonus task section
 /tasks/new               # Create task (parents) or request task (kids with restrictions)
+/tasks/new/ai            # 🤖 AI-assisted task creation (parents only)
 /tasks/[id]              # ✅ Single task view with actions including self-assignment
 /tasks/[id]/edit         # Edit task
 /points                  # ✅ Points overview with reward shop
@@ -364,6 +367,105 @@ POST /api/user/change-password
 Body: { currentPassword: string; newPassword: string; }
 ```
 
+### 🤖 AI Features APIs
+
+```typescript
+POST /api/ai/parse-tasks
+Body: {
+  input: string;              // Natural language input
+  targetDate?: string;        // Optional default due date
+  defaultPoints?: number;     // Optional default points
+}
+Response: {
+  success: boolean;
+  data: {
+    parsedTasks: Array<{
+      title: string;
+      description?: string;
+      suggestedPoints: number;
+      suggestedAssignee?: string;
+      suggestedDueDate: string;
+      confidence: number;       // AI confidence in parsing
+    }>;
+    clarificationQuestions?: Array<{
+      question: string;
+      taskIndex: number;
+      field: string;
+    }>;
+  }
+}
+
+POST /api/ai/clarify-tasks
+Body: {
+  sessionId: string;          // Parsing session ID
+  answers: Array<{
+    questionId: string;
+    answer: string;
+  }>;
+}
+Response: {
+  success: boolean;
+  data: {
+    finalizedTasks: Array<TaskCreationData>;
+    needsMoreClarification: boolean;
+    additionalQuestions?: Array<ClarificationQuestion>;
+  }
+}
+
+GET /api/ai/insights/child
+Query: { timeframe?: "week" | "month" }
+Response: {
+  success: boolean;
+  data: {
+    taskPriorities: Array<{
+      taskId: string;
+      priority: number;
+      reasoning: string;
+    }>;
+    motivationalMessage: string;
+    achievements: Array<{
+      type: string;
+      description: string;
+      points: number;
+    }>;
+    weeklyPlan: Array<{
+      date: string;
+      tasks: Array<TaskSummary>;
+      suggestedFocus: string;
+    }>;
+  }
+}
+
+GET /api/ai/insights/parent
+Query: { timeframe?: "week" | "month" }
+Response: {
+  success: boolean;
+  data: {
+    familyAnalytics: {
+      completionRate: number;
+      trendDirection: "up" | "down" | "stable";
+      alerts: Array<{
+        type: "overdue" | "low_engagement" | "imbalanced_workload";
+        message: string;
+        actionable: boolean;
+      }>;
+    };
+    childrenInsights: Array<{
+      childId: string;
+      childName: string;
+      completionRate: number;
+      strengths: string[];
+      improvementAreas: string[];
+      recommendedActions: string[];
+    }>;
+    workloadBalance: {
+      isBalanced: boolean;
+      suggestions: string[];
+    };
+  }
+}
+```
+
 ## User Roles & Permissions
 
 ### Admin Parent
@@ -527,6 +629,36 @@ src/
 - **Settings Page** with profile management and SMS settings
 - **Dual Dashboard Styles** (Classic and Enhanced with bonus tasks at top)
 - **Responsive Design** with proper navigation
+
+### 🤖 AI Features (v2.0+)
+
+#### AI Task Creation (Parents)
+- **Natural Language Task Input**: Parents type sentences like "Tomorrow Johnny needs to clean room, do homework, read for 1 hour and wash dishes"
+- **AI Task Parser**: Converts natural language to structured task objects
+- **Interactive Clarification**: AI asks follow-up questions (points per task, specific assignments, due times)
+- **Batch Task Generation**: Creates multiple tasks from single input with proper assignments and scheduling
+- **Smart Defaults**: AI suggests reasonable points, due dates based on task complexity and family history
+
+#### AI Kids Dashboard (`/dashboard/ai`)
+- **Smart Daily/Weekly Planning**: AI-powered view showing optimized task scheduling
+- **Progress Visualization**: Interactive charts showing completion trends and achievements
+- **Task Prioritization**: AI ranks tasks by urgency, points, and difficulty
+- **Motivational Insights**: Personalized encouragement based on progress patterns
+- **Achievement Tracking**: AI-generated milestones and celebration of progress
+
+#### AI Parent Dashboard (`/dashboard/ai-parent`)
+- **Completion Analytics**: Advanced insights into family task completion rates and trends
+- **Smart Alerts**: Proactive notifications when children fall behind on tasks
+- **Performance Insights**: AI analysis of optimal task assignment patterns
+- **Family Productivity Reports**: Automated weekly/monthly progress summaries
+- **Workload Balancing**: AI suggestions for fair task distribution among children
+
+#### Technical Implementation
+- **MCP Postgres Server**: Direct AI access to family database for context-aware responses
+- **Streaming AI Responses**: Real-time conversational interface for task creation
+- **Context Preservation**: AI maintains family context (members, preferences, history)
+- **Role-Based AI**: Different AI personalities/capabilities for parents vs children
+- **Privacy-First**: All AI processing respects family data isolation
 
 ### 🔄 In Progress / Future Enhancements
 - Advanced recurring task patterns

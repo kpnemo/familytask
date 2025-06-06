@@ -276,6 +276,44 @@ src/app/reminders/
     └── page.tsx
 ```
 
+### 🤖 AI Features Organization:
+```
+src/
+├── components/
+│   └── features/
+│       └── ai/              # AI-specific components
+│           ├── task-parser.tsx
+│           ├── ai-dashboard-kids.tsx
+│           ├── ai-dashboard-parent.tsx
+│           ├── ai-chat-interface.tsx
+│           └── ai-insights-panel.tsx
+├── app/
+│   ├── dashboard/
+│   │   ├── ai/              # AI Kids Dashboard
+│   │   │   └── page.tsx
+│   │   └── ai-parent/       # AI Parent Dashboard  
+│   │       └── page.tsx
+│   ├── tasks/
+│   │   └── new/
+│   │       └── ai/          # AI Task Creation
+│   │           └── page.tsx
+│   └── api/
+│       └── ai/              # AI API endpoints
+│           ├── parse-tasks/
+│           ├── clarify-tasks/
+│           └── insights/
+├── lib/
+│   ├── ai/                  # AI utilities
+│   │   ├── task-parser.ts
+│   │   ├── mcp-client.ts
+│   │   └── ai-insights.ts
+│   └── mcp/                 # MCP server setup
+│       ├── postgres-mcp.ts
+│       └── family-context.ts
+└── types/
+    └── ai.ts                # AI-specific TypeScript types
+```
+
 ## 🎨 Code Style Guidelines
 
 ### React Components:
@@ -298,6 +336,65 @@ src/app/reminders/
 - Document API endpoints if added
 - Update README if significant changes
 - Add inline comments for complex logic
+
+### 🤖 AI Feature Development:
+
+#### Environment Setup:
+```bash
+# Install AI dependencies
+npm install @anthropic-ai/sdk openai @modelcontextprotocol/sdk
+
+# Set up environment variables
+echo "ANTHROPIC_API_KEY=your_key_here" >> .env.local
+echo "OPENAI_API_KEY=your_key_here" >> .env.local
+echo "MCP_POSTGRES_URL=your_postgres_url" >> .env.local
+```
+
+#### MCP Server Setup:
+```bash
+# Install MCP Postgres server
+npm install -g @modelcontextprotocol/server-postgres
+
+# Configure MCP server for family data isolation
+# Create src/lib/mcp/postgres-mcp.ts configuration
+```
+
+#### AI Development Workflow:
+
+1. **Test AI Integration Locally**:
+```bash
+# Start MCP server
+mcp-server-postgres --database-url $DATABASE_URL
+
+# Test AI endpoints in development
+npm run dev
+curl -X POST http://localhost:3000/api/ai/parse-tasks \
+  -H "Content-Type: application/json" \
+  -d '{"input": "tomorrow clean room and do homework"}'
+```
+
+2. **Family Context Isolation**:
+- Always pass `familyId` to AI context
+- Validate user permissions before AI operations
+- Ensure AI responses respect role-based access
+
+3. **AI Safety & Validation**:
+- Validate all AI-generated task data
+- Implement confidence thresholds for auto-creation
+- Provide manual review for low-confidence parses
+- Rate limit AI API calls per family
+
+4. **Testing AI Features**:
+```bash
+# Test natural language parsing
+npm run test:ai-parser
+
+# Test AI dashboard insights
+npm run test:ai-insights
+
+# Test MCP database integration
+npm run test:mcp-integration
+```
 
 ## 🎯 Quality Standards
 
