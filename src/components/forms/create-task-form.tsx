@@ -53,7 +53,8 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
       isRecurring: false,
       isBonusTask: false,
       dueDateOnly: false,
-      assignedTo: currentUserId
+      assignedTo: currentUserId,
+      tagIds: []
     }
   })
 
@@ -119,12 +120,20 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     setError("")
 
     try {
+      // For bonus tasks, ensure assignedTo is properly null
+      const submitData = { ...data };
+      if (data.isBonusTask) {
+        submitData.assignedTo = undefined;
+      }
+
+      console.log("Submitting task data:", submitData);
+
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(submitData)
       })
 
       const result = await response.json()
@@ -270,7 +279,7 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
                   className="text-blue-600"
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setValue("assignedTo", undefined);
+                      setValue("assignedTo", "");
                     } else {
                       setValue("assignedTo", currentUserId);
                     }
