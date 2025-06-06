@@ -51,5 +51,22 @@ export function formatDateTime(date: Date): string {
 }
 
 export function isTaskOverdue(dueDate: Date): boolean {
-  return new Date() > dueDate
+  // Compare only date parts, ignoring time
+  const today = new Date()
+  const taskDate = new Date(dueDate)
+  
+  // Create date-only objects for comparison
+  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate())
+  
+  return todayDateOnly > taskDateOnly
+}
+
+export function isDateBefore(date1: Date, date2: Date): boolean {
+  // Compare only date parts, ignoring time
+  // Returns true if date1 is before date2
+  const dateOnly1 = new Date(date1.getFullYear(), date1.getMonth(), date1.getDate())
+  const dateOnly2 = new Date(date2.getFullYear(), date2.getMonth(), date2.getDate())
+  
+  return dateOnly1 < dateOnly2
 }

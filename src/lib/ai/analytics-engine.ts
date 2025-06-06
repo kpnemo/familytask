@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { FamilyContext } from '../mcp/family-context';
+import { isTaskOverdue } from '../utils';
 
 export interface AnalyticsQuery {
   question: string;
@@ -91,7 +92,7 @@ export class AnalyticsEngine {
     // Calculate basic metrics
     const totalActiveTasks = activeTasks.length;
     const completedTasks = completionHistory.length;
-    const overdueTasks = activeTasks.filter(task => new Date(task.dueDate) < new Date()).length;
+    const overdueTasks = activeTasks.filter(task => isTaskOverdue(new Date(task.dueDate))).length;
     
     // Per-member statistics
     const memberStats = familyMembers.map(member => {
@@ -107,7 +108,7 @@ export class AnalyticsEngine {
         completedTasks: memberCompletions.length,
         totalPoints,
         averagePoints: memberCompletions.length > 0 ? totalPoints / memberCompletions.length : 0,
-        overdueTasks: memberActiveTasks.filter(task => new Date(task.dueDate) < new Date()).length,
+        overdueTasks: memberActiveTasks.filter(task => isTaskOverdue(new Date(task.dueDate))).length,
         completionRate: (memberActiveTasks.length + memberCompletions.length) > 0 
           ? memberCompletions.length / (memberActiveTasks.length + memberCompletions.length) 
           : 0
@@ -234,7 +235,7 @@ IMPORTANT: Use only valid JSON characters. No line breaks, tabs, or control char
     const completionHistory = familyContext.completionHistory;
     const pointsData = familyContext.pointsData;
 
-    const overdueTasks = activeTasks.filter(task => new Date(task.dueDate) < new Date()).length;
+    const overdueTasks = activeTasks.filter(task => isTaskOverdue(new Date(task.dueDate))).length;
     const completedThisWeek = completionHistory.filter(task => 
       new Date(task.updatedAt || task.createdAt) >= oneWeekAgo
     ).length;

@@ -153,7 +153,7 @@ export default function CompactDashboard({ user }: Props) {
     const shouldShowOnlyMineButton = !allTasksAreMine && (pendingTasks.length > 0 || completedTasks.length > 0 || verifiedTasks.length > 0)
 
     const now = new Date()
-    const todayStart = new Date(now.setHours(0,0,0,0))
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const tomorrowStart = new Date(todayStart);
     tomorrowStart.setDate(todayStart.getDate() + 1)
 
