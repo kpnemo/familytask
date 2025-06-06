@@ -198,10 +198,10 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
                 {task.title}
                 {task.isRecurring && (
                   <span 
-                    className="text-purple-600 dark:text-purple-400" 
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium" 
                     title={`Recurring ${task.recurrencePattern?.toLowerCase()}`}
                   >
-                    🔄
+                    🔄 {task.recurrencePattern?.toLowerCase() || 'recurring'}
                   </span>
                 )}
                 {task.dueDateOnly && (

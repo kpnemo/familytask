@@ -39,6 +39,8 @@ interface Task {
   tags: Tag[]
   isBonusTask?: boolean
   dueDateOnly?: boolean
+  isRecurring?: boolean
+  recurrencePattern?: string
 }
 
 interface TaskViewClientProps {
@@ -255,7 +257,17 @@ export function TaskViewClient({
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <CardTitle className="text-2xl">{task.title}</CardTitle>
+              <CardTitle className="text-2xl flex items-center gap-3">
+                {task.title}
+                {task.isRecurring && (
+                  <span 
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium" 
+                    title={`Recurring ${task.recurrencePattern?.toLowerCase()}`}
+                  >
+                    🔄 {task.recurrencePattern?.toLowerCase() || 'recurring'}
+                  </span>
+                )}
+              </CardTitle>
               <CardDescription className="mt-2">
                 Created by {task.creator.name} • {task.assignee ? `Assigned to ${task.assignee.name}` : '💰 Bonus Task - Available to Claim'}
               </CardDescription>
@@ -300,6 +312,14 @@ export function TaskViewClient({
                   <span className="text-gray-500">Created:</span>
                   <span>{formatDateTime(new Date(task.createdAt))}</span>
                 </div>
+                {task.isRecurring && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Recurrence:</span>
+                    <span className="font-medium text-purple-700 dark:text-purple-300">
+                      🔄 {task.recurrencePattern?.toLowerCase() || 'recurring'}
+                    </span>
+                  </div>
+                )}
                 {task.completedAt && (
                   <div className="flex justify-between">
                     <span className="text-gray-500">Completed:</span>

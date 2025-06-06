@@ -21,6 +21,8 @@ interface TaskData {
   assignedTo: string
   status: string
   dueDateOnly?: boolean
+  isRecurring?: boolean
+  recurrencePattern?: string
   tags: Array<{ tag: { id: string; name: string; color: string } }>
 }
 
@@ -167,7 +169,17 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Edit Task</CardTitle>
+        <CardTitle className="flex items-center gap-3">
+          Edit Task
+          {task.isRecurring && (
+            <span 
+              className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium" 
+              title={`Recurring ${task.recurrencePattern?.toLowerCase()}`}
+            >
+              🔄 {task.recurrencePattern?.toLowerCase() || 'recurring'}
+            </span>
+          )}
+        </CardTitle>
         <CardDescription>
           Update task details and assignment
         </CardDescription>
