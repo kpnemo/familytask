@@ -1,5 +1,71 @@
 # FamilyTasks Release Notes
 
+## [1.0.30] - 2025-06-06
+
+### 🤖 AI-Powered Family Task Management
+- **NEW:** AI Assistant for natural language task creation and family analytics
+- Create tasks naturally: "Tomorrow Johnny clean room and Sarah do homework"
+- Smart conversation routing: task creation, data analysis, and status queries
+- Family insights: "How is Erik doing this week?" or "What tasks are overdue?"
+- Intelligent intent classification with comprehensive error handling
+- **Parent-only feature** with family data isolation and role-based access
+
+### ✨ AI Features
+- **Natural Language Task Creation**: Convert conversations into structured tasks
+- **Smart Analytics**: Get family insights and performance recommendations  
+- **Conversation Mode**: AI decides between task creation and data retrieval
+- **Multi-task Support**: Create multiple tasks from single conversation
+- **Recurring Task Support**: AI understands daily/weekly/monthly patterns
+- **Bonus Task Creation**: AI can create unassigned bonus tasks for family pickup
+- **Due Date Intelligence**: AI handles flexible date formats and constraints
+
+### 🔄 Enhanced Recurring Task Management
+- **NEW:** Edit recurring task properties in task edit form
+- Change recurrence patterns: daily → weekly → monthly or disable recurring
+- Beautiful purple-themed recurring controls with clear explanations
+- Smart form validation requiring pattern when recurring is enabled
+- **Enhanced Indicators**: All views now show specific frequency (daily/weekly/monthly)
+- **Consistent UI**: Recurring badges across Enhanced Dashboard, single task view, and edit form
+
+### 🎯 Improved Task Indicators
+- **Enhanced Dashboard**: Recurring tasks show frequency badges instead of just 🔄 icon
+- **Single Task View**: Added recurring indicator to title and dedicated recurrence field
+- **Edit Task Form**: Shows recurring status in header with frequency information
+- **Universal Branding**: "FamilyTasks" text now clickable across all headers for easy navigation
+
+### 🛡️ AI Reliability & Security
+- **1-Retry Mechanism**: Automatic error recovery for AI parsing failures
+- **Control Character Cleanup**: Robust JSON parsing with error handling
+- **Family Data Isolation**: AI context limited to user's family data only
+- **Graceful Fallbacks**: Continues working even if AI services are unavailable
+- **Privacy-First**: No AI provider data retention, family data stays secure
+
+### 🔧 Technical Excellence
+- **Model Context Protocol (MCP)**: Advanced AI integration with database context
+- **Intent Classification**: Smart routing between task creation and analytics
+- **Conversation History**: Maintains context for follow-up questions
+- **Type-Safe AI Integration**: Full TypeScript support with proper error handling
+- **Zero Breaking Changes**: All existing functionality preserved and enhanced
+
+### 💡 AI Use Cases
+- **Task Creation**: "Daily dishes for Sarah starting tomorrow"
+- **Family Analytics**: "Show me this week's family performance"
+- **Status Queries**: "What bonus tasks are available?"
+- **Insights**: "Who needs encouragement this week?"
+- **Planning**: "Create weekly cleanup routine for all kids"
+
+### 📱 Enhanced User Experience
+- **Follow-up Actions**: AI provides relevant suggestions after task creation
+- **Real-time Updates**: Instant feedback and progress indicators
+- **Mobile Optimized**: AI assistant works perfectly on all devices
+- **Accessible Design**: Clear visual hierarchy and intuitive interactions
+
+### 🚀 Production Ready
+- **Comprehensive Testing**: Full test suite covering AI functionality
+- **Error Monitoring**: Detailed logging for troubleshooting
+- **Performance Optimized**: Efficient AI calls with smart caching
+- **Deployment Scripts**: Automated deployment with environment setup
+
 ## [1.0.29] - 2025-06-05
 
 ### ✨ New Features
