@@ -208,6 +208,12 @@ export async function PUT(
           ...(validatedData.dueDate && { dueDate: new Date(validatedData.dueDate + "T12:00:00.000Z") }),
           ...(validatedData.assignedTo && { assignedTo: validatedData.assignedTo }),
           ...(validatedData.dueDateOnly !== undefined && { dueDateOnly: validatedData.dueDateOnly }),
+          ...(validatedData.isRecurring !== undefined && { 
+            isRecurring: validatedData.isRecurring,
+            // If isRecurring is false, clear the recurrence pattern
+            ...(validatedData.isRecurring === false && { recurrencePattern: null })
+          }),
+          ...(validatedData.recurrencePattern !== undefined && { recurrencePattern: validatedData.recurrencePattern }),
         }
       })
 

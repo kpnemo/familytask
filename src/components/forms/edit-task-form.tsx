@@ -77,11 +77,22 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
       })(), // Direct date formatting
       assignedTo: task.assignedTo,
       dueDateOnly: task.dueDateOnly || false,
+      isRecurring: task.isRecurring || false,
+      recurrencePattern: task.recurrencePattern as "DAILY" | "WEEKLY" | "MONTHLY" | undefined,
       tagIds: task.tags.map(t => t.tag.id)
     }
   })
 
   const dueDateOnly = watch("dueDateOnly")
+  const isRecurring = watch("isRecurring")
+  const recurrencePattern = watch("recurrencePattern")
+
+  // Clear recurrence pattern when isRecurring is unchecked
+  useEffect(() => {
+    if (!isRecurring) {
+      setValue("recurrencePattern", undefined)
+    }
+  }, [isRecurring, setValue])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -302,6 +313,46 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
                 <p className="text-sm text-amber-700">
                   ⏰ <strong>Due Date Only:</strong> This task can only be completed on its specific due date. Perfect for daily routines like "do the dishes" that shouldn't be done early.
                 </p>
+              </div>
+            )}
+          </div>
+
+          {/* Recurring Task Settings */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isRecurring"
+                {...register("isRecurring")}
+                className="text-purple-600"
+              />
+              <Label htmlFor="isRecurring">🔄 Recurring Task</Label>
+            </div>
+            
+            {isRecurring && (
+              <div className="space-y-3">
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                  <p className="text-sm text-purple-700 mb-3">
+                    🔄 <strong>Recurring Task:</strong> This task will automatically generate new instances based on the pattern you choose.
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="recurrencePattern">Recurrence Pattern *</Label>
+                    <select
+                      id="recurrencePattern"
+                      {...register("recurrencePattern")}
+                      className="w-full px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    >
+                      <option value="">Select recurrence pattern</option>
+                      <option value="DAILY">🗓️ Daily - Every day</option>
+                      <option value="WEEKLY">📅 Weekly - Every week</option>
+                      <option value="MONTHLY">🗓️ Monthly - Every month</option>
+                    </select>
+                    {errors.recurrencePattern && (
+                      <p className="text-sm text-red-600">{errors.recurrencePattern.message}</p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -64,6 +64,17 @@ export const updateTaskSchema = z.object({
   assignedTo: z.string().cuid("Invalid user ID").optional(),
   tagIds: z.array(z.string().cuid()).optional(),
   dueDateOnly: z.boolean().optional(),
+  isRecurring: z.boolean().optional(),
+  recurrencePattern: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
+}).refine((data) => {
+  // If isRecurring is true, recurrencePattern is required
+  if (data.isRecurring === true) {
+    return !!data.recurrencePattern;
+  }
+  return true;
+}, {
+  message: "Recurrence pattern is required when task is recurring",
+  path: ["recurrencePattern"]
 })
 
 export const declineTaskSchema = z.object({
