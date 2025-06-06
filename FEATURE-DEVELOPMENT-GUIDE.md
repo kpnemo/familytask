@@ -85,74 +85,26 @@ git branch -d feature/[feature-name]
 git push origin main
 ```
 
-### 8. Deploy to Production
+### 8. Production Deployment
 
-⚠️ **CRITICAL: Database Schema Changes**
+⚠️ **PROJECT OWNER ONLY**: Deployment is handled by the project owner after code review and approval.
 
-**If your changes include database schema modifications (Prisma schema changes):**
+**For developers:**
+1. Ensure all changes are committed and pushed to main branch
+2. Request deployment from project owner
+3. Provide any special deployment notes or database migration requirements
 
-1. **ALWAYS backup production data first:**
-```bash
-# Switch to production database
-./scripts/switch-to-prod.sh
+**Database Schema Changes:**
+If your feature includes Prisma schema changes, clearly document:
+- What tables/fields are being added/modified
+- Whether data migration is required
+- Any backup requirements before deployment
 
-# Create backup of current production data
-npx prisma studio  # Verify current data exists
-# OR use Neon Console to create manual backup
-
-# Document what data exists before migration
-node -e "
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-async function backup() {
-  const users = await prisma.user.count();
-  const tasks = await prisma.task.count();
-  const families = await prisma.family.count();
-  console.log(\`📊 Pre-migration data: \${users} users, \${tasks} tasks, \${families} families\`);
-  console.log(\`⏰ Backup taken at: \${new Date().toISOString()}\`);
-  await prisma.\$disconnect();
-}
-backup();"
-```
-
-2. **Apply migration safely:**
-```bash
-# Apply schema changes (do NOT use migrate reset or drop database)
-npx prisma db push --accept-data-loss
-
-# Verify data is still intact after migration
-node -e "/* same script as above to verify data */"
-```
-
-3. **If data is lost - restore from backup:**
-   - Use Neon Console Point-in-time Recovery
-   - Restore to time before migration
-   - Re-apply schema migration correctly
-
-**For regular deployments (no schema changes):**
-```bash
-# Automated deployment with version bump
-npm run deploy
-```
-
-**The deployment script automatically:**
-- ✅ Increments the patch version (e.g., 1.0.0 → 1.0.1)
-- ✅ Commits the version bump
-- ✅ Pushes to main branch (triggers Vercel deployment)
-- ✅ Verifies the new version is deployed
-- ✅ Reports deployment success with live URL
-
-**Prerequisites:**
-- Must be on `main` branch
-- Working directory must be clean (no uncommitted changes)
-- Must have latest changes pulled from remote
-- **Production data backed up if schema changes**
-
-**Manual verification:**
-```bash
-# Check deployed version
-curl -s https://family-tasks-beta.vercel.app/api/health | jq .version
-```
+**The project owner will handle:**
+- Version bumping and release notes
+- Production database migrations
+- Vercel deployment verification
+- Health checks and monitoring
 
 ## 📋 Commit Message Guidelines
 
