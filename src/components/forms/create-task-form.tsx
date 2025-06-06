@@ -120,10 +120,10 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     setError("")
 
     try {
-      // For bonus tasks, ensure assignedTo is properly null
+      // For bonus tasks, completely remove assignedTo from the data
       const submitData = { ...data };
       if (data.isBonusTask) {
-        submitData.assignedTo = undefined;
+        delete submitData.assignedTo;
       }
 
       console.log("Submitting task data:", submitData);
@@ -139,7 +139,8 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
       const result = await response.json()
 
       if (!response.ok) {
-        setError(result.error?.message || "Failed to create task")
+        console.error("API Error:", result);
+        setError(result.error?.message || result.message || "Failed to create task")
         return
       }
 
@@ -201,6 +202,17 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Debug form errors */}
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-700 font-medium">Form Validation Errors:</p>
+              <ul className="text-xs text-red-600 mt-1">
+                {Object.entries(errors).map(([field, error]) => (
+                  <li key={field}>{field}: {error?.message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {/* Task Title */}
           <div className="space-y-2">
             <Label htmlFor="title">Task Title *</Label>

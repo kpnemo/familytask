@@ -45,9 +45,9 @@ export const createTaskSchema = z.object({
   isBonusTask: z.boolean().optional(),
   dueDateOnly: z.boolean().optional(),
 }).refine((data) => {
-  // For bonus tasks, assignedTo should be empty/null/undefined
+  // For bonus tasks, assignedTo should not be present or should be empty
   if (data.isBonusTask) {
-    return !data.assignedTo || data.assignedTo === "" || data.assignedTo === undefined;
+    return !data.assignedTo || data.assignedTo === "";
   }
   // For regular tasks, assignedTo is required and not empty
   return data.assignedTo && data.assignedTo.trim() !== "";
