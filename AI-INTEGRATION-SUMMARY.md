@@ -42,7 +42,7 @@ AI-INTEGRATION-SUMMARY.md    # This summary document
 ## 🌍 **Environment Variables Added**
 ```env
 # AI Configuration
-ANTHROPIC_API_KEY="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"
+ANTHROPIC_API_KEY="your_anthropic_api_key_here"
 ```
 
 ## 🏗️ **Technical Implementation**
