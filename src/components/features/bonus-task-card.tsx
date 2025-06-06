@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TaskWithRelations } from "@/types"
+import { isTaskOverdue } from "@/lib/utils"
 
 interface BonusTaskCardProps {
   task: TaskWithRelations
@@ -44,7 +45,7 @@ export function BonusTaskCard({ task, onAssign }: BonusTaskCardProps) {
     }).format(new Date(date))
   }
 
-  const isOverdue = new Date(task.dueDate) < new Date()
+  const isOverdue = isTaskOverdue(new Date(task.dueDate))
 
   return (
     <Card className="border-l-4 border-l-amber-500 bg-gradient-to-r from-amber-50 to-yellow-50 hover:shadow-md transition-shadow">
