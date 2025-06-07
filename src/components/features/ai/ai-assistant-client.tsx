@@ -452,7 +452,7 @@ What would you like me to help you with?`,
                             ⏰ Due Date Only
                           </span>
                         )}
-                        <span>🎯 {Math.round(task.confidence * 100)}%</span>
+                        <span>🎯 {Math.round((task.confidence || 0) * 100)}%</span>
                       </div>
                     </div>
                   </div>

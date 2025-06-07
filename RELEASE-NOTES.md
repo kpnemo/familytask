@@ -1,5 +1,22 @@
 # FamilyTasks Release Notes
 
+## [1.0.35] - 2025-01-07
+
+### 🚀 Major AI Enhancement - Multilingual Support
+- **OpenAI Integration**: Upgraded from Anthropic to OpenAI GPT-4o for enhanced AI capabilities
+- **Russian Language Support**: AI assistant now speaks Russian and English fluently
+- **Intelligent Language Detection**: Automatically detects input language and responds accordingly
+- **Enhanced Task Parsing**: Improved natural language understanding for task creation in both languages
+- **Advanced Analytics**: More insightful family analytics with cultural context
+
+### 🔧 Bug Fixes
+- **Fixed Task Assignment Display**: Tasks now properly show assignee names instead of "Unassigned"
+- **Fixed Analytics Object Display**: Replaced "[object Object]" with properly formatted metrics
+- **Fixed Task Query Errors**: Resolved date comparison issues in task filtering
+- **Fixed UI Icons**: Corrected SVG path errors causing browser console warnings
+
+---
+
 ## [1.0.34] - 2025-06-06
 
 ### 🔧 Bug Fixes

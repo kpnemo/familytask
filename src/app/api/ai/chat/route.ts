@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { FamilyContextBuilder } from '@/lib/mcp/family-context';
-import { ConversationHandler } from '@/lib/ai/conversation-handler';
+import { OpenAIConversationHandler } from '@/lib/ai/openai-conversation-handler';
 
 interface ChatRequest {
   message: string;
@@ -19,7 +19,8 @@ interface ChatResponse {
   data?: {
     message: string;
     intent: string;
-    data?: any;
+    language: string;
+    data?: unknown;
     followUpActions?: string[];
     confidence: number;
     timestamp: string;
@@ -100,8 +101,8 @@ export async function POST(request: NextRequest) {
       timestamp: new Date(msg.timestamp)
     })) || [];
 
-    // Handle conversation with AI
-    const conversationHandler = new ConversationHandler();
+    // Handle conversation with AI (now using OpenAI)
+    const conversationHandler = new OpenAIConversationHandler();
     const result = await conversationHandler.handleConversation(
       message,
       familyContext,
@@ -109,13 +110,14 @@ export async function POST(request: NextRequest) {
     );
 
     // Log AI usage (for monitoring and cost tracking)
-    console.log(`AI Chat - Family: ${session.user.familyId}, User: ${session.user.id}, Intent: ${result.intent}`);
+    console.log(`AI Chat (OpenAI) - Family: ${session.user.familyId}, User: ${session.user.id}, Intent: ${result.intent}, Language: ${result.language}`);
 
     const response: ChatResponse = {
       success: true,
       data: {
         message: result.message,
         intent: result.intent,
+        language: result.language,
         data: result.data,
         followUpActions: result.followUpActions,
         confidence: result.confidence,

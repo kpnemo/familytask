@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { FamilyContextBuilder } from '@/lib/mcp/family-context';
-import { TaskParser } from '@/lib/ai/task-parser';
+import { OpenAITaskParser } from '@/lib/ai/openai-task-parser';
 import { AIParseTasksRequest, AIParseTasksResponse } from '@/types/ai';
 
 export async function POST(request: NextRequest) {
@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
       userRole
     );
 
-    // Parse tasks using AI
-    const taskParser = new TaskParser();
+    // Parse tasks using AI (now using OpenAI)
+    const taskParser = new OpenAITaskParser();
     const result = await taskParser.parseNaturalLanguage(
       input,
       familyContext,
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Log AI usage (for monitoring and cost tracking)
-    console.log(`AI Task Parsing - Family: ${session.user.familyId}, User: ${session.user.id}, Tasks: ${result.parsedTasks.length}`);
+    console.log(`AI Task Parsing (OpenAI) - Family: ${session.user.familyId}, User: ${session.user.id}, Tasks: ${result.parsedTasks.length}`);
 
     return NextResponse.json(response);
 
