@@ -1,6 +1,12 @@
 # FamilyTasks Release Notes
 
-## [1.0.35] - 2025-01-07
+## [1.0.36] - 2025-01-07
+
+### 🎯 Kids Dashboard Enhancements
+- **Overdue Task Visibility**: Kids can now see overdue tasks in their dashboard (previously hidden)
+- **Priority Task Ordering**: Overdue tasks appear first with urgent red styling, then today's tasks
+- **Bonus Task Access**: Kids can see and self-assign available bonus tasks directly from their dashboard
+- **Enhanced Task Organization**: Clear visual sections for overdue, today's, and bonus tasks
 
 ### 🚀 Major AI Enhancement - Multilingual Support
 - **OpenAI Integration**: Upgraded from Anthropic to OpenAI GPT-4o for enhanced AI capabilities
