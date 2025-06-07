@@ -40,22 +40,45 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          // Filter tasks that are due today only using consistent date logic
+          // Filter tasks that are due today OR overdue using consistent date logic
           const now = new Date()
           const todayYear = now.getFullYear()
           const todayMonth = now.getMonth()
           const todayDay = now.getDate()
           
-          const todaysTasks = result.data.filter((task: Task) => {
+          const relevantTasks = result.data.filter((task: Task) => {
             const taskDate = new Date(task.dueDate)
             const taskYear = taskDate.getFullYear()
             const taskMonth = taskDate.getMonth()
             const taskDay = taskDate.getDate()
             
-            // Only show tasks due today (ignore time completely)
-            return taskYear === todayYear && taskMonth === todayMonth && taskDay === todayDay
+            // Create date numbers for comparison (ignore time completely)
+            const todayDateNum = todayYear * 10000 + todayMonth * 100 + todayDay
+            const taskDateNum = taskYear * 10000 + taskMonth * 100 + taskDay
+            
+            // Show tasks due today OR overdue (past due)
+            return taskDateNum <= todayDateNum
           })
-          setTasks(todaysTasks)
+
+          // Sort tasks: overdue first, then today's tasks
+          const sortedTasks = relevantTasks.sort((a: Task, b: Task) => {
+            const aDate = new Date(a.dueDate)
+            const bDate = new Date(b.dueDate)
+            const aYear = aDate.getFullYear()
+            const aMonth = aDate.getMonth()
+            const aDay = aDate.getDate()
+            const bYear = bDate.getFullYear()
+            const bMonth = bDate.getMonth()
+            const bDay = bDate.getDate()
+            
+            const aDateNum = aYear * 10000 + aMonth * 100 + aDay
+            const bDateNum = bYear * 10000 + bMonth * 100 + bDay
+            
+            // Sort by date: older dates (overdue) first
+            return aDateNum - bDateNum
+          })
+          
+          setTasks(sortedTasks)
         }
       }
     } catch (error) {
@@ -138,8 +161,43 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
     )
   }
 
+  // Helper function to check if a task is overdue
+  const isTaskOverdue = (task: Task) => {
+    const now = new Date()
+    const taskDate = new Date(task.dueDate)
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    const taskYear = taskDate.getFullYear()
+    const taskMonth = taskDate.getMonth()
+    const taskDay = taskDate.getDate()
+    
+    const todayDateNum = todayYear * 10000 + todayMonth * 100 + todayDay
+    const taskDateNum = taskYear * 10000 + taskMonth * 100 + taskDay
+    
+    return taskDateNum < todayDateNum
+  }
+
+  // Helper function to check if a task is due today
+  const isTaskDueToday = (task: Task) => {
+    const now = new Date()
+    const taskDate = new Date(task.dueDate)
+    const todayYear = now.getFullYear()
+    const todayMonth = now.getMonth()
+    const todayDay = now.getDate()
+    const taskYear = taskDate.getFullYear()
+    const taskMonth = taskDate.getMonth()
+    const taskDay = taskDate.getDate()
+    
+    return todayYear === taskYear && todayMonth === taskMonth && todayDay === taskDay
+  }
+
   const completableTasks = tasks.filter(task => canCompleteToday(task))
   const lockedTasks = tasks.filter(task => !canCompleteToday(task))
+  
+  // Separate overdue and today's tasks for better UI organization
+  const overdueTasks = completableTasks.filter(task => isTaskOverdue(task))
+  const todaysTasks = completableTasks.filter(task => isTaskDueToday(task))
 
   return (
     <div className="space-y-6">
@@ -149,7 +207,7 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
           👋 Hi {user.name}!
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">
-          Here are your tasks for today
+          Here are your tasks
         </p>
         <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900 px-4 py-2 rounded-full">
           <span className="text-2xl">⭐</span>
@@ -159,74 +217,142 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
         </div>
       </div>
 
-      {/* Today's Tasks */}
-      {completableTasks.length === 0 && lockedTasks.length === 0 ? (
+      {/* Tasks */}
+      {overdueTasks.length === 0 && todaysTasks.length === 0 && lockedTasks.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-              All done for today!
+              All done!
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Great job! You've completed all your tasks for today.
+              Great job! You've completed all your tasks.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {/* Completable Tasks */}
-          {completableTasks.map((task) => (
-            <Card key={task.id} className="border-2 border-green-200 bg-green-50 dark:bg-green-900/20">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      {task.title}
-                      {task.dueDateOnly && (
-                        <span className="text-amber-600" title="Due date only">⏰</span>
-                      )}
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                        📅 {formatDate(new Date(task.dueDate))}
-                      </span>
+        <div className="space-y-6">
+          {/* Overdue Tasks Section */}
+          {overdueTasks.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                🚨 Overdue Tasks ({overdueTasks.length})
+              </h2>
+              {overdueTasks.map((task) => (
+                <Card key={task.id} className="border-2 border-red-300 bg-red-50 dark:bg-red-900/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl flex items-center gap-2 text-red-700 dark:text-red-300">
+                          ⚠️ {task.title}
+                          {task.dueDateOnly && (
+                            <span className="text-amber-600" title="Due date only">⏰</span>
+                          )}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-red-600 dark:text-red-400 font-medium">
+                            📅 Was due: {formatDate(new Date(task.dueDate))}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-red-600 mb-1">
+                          {task.points} pts
+                        </div>
+                      </div>
                     </div>
-                    {task.description && (
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-green-600 mb-1">
-                      {task.points} pts
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {task.tags.map(tag => (
-                      <span
-                        key={tag.id}
-                        className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                        style={{ backgroundColor: tag.color }}
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1">
+                        {task.tags.map(tag => (
+                          <span
+                            key={tag.id}
+                            className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={() => handleCompleteTask(task.id)}
+                        className="bg-red-600 hover:bg-red-700 text-lg px-6 py-3"
+                        size="lg"
                       >
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                  <Button
-                    onClick={() => handleCompleteTask(task.id)}
-                    className="bg-green-600 hover:bg-green-700 text-lg px-6 py-3"
-                    size="lg"
-                  >
-                    <Icons.check className="w-5 h-5 mr-2" />
-                    Done!
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                        <Icons.check className="w-5 h-5 mr-2" />
+                        Complete Now!
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Today's Tasks Section */}
+          {todaysTasks.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold text-green-600 dark:text-green-400 flex items-center gap-2">
+                📅 Today's Tasks ({todaysTasks.length})
+              </h2>
+              {todaysTasks.map((task) => (
+                <Card key={task.id} className="border-2 border-green-200 bg-green-50 dark:bg-green-900/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl flex items-center gap-2">
+                          {task.title}
+                          {task.dueDateOnly && (
+                            <span className="text-amber-600" title="Due date only">⏰</span>
+                          )}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                            📅 {formatDate(new Date(task.dueDate))}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-green-600 mb-1">
+                          {task.points} pts
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1">
+                        {task.tags.map(tag => (
+                          <span
+                            key={tag.id}
+                            className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={() => handleCompleteTask(task.id)}
+                        className="bg-green-600 hover:bg-green-700 text-lg px-6 py-3"
+                        size="lg"
+                      >
+                        <Icons.check className="w-5 h-5 mr-2" />
+                        Done!
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
           {/* Locked Tasks (due date only, not available yet) */}
           {lockedTasks.map((task) => (
