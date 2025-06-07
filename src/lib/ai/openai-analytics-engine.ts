@@ -216,26 +216,28 @@ ${query.targetMember ? `ФОКУС НА: ${query.targetMember}` : ''}
 
 ИНСТРУКЦИИ ПО АНАЛИЗУ:
 1. Ответьте на конкретный вопрос пользователя прямо на РУССКОМ языке
-2. Предоставьте релевантные метрики и insights
-3. Включите практические рекомендации
-4. Предложите визуализацию данных если полезно
-5. Будьте поощрительными и семейно-ориентированными
-6. Используйте конкретные числа и проценты
-7. Сравнивайте членов семьи справедливо и конструктивно
-8. ВАЖНО: НЕ включайте объекты или JSON в ответ - только форматированный текст!
+2. Если пользователь просит показать все задачи отсортированные - ПОКАЖИТЕ ВСЕ ЗАДАЧИ ДЕТАЛЬНО
+3. Группируйте задачи по баллам (например "50 баллов:", "20 баллов:" и т.д.)
+4. Каждую задачу показывайте в новой строке с названием, исполнителем и статусом
+5. Используйте маркеры (• или -) для лучшей читаемости
+6. Предоставьте релевантные метрики и insights
+7. Включите практические рекомендации
+8. Будьте поощрительными и семейно-ориентированными
+9. Используйте конкретные числа и проценты
+10. ВАЖНО: НЕ включайте объекты или JSON в ответ - только форматированный текст!
 
 ФОРМАТ ОТВЕТА (JSON):
 {
-  "answer": "Ключевые метрики:\nKid1:\n• Выполнено задач: 8\n• Заработано баллов: 33\n• Активных задач: 3\n\nErik:\n• Выполнено задач: 2\n• Заработано баллов: 13\n• Активных задач: 1\n\n💡 Инсайты:\nОстальной анализ...",
+  "answer": "📋 Выполненные задачи семьи Bogdanovsky (отсортированы по баллам - от большего к меньшему):\n\n50 баллов:\n- Вычесать помыть и высушить Зои - Olya (Выполнено)\n\n20 баллов:\n- Стирка & Сушка белья - Erik Bogdanovsky (Выполнено)\n- Погулять с собаками пока мы в сауне - Erik Bogdanovsky (Выполнено)\n\n15 баллов:\n- Помощь на улице - Meir (Выполнено)\n\nВсего: 39 выполненных задач",
   "data": {},
   "confidence": 0.9
 }
 
-ПРИМЕРЫ ФОРМАТИРОВАННЫХ ОТВЕТОВ:
-- "Эрик выполнил 8 из 10 задач на этой неделе (80% выполнения)"
-- "У Сары серия из 5 дней подряд выполненных задач!"
-- "Семья выполнила 85% задач на этой неделе, что больше чем 70% на прошлой неделе"
-- "Джонни трудно даются задачи в будни - стоит перенести некоторые на выходные"`;
+ПРИМЕРЫ ФОРМАТИРОВАННЫХ ОТВЕТОВ ДЛЯ СПИСКОВ ЗАДАЧ:
+- Когда пользователь просит показать все задачи отсортированные - покажите ПОЛНЫЙ список всех задач с названиями, исполнителями и статусом
+- Группируйте по баллам от большего к меньшему  
+- Каждую задачу на отдельной строке с маркером
+- В конце покажите общую статистику`;
     }
 
     return `FAMILY DATA ANALYSIS:
@@ -263,26 +265,28 @@ ${query.targetMember ? `FOCUS ON: ${query.targetMember}` : ''}
 
 ANALYSIS INSTRUCTIONS:
 1. Answer the user's specific question directly in ENGLISH
-2. Provide relevant metrics and insights
-3. Include actionable recommendations
-4. Suggest data visualizations if helpful
-5. Be encouraging and family-focused
-6. Use specific numbers and percentages
-7. Compare family members fairly and constructively
-8. IMPORTANT: Do NOT include objects or JSON in response - only formatted text!
+2. If user asks to show all tasks sorted - SHOW ALL TASKS IN DETAIL
+3. Group tasks by points (e.g., "50 Points:", "20 Points:", etc.)
+4. Show each task on new line with title, assignee, and status
+5. Use bullet points (• or -) for better readability
+6. Provide relevant metrics and insights
+7. Include actionable recommendations
+8. Be encouraging and family-focused
+9. Use specific numbers and percentages
+10. IMPORTANT: Do NOT include objects or JSON in response - only formatted text!
 
 RESPONSE FORMAT (JSON):
 {
-  "answer": "Key Metrics:\nKid1:\n• Tasks completed: 8\n• Points earned: 33\n• Active tasks: 3\n\nErik:\n• Tasks completed: 2\n• Points earned: 13\n• Active tasks: 1\n\n💡 Insights:\nRest of analysis...",
+  "answer": "📋 Completed Tasks in Bogdanovsky Family (Sorted by Points - High to Low):\n\n50 Points:\n- Вычесать помыть и высушить Зои - Olya (Verified)\n\n20 Points:\n- Стирка & Сушка белья - Erik Bogdanovsky (Verified)\n- Погулять с собаками пока мы в сауне - Erik Bogdanovsky (Verified)\n\n15 Points:\n- Помощь на улице - Meir (Verified)\n\nTotal: 39 completed tasks",
   "data": {},
   "confidence": 0.9
 }
 
-EXAMPLE FORMATTED RESPONSES:
-- "Erik completed 8 out of 10 tasks this week (80% completion rate)"
-- "Sarah has been on a 5-day completion streak!"
-- "The family completed 85% of tasks this week, up from 70% last week"
-- "Johnny seems to struggle with chores on weekdays - consider moving some to weekends"`;
+EXAMPLE FORMATTED RESPONSES FOR TASK LISTS:
+- When user asks to show all tasks sorted - show COMPLETE list of all tasks with titles, assignees, and status
+- Group by points from high to low
+- Each task on separate line with bullet point
+- Show total statistics at the end`;
   }
 
   private parseAnalyticsResponse(response: string): AnalyticsResponse {

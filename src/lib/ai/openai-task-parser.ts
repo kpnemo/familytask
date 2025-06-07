@@ -46,7 +46,9 @@ export class OpenAITaskParser {
 - Извлечение нескольких задач из одного сообщения
 - Распознавание дат (завтра, понедельник, через неделю, 15 января и т.д.)
 - Назначение задач членам семьи по именам
-- Определение повторяющихся задач (ежедневно, еженедельно, ежемесячно)
+- Определение повторяющихся задач (ТОЛЬКО: ежедневно, еженедельно, ежемесячно)
+- ВАЖНО: "каждый второй день", "через день", "раз в 3 дня" НЕ поддерживаются
+- При запросе неподдерживаемых интервалов - создавайте вопрос уточнения с альтернативами
 - Создание бонусных задач (никому не назначенных)
 - Оценка сложности для определения баллов
 
@@ -84,7 +86,9 @@ Capabilities:
 - Extracting multiple tasks from a single message
 - Recognizing dates (tomorrow, Monday, next week, January 15th, etc.)
 - Assigning tasks to family members by name
-- Identifying recurring tasks (daily, weekly, monthly)
+- Identifying recurring tasks (ONLY: daily, weekly, monthly)
+- IMPORTANT: "every other day", "every 2 days", "twice a week" are NOT supported
+- For unsupported intervals - create clarification question with alternatives
 - Creating bonus tasks (unassigned for anyone to claim)
 - Estimating complexity for point values
 
@@ -120,6 +124,7 @@ RESPONSE FORMAT (JSON only):
     familyContext: FamilyContext,
     targetDate?: string,
     defaultPoints?: number,
+    conversationHistory?: Array<{role: string, content: string}>,
     retryCount: number = 0
   ): Promise<{
     parsedTasks: ParsedTask[];
@@ -130,7 +135,7 @@ RESPONSE FORMAT (JSON only):
       // Detect language
       const detectedLanguage = this.detectLanguage(input);
       
-      const prompt = this.buildParsingPrompt(input, familyContext, targetDate, defaultPoints, detectedLanguage);
+      const prompt = this.buildParsingPrompt(input, familyContext, targetDate, defaultPoints, detectedLanguage, conversationHistory);
       
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4o', // Latest GPT-4o model for best multilingual understanding
@@ -164,7 +169,7 @@ RESPONSE FORMAT (JSON only):
       // Retry once if this is the first attempt and the error is parsing-related
       if (retryCount === 0 && (error instanceof SyntaxError || error.message.includes('JSON'))) {
         console.log('Retrying parsing request due to parsing error...');
-        return this.parseNaturalLanguage(input, familyContext, targetDate, defaultPoints, 1);
+        return this.parseNaturalLanguage(input, familyContext, targetDate, defaultPoints, conversationHistory, 1);
       }
       
       // Return empty result with error handling
@@ -181,7 +186,8 @@ RESPONSE FORMAT (JSON only):
     familyContext: FamilyContext, 
     targetDate?: string, 
     defaultPoints?: number,
-    language: 'en' | 'ru' | 'unknown' = 'en'
+    language: 'en' | 'ru' | 'unknown' = 'en',
+    conversationHistory?: Array<{role: string, content: string}>
   ): string {
     const familyMembers = familyContext.members.map(m => ({
       name: m.name,
@@ -201,13 +207,17 @@ RESPONSE FORMAT (JSON only):
 ${targetDate ? `Целевая дата: ${targetDate}` : ''}
 ${defaultPoints ? `Баллы по умолчанию: ${defaultPoints}` : ''}
 
+${conversationHistory && conversationHistory.length > 0 ? `ИСТОРИЯ РАЗГОВОРА (последние сообщения):
+${conversationHistory.slice(-4).map(msg => `${msg.role}: ${msg.content}`).join('\n')}` : ''}
+
 ПОЛЬЗОВАТЕЛЬСКИЙ ВВОД: "${input}"
 
 ВНИМАНИЕ: ОБЯЗАТЕЛЬНО найдите Erik в списке members выше и используйте его ТОЧНЫЙ ID для assignedTo!
 
 ИНСТРУКЦИИ ПО ПАРСИНГУ:
-1. Извлеките ВСЕ задачи из пользовательского ввода
-2. Для каждой задачи определите:
+1. УЧИТЫВАЙТЕ КОНТЕКСТ: Если пользователь ссылается на предыдущие задачи ("сделай это 10 баллов", "измени на ежедневно"), используйте историю разговора
+2. Извлеките ВСЕ задачи из пользовательского ввода
+3. Для каждой задачи определите:
    - title: четкое название задачи
    - description: дополнительные детали (если есть)
    - assignedTo: ID члена семьи (если упоминается имя) или null для бонусных задач
@@ -231,6 +241,8 @@ ${defaultPoints ? `Баллы по умолчанию: ${defaultPoints}` : ''}
 - "Саша должна" = assign to Саша (найти Саша в family members и использовать его ID)
 - "каждый день" = isRecurring: true, recurrencePattern: "DAILY"
 - "каждую неделю" = isRecurring: true, recurrencePattern: "WEEKLY"
+- "каждый второй день" / "через день" = СОЗДАТЬ ВОПРОС УТОЧНЕНИЯ (не поддерживается)
+- "раз в 3 дня" / "каждые 2 недели" = СОЗДАТЬ ВОПРОС УТОЧНЕНИЯ (не поддерживается)
 - "до конца недели" = end of current week (Friday)
 - "до конца следующей недели" = end of next week
 - "делать уроки" = do homework (средняя сложность, ~3 балла)
@@ -255,6 +267,43 @@ ${defaultPoints ? `Баллы по умолчанию: ${defaultPoints}` : ''}
   recurrencePattern: "DAILY",
   isBonusTask: false,
   confidence: 0.95
+}
+
+ПРИМЕР НЕПОДДЕРЖИВАЕМОГО ПАТТЕРНА:
+Ввод: "Erik должен мыть посуду каждый второй день"
+Результат: {
+  parsedTasks: [],
+  clarificationQuestions: [
+    {
+      question: "Система поддерживает только ежедневные, еженедельные или ежемесячные повторения. Для 'каждый второй день' могу предложить:",
+      options: [
+        "Делать ежедневно (каждый день)",
+        "Создать отдельные задачи на понедельник, среду, пятницу",
+        "Создать еженедельную задачу"
+      ]
+    }
+  ]
+}
+
+ПРИМЕР КОНТЕКСТНОГО ИЗМЕНЕНИЯ:
+История: 
+assistant: Отлично! Я создал 1 задачу для вашей семьи.
+user: сделай это 10 баллов вместо 3
+
+Ввод: "сделай это 10 баллов вместо 3"
+Результат: {
+  parsedTasks: [
+    {
+      title: "Домашнее задание", // из контекста
+      description: "Домашнее задание два часа каждый день", // из контекста
+      assignedTo: "ERIK_ID", // из контекста
+      dueDate: "2025-01-07",
+      points: 10, // ИЗМЕНЕНО с 3 на 10
+      isRecurring: true, // из контекста
+      recurrencePattern: "DAILY", // из контекста
+      confidence: 0.95
+    }
+  ]
 }`;
     }
 
@@ -265,11 +314,15 @@ Tomorrow: ${tomorrow}
 ${targetDate ? `Target Date: ${targetDate}` : ''}
 ${defaultPoints ? `Default Points: ${defaultPoints}` : ''}
 
+${conversationHistory && conversationHistory.length > 0 ? `CONVERSATION HISTORY (recent messages):
+${conversationHistory.slice(-4).map(msg => `${msg.role}: ${msg.content}`).join('\n')}` : ''}
+
 USER INPUT: "${input}"
 
 PARSING INSTRUCTIONS:
-1. Extract ALL tasks from the user input
-2. For each task, determine:
+1. CONSIDER CONTEXT: If user references previous tasks ("make it 10 points", "change to daily"), use conversation history
+2. Extract ALL tasks from the user input
+3. For each task, determine:
    - title: clear task name
    - description: additional details (if any)
    - assignedTo: family member ID (if name mentioned) or null for bonus tasks
@@ -287,6 +340,63 @@ ASSIGNMENT RULES:
 - If name explicitly mentioned → assign to that person
 - If "bonus task" mentioned → isBonusTask: true, assignedTo: null
 - If unclear → create clarification question
+
+RECURRING PATTERN RULES:
+- "daily" / "every day" = isRecurring: true, recurrencePattern: "DAILY"
+- "weekly" / "every week" = isRecurring: true, recurrencePattern: "WEEKLY"
+- "monthly" / "every month" = isRecurring: true, recurrencePattern: "MONTHLY"
+- "every other day" / "every 2 days" = CREATE CLARIFICATION QUESTION (not supported)
+- "twice a week" / "every 3 days" = CREATE CLARIFICATION QUESTION (not supported)
+
+EXAMPLE SUPPORTED PARSING:
+Input: "Erik needs to do homework every day"
+Result: {
+  title: "Do homework",
+  assignedTo: "EXACT_ID_OF_Erik_FROM_FAMILY_MEMBERS",
+  dueDate: "2025-01-07",
+  points: 3,
+  isRecurring: true,
+  recurrencePattern: "DAILY",
+  isBonusTask: false,
+  confidence: 0.95
+}
+
+EXAMPLE UNSUPPORTED PATTERN:
+Input: "Erik needs to wash dishes every other day"
+Result: {
+  parsedTasks: [],
+  clarificationQuestions: [
+    {
+      question: "The system only supports daily, weekly, or monthly recurring tasks. For 'every other day', I can suggest:",
+      options: [
+        "Make it daily (every day)",
+        "Create separate tasks for Monday, Wednesday, Friday",
+        "Make it a weekly task"
+      ]
+    }
+  ]
+}
+
+EXAMPLE CONTEXTUAL MODIFICATION:
+History:
+assistant: Great! I've created 1 task for your family.
+user: make it 10 points instead of 3
+
+Input: "make it 10 points instead of 3"
+Result: {
+  parsedTasks: [
+    {
+      title: "Do homework", // from context
+      description: "Homework two hours every day", // from context
+      assignedTo: "ERIK_ID", // from context
+      dueDate: "2025-01-07",
+      points: 10, // CHANGED from 3 to 10
+      isRecurring: true, // from context
+      recurrencePattern: "DAILY", // from context
+      confidence: 0.95
+    }
+  ]
+}
 
 EXAMPLE WEEKDAYS:
 Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday`;

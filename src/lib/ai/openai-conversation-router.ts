@@ -58,11 +58,11 @@ export class OpenAIConversationRouter {
 1. CREATE_TASKS - пользователь хочет создать новые задачи
    Примеры: "завтра Саша убери комнату", "создай задачу помыть посуду", "Пете сделать домашку"
 
-2. ANALYZE_DATA - пользователь хочет получить аналитику и insights
-   Примеры: "как дела у детей?", "покажи статистику", "кто лучше всех выполняет задачи?"
+2. ANALYZE_DATA - пользователь хочет получить аналитику, insights или детальные списки данных
+   Примеры: "как дела у детей?", "покажи статистику", "кто лучше всех выполняет задачи?", "покажи все задачи по баллам", "список каждой задачи в новой строке", "покажи все выполненные задачи от большего к меньшему"
 
-3. QUERY_TASKS - пользователь хочет узнать о существующих задачах
-   Примеры: "какие задачи на сегодня?", "что нужно сделать?", "покажи просроченные задачи"
+3. QUERY_TASKS - пользователь хочет быструю проверку статуса
+   Примеры: "какие задачи на сегодня?", "краткий обзор", "проверка статуса"
 
 4. CLARIFICATION - нужна дополнительная информация
    Примеры: неясные или двусмысленные сообщения
@@ -79,11 +79,11 @@ INTENT TYPES:
 1. CREATE_TASKS - user wants to create new tasks
    Examples: "tomorrow Sarah clean room", "create task wash dishes", "Peter do homework"
 
-2. ANALYZE_DATA - user wants analytics and insights
-   Examples: "how are the kids doing?", "show me stats", "who's performing best?"
+2. ANALYZE_DATA - user wants analytics, insights, or detailed data listings
+   Examples: "how are the kids doing?", "show me stats", "who's performing best?", "show all tasks sorted by points", "list each task in new line", "show all completed tasks by points high to low"
 
-3. QUERY_TASKS - user wants to check existing tasks
-   Examples: "what tasks for today?", "what needs to be done?", "show overdue tasks"
+3. QUERY_TASKS - user wants quick status checks only
+   Examples: "what tasks for today?", "quick overview", "status check"
 
 4. CLARIFICATION - need more information
    Examples: unclear or ambiguous messages
@@ -216,8 +216,13 @@ Analyze the user's intent and return JSON with:
     
     // Simple pattern matching for fallback
     const createPatterns = /\b(create|make|add|tomorrow|today|task|убрать|сделать|создать|завтра|сегодня|задач)\b/i;
-    const analyticsPatterns = /\b(how|stats|analysis|show|report|как дела|статистика|анализ|покажи)\b/i;
-    const queryPatterns = /\b(what|which|list|tasks|какие|что|список|задач)\b/i;
+    
+    // Enhanced analytics patterns - include detailed listing requests
+    const analyticsPatterns = /\b(how|stats|analysis|show.*all|show.*each|show.*list|show.*sorted|show.*by|report|detailed|как дела|статистика|анализ|покажи.*все|покажи.*каждый|покажи.*список|отсортировать|сортировать|по баллам|по очкам|points.*high.*low|high.*low|sorted.*points)\b/i;
+    
+    // Basic query patterns - simple status checks only
+    const queryPatterns = /\b(what.*today|what.*now|status|quick|overview|какие.*сегодня|что.*сейчас|состояние|кратко)\b/i;
+    
     const greetingPatterns = /\b(hi|hello|thanks|bye|привет|спасибо|пока)\b/i;
 
     if (createPatterns.test(input)) {

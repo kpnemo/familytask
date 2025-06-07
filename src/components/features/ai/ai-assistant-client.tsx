@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Icons } from '@/components/ui/icons';
+import { FormattedContent } from '@/components/ui/formatted-content';
 import { ParsedTask, ClarificationQuestion } from '@/types/ai';
 
 interface Message {
@@ -327,7 +328,7 @@ What would you like me to help you with?`,
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
-              <p className="text-sm">{message.content}</p>
+              <FormattedContent content={message.content} className="text-sm" />
               
               {/* Analytics Display */}
               {message.analytics && (

@@ -66,7 +66,7 @@ export class OpenAIConversationHandler {
       // Step 2: Route to appropriate handler based on intent
       switch (intentAnalysis.intent) {
         case 'CREATE_TASKS':
-          return await this.handleTaskCreation(userInput, familyContext, intentAnalysis.detectedLanguage || 'en');
+          return await this.handleTaskCreation(userInput, familyContext, intentAnalysis.detectedLanguage || 'en', conversationHistory);
 
         case 'ANALYZE_DATA':
           return await this.handleDataAnalysis(userInput, familyContext, intentAnalysis.detectedLanguage || 'en');
@@ -108,12 +108,22 @@ export class OpenAIConversationHandler {
   private async handleTaskCreation(
     userInput: string, 
     familyContext: FamilyContext, 
-    language: string
+    language: string,
+    conversationHistory: ConversationMessage[] = []
   ): Promise<ConversationResponse> {
     try {
+      // Convert conversation history to format expected by task parser
+      const recentHistory = conversationHistory.slice(-3).map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
       const parseResult = await this.taskParser.parseNaturalLanguage(
         userInput, 
-        familyContext
+        familyContext,
+        undefined, // targetDate
+        undefined, // defaultPoints
+        recentHistory
       );
 
       if (parseResult.clarificationQuestions.length > 0) {
