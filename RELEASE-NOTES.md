@@ -1,5 +1,14 @@
 # FamilyTasks Release Notes
 
+## [1.0.34] - 2025-06-06
+
+### 🔧 Bug Fixes
+- **Fixed Bonus Task Creation**: Bonus tasks can now be created without assignment errors
+- **Fixed Edit Task Form**: Assignment dropdown now shows current assignee instead of current user
+- **Fixed Bonus Task Display**: Bonus tasks due today no longer incorrectly show as overdue
+
+---
+
 ## [1.0.33] - 2025-06-06
 
 ### 🔧 Task Management Improvements
