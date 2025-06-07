@@ -183,7 +183,60 @@ The project includes automated deployment scripts:
 - View own points and history
 - Limited family member visibility
 
-## Recent Critical Updates (v1.0.25-1.0.28)
+## Recent Major Updates (v1.0.35-1.0.36)
+
+### 🤖 OpenAI Multilingual AI Enhancement (v1.0.35)
+**Major AI System Upgrade**: Complete migration from Anthropic to OpenAI GPT-4o with multilingual support.
+
+**🌍 Multilingual Capabilities:**
+- **Language Detection**: Automatic detection of Russian vs English input using Cyrillic patterns
+- **Intelligent Responses**: AI responds in the same language it was approached
+- **Cultural Context**: Russian prompts include culturally appropriate examples and grammar patterns
+- **Enhanced Parsing**: Better natural language understanding for task creation in both languages
+
+**🎯 Technical Implementation:**
+- **OpenAI Integration**: Four new AI modules using GPT-4o model
+  - `OpenAIAnalyticsEngine` - Family insights with multilingual analytics
+  - `OpenAITaskParser` - Natural language task creation (Russian/English)
+  - `OpenAIConversationRouter` - Intent analysis with language detection
+  - `OpenAIConversationHandler` - Main orchestration with cultural context
+- **API Updates**: Both `/api/ai/chat` and `/api/ai/parse-tasks` now use OpenAI
+- **Data Transformation**: Fixed frontend assignee display by converting IDs to names
+- **Error Handling**: Resolved SVG path errors and date comparison issues
+
+**🔧 Bug Fixes Included:**
+- Fixed `[object Object]` display in analytics (now shows formatted metrics)
+- Fixed task assignment display showing "Unassigned" instead of names
+- Fixed date comparison errors in task queries
+- Fixed SVG path syntax causing browser console warnings
+
+### 🎯 Kids Dashboard Enhancements (v1.0.36)
+**Major UX Improvement**: Complete overhaul of children's dashboard experience.
+
+**📋 Overdue Task Visibility:**
+- **Previously Hidden**: Kids couldn't see overdue tasks in their dashboard
+- **Now Visible**: Overdue tasks appear prominently with red styling and warning icons
+- **Priority Ordering**: Overdue tasks show first, then today's tasks
+- **Visual Distinction**: "🚨 Overdue Tasks" section with urgent "Complete Now!" buttons
+
+**💰 Bonus Task Integration:**
+- **Full Access**: Kids can see all available bonus tasks in their dashboard
+- **Self-Assignment**: "Take Task!" button allows immediate bonus task claiming
+- **Visual Identification**: Bonus tasks show 💰 icon and "Bonus Task" badge
+- **Parallel Fetching**: Dashboard fetches both assigned tasks and bonus tasks simultaneously
+
+**🎨 Enhanced Organization:**
+- **Clear Sections**: Overdue → Today's (Assigned + Bonus) → Future Locked
+- **Color Coding**: Red (overdue), Green (today), Amber (locked/bonus actions)
+- **Child-Friendly**: Maintains encouraging interface with clear visual hierarchy
+
+**⚙️ Technical Improvements:**
+- **Dual API Calls**: Parallel fetching of assigned and bonus tasks
+- **Date-Only Logic**: Consistent date comparison ignoring time across all task filtering
+- **Task Categorization**: Sophisticated sorting by type (assigned/bonus) and timing (overdue/today)
+- **State Management**: Proper refresh after task completion or assignment
+
+## Previous Updates (v1.0.25-1.0.28)
 
 ### 🚨 Task Deletion Points Bug Fix (v1.0.26-1.0.27)
 **Critical Issue**: Deleting verified tasks caused double-deduction, leaving users with negative points.
@@ -214,3 +267,6 @@ The project includes automated deployment scripts:
 3. **Browser Caching**: Hard refresh needed when updating React components
 4. **Family Filtering**: Role-based filtering can be limiting - consider showing all members
 5. **API Design**: Consistent patterns across add/deduct endpoints with proper validation
+6. **Language Detection**: Cyrillic character patterns + keyword matching for reliable detection
+7. **Data Transformation**: Always convert backend IDs to frontend display names
+8. **Kids UX**: Children need simple, encouraging interfaces with clear visual priority
