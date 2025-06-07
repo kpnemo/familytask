@@ -72,7 +72,10 @@ export default async function EditTaskPage({ params }: EditTaskPageProps) {
 
       {/* Main Content */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <EditTaskForm task={task} />
+        <EditTaskForm task={{
+          ...task,
+          assignedTo: task.assignee?.id || task.assignedTo || ""
+        }} />
       </div>
     </div>
   )
