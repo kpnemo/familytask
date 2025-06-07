@@ -13,8 +13,10 @@ interface Task {
   description?: string
   points: number
   dueDate: string
-  status: "PENDING" | "COMPLETED" | "VERIFIED" | "OVERDUE"
+  status: "PENDING" | "COMPLETED" | "VERIFIED" | "OVERDUE" | "AVAILABLE"
   dueDateOnly?: boolean
+  isBonusTask?: boolean
+  assignedTo?: string | null
   tags: Array<{ id: string; name: string; color: string }>
 }
 
@@ -36,17 +38,29 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
 
   const fetchTodaysTasks = async () => {
     try {
-      const response = await fetch(`/api/tasks?assignedTo=${user.id}&status=PENDING`)
-      if (response.ok) {
-        const result = await response.json()
-        if (result.success) {
+      // Fetch both assigned tasks and available bonus tasks
+      const [assignedResponse, bonusResponse] = await Promise.all([
+        fetch(`/api/tasks?assignedTo=${user.id}&status=PENDING`),
+        fetch(`/api/tasks?status=AVAILABLE`)
+      ])
+      
+      if (assignedResponse.ok && bonusResponse.ok) {
+        const [assignedResult, bonusResult] = await Promise.all([
+          assignedResponse.json(),
+          bonusResponse.json()
+        ])
+        
+        if (assignedResult.success && bonusResult.success) {
+          // Combine assigned tasks and bonus tasks
+          const allTasks = [...assignedResult.data, ...bonusResult.data]
+          
           // Filter tasks that are due today OR overdue using consistent date logic
           const now = new Date()
           const todayYear = now.getFullYear()
           const todayMonth = now.getMonth()
           const todayDay = now.getDate()
           
-          const relevantTasks = result.data.filter((task: Task) => {
+          const relevantTasks = allTasks.filter((task: Task) => {
             const taskDate = new Date(task.dueDate)
             const taskYear = taskDate.getFullYear()
             const taskMonth = taskDate.getMonth()
@@ -130,6 +144,27 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
     }
   }
 
+  const handleAssignBonusTask = async (taskId: string) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignedTo: user.id })
+      })
+
+      if (response.ok) {
+        // Refresh tasks to show the newly assigned task
+        await fetchTodaysTasks()
+      } else {
+        const error = await response.json()
+        alert(error.error?.message || 'Failed to assign task')
+      }
+    } catch (error) {
+      console.error('Error assigning task:', error)
+      alert('Failed to assign task')
+    }
+  }
+
   const canCompleteToday = (task: Task) => {
     if (!task.dueDateOnly) return true
     
@@ -192,12 +227,20 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
     return todayYear === taskYear && todayMonth === taskMonth && todayDay === taskDay
   }
 
-  const completableTasks = tasks.filter(task => canCompleteToday(task))
-  const lockedTasks = tasks.filter(task => !canCompleteToday(task))
+  // Separate tasks by type and status
+  const assignedTasks = tasks.filter(task => !task.isBonusTask)
+  const bonusTasks = tasks.filter(task => task.isBonusTask && task.status === 'AVAILABLE')
   
-  // Separate overdue and today's tasks for better UI organization
-  const overdueTasks = completableTasks.filter(task => isTaskOverdue(task))
-  const todaysTasks = completableTasks.filter(task => isTaskDueToday(task))
+  const completableAssignedTasks = assignedTasks.filter(task => canCompleteToday(task))
+  const lockedTasks = assignedTasks.filter(task => !canCompleteToday(task))
+  
+  // Separate overdue and today's assigned tasks
+  const overdueAssignedTasks = completableAssignedTasks.filter(task => isTaskOverdue(task))
+  const todaysAssignedTasks = completableAssignedTasks.filter(task => isTaskDueToday(task))
+  
+  // Separate bonus tasks by timing
+  const overdueBonusTasks = bonusTasks.filter(task => isTaskOverdue(task))
+  const todaysBonusTasks = bonusTasks.filter(task => isTaskDueToday(task))
 
   return (
     <div className="space-y-6">
@@ -218,7 +261,7 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
       </div>
 
       {/* Tasks */}
-      {overdueTasks.length === 0 && todaysTasks.length === 0 && lockedTasks.length === 0 ? (
+      {overdueAssignedTasks.length === 0 && todaysAssignedTasks.length === 0 && overdueBonusTasks.length === 0 && todaysBonusTasks.length === 0 && lockedTasks.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
             <div className="text-6xl mb-4">🎉</div>
@@ -233,12 +276,13 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
       ) : (
         <div className="space-y-6">
           {/* Overdue Tasks Section */}
-          {overdueTasks.length > 0 && (
+          {(overdueAssignedTasks.length > 0 || overdueBonusTasks.length > 0) && (
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
-                🚨 Overdue Tasks ({overdueTasks.length})
+                🚨 Overdue Tasks ({overdueAssignedTasks.length + overdueBonusTasks.length})
               </h2>
-              {overdueTasks.map((task) => (
+              {/* Overdue Assigned Tasks */}
+              {overdueAssignedTasks.map((task) => (
                 <Card key={task.id} className="border-2 border-red-300 bg-red-50 dark:bg-red-900/20">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -290,16 +334,74 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Overdue Bonus Tasks */}
+              {overdueBonusTasks.map((task) => (
+                <Card key={task.id} className="border-2 border-red-300 bg-red-50 dark:bg-red-900/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl flex items-center gap-2 text-red-700 dark:text-red-300">
+                          ⚠️ 💰 {task.title}
+                          {task.dueDateOnly && (
+                            <span className="text-amber-600" title="Due date only">⏰</span>
+                          )}
+                          <span className="text-sm bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+                            Bonus Task
+                          </span>
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-red-600 dark:text-red-400 font-medium">
+                            📅 Was due: {formatDate(new Date(task.dueDate))}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-red-600 mb-1">
+                          {task.points} pts
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1">
+                        {task.tags.map(tag => (
+                          <span
+                            key={tag.id}
+                            className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={() => handleAssignBonusTask(task.id)}
+                        className="bg-amber-600 hover:bg-amber-700 text-lg px-6 py-3"
+                        size="lg"
+                      >
+                        <Icons.plus className="w-5 h-5 mr-2" />
+                        Take Task!
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
 
           {/* Today's Tasks Section */}
-          {todaysTasks.length > 0 && (
+          {(todaysAssignedTasks.length > 0 || todaysBonusTasks.length > 0) && (
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-green-600 dark:text-green-400 flex items-center gap-2">
-                📅 Today's Tasks ({todaysTasks.length})
+                📅 Today's Tasks ({todaysAssignedTasks.length + todaysBonusTasks.length})
               </h2>
-              {todaysTasks.map((task) => (
+              {/* Today's Assigned Tasks */}
+              {todaysAssignedTasks.map((task) => (
                 <Card key={task.id} className="border-2 border-green-200 bg-green-50 dark:bg-green-900/20">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -346,6 +448,63 @@ export function KidsStyleDashboard({ user }: KidsStyleDashboardProps) {
                       >
                         <Icons.check className="w-5 h-5 mr-2" />
                         Done!
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {/* Today's Bonus Tasks */}
+              {todaysBonusTasks.map((task) => (
+                <Card key={task.id} className="border-2 border-green-200 bg-green-50 dark:bg-green-900/20">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl flex items-center gap-2">
+                          💰 {task.title}
+                          {task.dueDateOnly && (
+                            <span className="text-amber-600" title="Due date only">⏰</span>
+                          )}
+                          <span className="text-sm bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+                            Bonus Task
+                          </span>
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                            📅 {formatDate(new Date(task.dueDate))}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-green-600 mb-1">
+                          {task.points} pts
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1">
+                        {task.tags.map(tag => (
+                          <span
+                            key={tag.id}
+                            className="px-2 py-1 rounded-full text-xs font-medium text-white"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={() => handleAssignBonusTask(task.id)}
+                        className="bg-amber-600 hover:bg-amber-700 text-lg px-6 py-3"
+                        size="lg"
+                      >
+                        <Icons.plus className="w-5 h-5 mr-2" />
+                        Take Task!
                       </Button>
                     </div>
                   </CardContent>
