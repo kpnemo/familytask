@@ -1,5 +1,33 @@
 # FamilyTasks Release Notes
 
+## [1.0.37] - 2025-01-07
+
+### 🤖 AI Assistant Major Enhancements
+- **Beautiful Formatted Output**: AI responses now display in professional tables and structured format
+  - Automatic detection of task lists, point groupings, and structured data
+  - Clean visual hierarchy with proper headers, bullet points, and sections
+  - No more messy text with `\n` characters - everything renders beautifully
+- **Conversation Context Memory**: AI now remembers previous conversation and can handle follow-up requests
+  - Understand contextual modifications: "make it 10 points instead of 3"
+  - Reference previous tasks without needing to repeat all details
+  - Smart task reconstruction from conversation history
+- **Enhanced Intent Detection**: Improved routing of complex queries
+  - "Show all tasks sorted by points" now provides detailed task listings
+  - Better distinction between quick status checks and detailed analytics
+  - Supports both English and Russian query patterns
+- **Smart Recurring Pattern Handling**: Better handling of unsupported patterns like "every other day"
+  - Clear explanation of system limitations (daily, weekly, monthly only)
+  - Helpful alternative suggestions with specific options
+  - No more confusing clarification loops
+
+### 🎯 User Experience Improvements
+- **Generic Formatting Solution**: All AI responses automatically formatted without manual configuration
+- **Multilingual Support**: Enhanced context handling for both English and Russian conversations
+- **Task Modification Support**: Easy point adjustments, recurrence changes, and assignee modifications
+- **Professional Output**: Clean, readable responses that look great on both desktop and mobile
+
+---
+
 ## [1.0.36] - 2025-01-07
 
 ### 🎯 Kids Dashboard Enhancements
