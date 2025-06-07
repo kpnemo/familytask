@@ -1,5 +1,32 @@
 # FamilyTasks Release Notes
 
+## [1.0.38] - 2025-01-08
+
+### 🎨 Task Icon Generation - NEW FEATURE
+- **AI-Powered Task Icons**: Generate beautiful, custom icons for every task using OpenAI DALL-E
+  - Studio Ghibli-inspired aesthetic with warm, hand-drawn textures
+  - Automatic classification of tasks into visual categories (cleaning, homework, cooking, etc.)
+  - High contrast, minimalist design optimized for small icon sizes
+  - Family-friendly and child-appropriate imagery
+- **Complete Integration**: Icons appear throughout the entire app
+  - **Create Tasks**: Generate icons during task creation (parents only)
+  - **Edit Tasks**: View existing icons and generate new ones
+  - **Task Cards**: Icons displayed prominently on all task cards
+  - **Task View**: Large icons shown on individual task pages
+  - **Recurring Tasks**: Icons automatically copied to future task instances
+- **Smart Icon Management**: 
+  - Icons persist correctly when editing tasks
+  - Fallback to default task icon when no custom icon exists
+  - Icons stored with generation prompts for consistency
+
+### 🛠️ Technical Enhancements
+- **Database Schema**: Added `iconUrl` and `iconPrompt` fields to Task model
+- **API Integration**: New `/api/tasks/generate-icon` endpoint with OpenAI DALL-E 3
+- **UI Components**: Reusable `TaskIcon` component with generation functionality
+- **Validation**: Updated Zod schemas to support icon fields in create/edit operations
+
+---
+
 ## [1.0.37] - 2025-01-07
 
 ### 🤖 AI Assistant Major Enhancements

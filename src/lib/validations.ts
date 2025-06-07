@@ -44,6 +44,8 @@ export const createTaskSchema = z.object({
   recurrencePattern: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
   isBonusTask: z.boolean().optional(),
   dueDateOnly: z.boolean().optional(),
+  iconUrl: z.string().url().optional(),
+  iconPrompt: z.string().optional(),
 }).refine((data) => {
   // For bonus tasks, assignedTo is not required
   if (data.isBonusTask === true) {
@@ -66,6 +68,8 @@ export const updateTaskSchema = z.object({
   dueDateOnly: z.boolean().optional(),
   isRecurring: z.boolean().optional(),
   recurrencePattern: z.enum(["DAILY", "WEEKLY", "MONTHLY"]).optional(),
+  iconUrl: z.string().url().optional(),
+  iconPrompt: z.string().optional(),
 }).refine((data) => {
   // If isRecurring is true, recurrencePattern is required
   if (data.isRecurring === true) {

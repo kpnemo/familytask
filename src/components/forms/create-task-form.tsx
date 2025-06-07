@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { TaskIcon, useTaskIconGeneration } from "@/components/ui/task-icon"
 import { createTaskSchema, type CreateTaskInput } from "@/lib/validations"
 import { dateToInputString } from "@/lib/utils"
 
@@ -38,7 +39,11 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     role: currentUserRole
   }])
   const [tags, setTags] = useState<Tag[]>([])
+  const [iconUrl, setIconUrl] = useState<string | null>(null)
+  const [iconPrompt, setIconPrompt] = useState<string | null>(null)
   const router = useRouter()
+  
+  const { generateIcon, isGenerating, error: iconError, clearError } = useTaskIconGeneration()
 
   const {
     register,
@@ -115,6 +120,23 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
     fetchData()
   }, [currentUserId, currentUserName, currentUserRole])
 
+  const handleGenerateIcon = async () => {
+    const title = watch('title')
+    const description = watch('description')
+    
+    if (!title?.trim()) {
+      return
+    }
+    
+    clearError()
+    const result = await generateIcon(title, description)
+    
+    if (result) {
+      setIconUrl(result.iconUrl)
+      setIconPrompt(result.prompt)
+    }
+  }
+
   const onSubmit = async (data: CreateTaskInput) => {
     console.log("Form submission started with data:", data);
     setIsLoading(true)
@@ -125,6 +147,12 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
       const submitData = { ...data };
       if (data.isBonusTask) {
         delete submitData.assignedTo;
+      }
+      
+      // Add icon data if available
+      if (iconUrl) {
+        submitData.iconUrl = iconUrl;
+        submitData.iconPrompt = iconPrompt;
       }
 
       console.log("Submitting task data:", submitData);
@@ -241,6 +269,50 @@ export function CreateTaskForm({ currentUserId, currentUserName, currentUserRole
             {errors.description && (
               <p className="text-sm text-destructive">{errors.description.message}</p>
             )}
+          </div>
+
+          {/* Task Icon Section */}
+          <div className="space-y-3">
+            <Label>Task Icon (optional)</Label>
+            <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+              <TaskIcon 
+                iconUrl={iconUrl}
+                title={watch('title') || 'New Task'}
+                size="lg"
+                showGenerateButton={currentUserRole === 'PARENT'}
+                onGenerate={handleGenerateIcon}
+                isGenerating={isGenerating}
+              />
+              <div className="flex-1">
+                {iconUrl ? (
+                  <div>
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                      ✨ Icon generated successfully!
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      AI will create a custom icon representing this task
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {currentUserRole === 'PARENT' 
+                        ? 'Click the + button to generate an AI-powered icon for this task'
+                        : 'AI-generated icons are available for parent-created tasks'
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Icons help make tasks more visual and engaging
+                    </p>
+                  </div>
+                )}
+                {iconError && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    {iconError}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Points and Due Date Row */}

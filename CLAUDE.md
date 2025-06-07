@@ -33,6 +33,27 @@ npx prisma studio             # Open database GUI
 npm run deploy                # Automated deployment with version bump
 ```
 
+## 🚨 CRITICAL DATABASE SAFETY RULE 🚨
+
+**NEVER run ANY database modification command without creating a backup first!**
+
+### MANDATORY Database Backup Process:
+1. **ALWAYS backup before ANY database changes** - Use `/scripts/backup-db.js` or `/scripts/simple-backup.js`
+2. **NEVER use `prisma migrate reset`** - This DELETES ALL DATA permanently
+3. **NEVER use `prisma db push --force-reset`** - This also DELETES ALL DATA
+4. **NEVER use destructive commands** without explicit user approval and verified backup
+
+### Safe Database Commands Only:
+- `npx prisma generate` ✅ (Safe - only generates client)
+- `npx prisma migrate dev --name [name]` ✅ (Safe - additive migrations only)
+- `npx prisma db push` ✅ (Safe - schema sync without reset)
+- `npx prisma studio` ✅ (Safe - read-only GUI)
+
+### FORBIDDEN Database Commands:
+- `npx prisma migrate reset` ❌ **DELETES ALL DATA**
+- `npx prisma db push --force-reset` ❌ **DELETES ALL DATA**
+- `npx prisma db seed --reset` ❌ **DELETES ALL DATA**
+
 ## Pre-Deployment Checklist
 
 Always run these commands before deploying:

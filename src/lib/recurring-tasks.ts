@@ -79,6 +79,8 @@ export async function createNextRecurringTask(taskId: string) {
         isRecurring: true,
         recurrencePattern: task.recurrencePattern,
         dueDateOnly: task.dueDateOnly, // Preserve dueDateOnly constraint
+        iconUrl: task.iconUrl, // Copy icon from original recurring task
+        iconPrompt: task.iconPrompt, // Copy icon prompt from original recurring task
         status: "PENDING"
       }
     })

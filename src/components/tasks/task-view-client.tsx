@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/ui/icons"
 import { formatDateTime, formatDate } from "@/lib/utils"
 import { DeclineTaskDialog } from "@/components/features/decline-task-dialog"
+import { TaskIcon } from "@/components/ui/task-icon"
 
 interface User {
   id: string
@@ -41,6 +42,8 @@ interface Task {
   dueDateOnly?: boolean
   isRecurring?: boolean
   recurrencePattern?: string
+  iconUrl?: string
+  iconPrompt?: string
 }
 
 interface TaskViewClientProps {
@@ -258,6 +261,7 @@ export function TaskViewClient({
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <CardTitle className="text-2xl flex items-center gap-3">
+                <TaskIcon iconUrl={task.iconUrl} title={task.title} size="lg" />
                 {task.title}
                 {task.isRecurring && (
                   <span 

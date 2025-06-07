@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { TaskIcon, useTaskIconGeneration } from "@/components/ui/task-icon"
 import { updateTaskSchema, type UpdateTaskInput } from "@/lib/validations"
 import { dateToInputString } from "@/lib/utils"
 
@@ -23,6 +24,8 @@ interface TaskData {
   dueDateOnly?: boolean
   isRecurring?: boolean
   recurrencePattern?: string
+  iconUrl?: string | null
+  iconPrompt?: string | null
   tags: Array<{ tag: { id: string; name: string; color: string } }>
 }
 
@@ -47,8 +50,12 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
   const [error, setError] = useState("")
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [tags, setTags] = useState<Tag[]>([])
+  const [iconUrl, setIconUrl] = useState<string | null>(task.iconUrl || null)
+  const [iconPrompt, setIconPrompt] = useState<string | null>(task.iconPrompt || null)
   const router = useRouter()
   const { data: session } = useSession()
+  
+  const { generateIcon, isGenerating, error: iconError, clearError } = useTaskIconGeneration()
   
   // Check if current user is a parent
   const isParent = session?.user?.role === "PARENT" || session?.user?.familyRole === "ADMIN_PARENT" || session?.user?.familyRole === "PARENT"
@@ -127,17 +134,41 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
     fetchData()
   }, [])
 
+  const handleGenerateIcon = async () => {
+    const title = watch('title')
+    const description = watch('description')
+    
+    if (!title?.trim()) {
+      return
+    }
+    
+    clearError()
+    const result = await generateIcon(title, description)
+    
+    if (result) {
+      setIconUrl(result.iconUrl)
+      setIconPrompt(result.prompt)
+    }
+  }
+
   const onSubmit = async (data: UpdateTaskInput) => {
     setIsLoading(true)
     setError("")
 
     try {
+      // Include icon data if available
+      const submitData = { ...data }
+      if (iconUrl) {
+        submitData.iconUrl = iconUrl
+        submitData.iconPrompt = iconPrompt || undefined
+      }
+
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(submitData)
       })
 
       const result = await response.json()
@@ -227,6 +258,50 @@ export function EditTaskForm({ task }: EditTaskFormProps) {
             {errors.description && (
               <p className="text-sm text-destructive">{errors.description.message}</p>
             )}
+          </div>
+
+          {/* Task Icon Section */}
+          <div className="space-y-3">
+            <Label>Task Icon (optional)</Label>
+            <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+              <TaskIcon 
+                iconUrl={iconUrl}
+                title={watch('title') || task.title}
+                size="lg"
+                showGenerateButton={isParent}
+                onGenerate={handleGenerateIcon}
+                isGenerating={isGenerating}
+              />
+              <div className="flex-1">
+                {iconUrl ? (
+                  <div>
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                      ✨ {iconUrl === task.iconUrl ? 'Original icon preserved' : 'New icon generated!'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Custom AI-generated icon for this task
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {isParent 
+                        ? 'Click the + button to generate or regenerate an AI-powered icon for this task'
+                        : 'AI-generated icons are available for parent-created tasks'
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Icons help make tasks more visual and engaging
+                    </p>
+                  </div>
+                )}
+                {iconError && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    {iconError}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Points and Due Date Row */}

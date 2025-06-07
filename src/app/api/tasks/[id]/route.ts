@@ -214,6 +214,8 @@ export async function PUT(
             ...(validatedData.isRecurring === false && { recurrencePattern: null })
           }),
           ...(validatedData.recurrencePattern !== undefined && { recurrencePattern: validatedData.recurrencePattern }),
+          ...(validatedData.iconUrl !== undefined && { iconUrl: validatedData.iconUrl }),
+          ...(validatedData.iconPrompt !== undefined && { iconPrompt: validatedData.iconPrompt }),
         }
       })
 

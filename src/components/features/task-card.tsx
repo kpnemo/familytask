@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { formatDate, formatDateTime, isTaskOverdue } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { TaskIcon } from "@/components/ui/task-icon"
 import { DeclineTaskDialog } from "./decline-task-dialog"
 
 export interface Task {
@@ -24,6 +25,8 @@ export interface Task {
   isRecurring?: boolean
   recurrencePattern?: string
   dueDateOnly?: boolean
+  iconUrl?: string
+  iconPrompt?: string
   // Legacy field names for backwards compatibility
   assignedTo?: string
   createdBy?: string
@@ -194,6 +197,7 @@ export function TaskCard({ task, onUpdate, isOverdue = false }: TaskCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
+              <TaskIcon iconUrl={task.iconUrl} title={task.title} size="md" />
               <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 {task.title}
                 {task.isRecurring && (
